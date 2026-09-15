@@ -14,6 +14,7 @@ allowBuilds:
   "@tetherto/pear-apps-utils-avatar-initials@https://codeload.github.com/tetherto/pear-apps-utils-avatar-initials/tar.gz/42406bc95ebee8090ed37942ce4b7dcfade48374": true
   "@tetherto/pear-apps-utils-date@https://codeload.github.com/tetherto/pear-apps-utils-date/tar.gz/b998c84247ca93d806290e44648a300d39188865": true
   "@tetherto/pear-apps-utils-generate-unique-id@https://codeload.github.com/tetherto/pear-apps-utils-generate-unique-id/tar.gz/8a9ccca79f4713df83ecdd5eacc92746d3f819dc": true
+  "@tetherto/pear-apps-utils-pattern-search@https://codeload.github.com/tetherto/pear-apps-utils-pattern-search/tar.gz/8f7a184949c5e4a556bf4b0e066492aeae61b25c": true
   "@tetherto/pear-apps-utils-qr@https://codeload.github.com/tetherto/pear-apps-utils-qr/tar.gz/f5346165dcee9f2b54360897c429564b712083aa": true
   "@tetherto/pear-apps-utils-validator@https://codeload.github.com/tetherto/pear-apps-utils-validator/tar.gz/bf6b3b6ce3e5c773d6df6a1956a38e578ce0e7ff": true
   "@tetherto/pearpass-lib-data-import@https://codeload.github.com/tetherto/pearpass-lib-data-import/tar.gz/1647d841c56e84e4a20fc59ec9d76305037229cf": true
