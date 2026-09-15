@@ -223,9 +223,6 @@ importers:
       '@lingui/react':
         specifier: 5.1.2
         version: 5.1.2(@lingui/babel-plugin-lingui-macro@5.9.5(babel-plugin-macros@3.1.0)(typescript@5.9.3))(babel-plugin-macros@3.1.0)(react@19.1.0)
-      '@tetherto/pear-apps-lib-feedback':
-        specifier: git+https://github.com/tetherto/pear-apps-lib-feedback.git
-        version: https://codeload.github.com/tetherto/pear-apps-lib-feedback/tar.gz/870e741f0ebf23c1da461d8f70d99ff461f548eb
       '@tetherto/pear-apps-lib-ui-react-hooks':
         specifier: git+https://github.com/tetherto/pear-apps-lib-ui-react-hooks.git
         version: https://codeload.github.com/tetherto/pear-apps-lib-ui-react-hooks/tar.gz/9a2bf80dc26780c81fcefa78af7244f1fbfaff03(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
@@ -238,9 +235,6 @@ importers:
       '@tetherto/pear-apps-utils-generate-unique-id':
         specifier: git+https://github.com/tetherto/pear-apps-utils-generate-unique-id.git
         version: https://codeload.github.com/tetherto/pear-apps-utils-generate-unique-id/tar.gz/8a9ccca79f4713df83ecdd5eacc92746d3f819dc
-      '@tetherto/pear-apps-utils-pattern-search':
-        specifier: git+https://github.com/tetherto/pear-apps-utils-pattern-search.git
-        version: https://codeload.github.com/tetherto/pear-apps-utils-pattern-search/tar.gz/fdb7f98db21d1b02a6c025ed89e8ec5791358db2
       '@tetherto/pear-apps-utils-qr':
         specifier: git+https://github.com/tetherto/pear-apps-utils-qr.git
         version: https://codeload.github.com/tetherto/pear-apps-utils-qr/tar.gz/f5346165dcee9f2b54360897c429564b712083aa
@@ -2287,10 +2281,6 @@ packages:
       '@types/react-dom':
         optional: true
 
-  '@tetherto/pear-apps-lib-feedback@https://codeload.github.com/tetherto/pear-apps-lib-feedback/tar.gz/870e741f0ebf23c1da461d8f70d99ff461f548eb':
-    resolution: {gitHosted: true, integrity: sha512-45pHezfuNaWxtp5S0WPAMC0TAlY170NxhL1f/faOkMZL10UKVxmkA1NwUkqnClEq8HYbn8INWU16NGCoNUKPwA==, tarball: https://codeload.github.com/tetherto/pear-apps-lib-feedback/tar.gz/870e741f0ebf23c1da461d8f70d99ff461f548eb}
-    version: 0.0.7
-
   '@tetherto/pear-apps-lib-ui-react-hooks@https://codeload.github.com/tetherto/pear-apps-lib-ui-react-hooks/tar.gz/9a2bf80dc26780c81fcefa78af7244f1fbfaff03':
     resolution: {gitHosted: true, integrity: sha512-VVv+wqt1IsTHk8HNOsYL1/y2rUUJ7ZCEm2ApADCm6NhOu1O37YEupqQ5wnkXl4eTeUixk3JC5gZCuix5EFSdbQ==, tarball: https://codeload.github.com/tetherto/pear-apps-lib-ui-react-hooks/tar.gz/9a2bf80dc26780c81fcefa78af7244f1fbfaff03}
     version: 0.0.11
@@ -2314,10 +2304,6 @@ packages:
     peerDependenciesMeta:
       expo-crypto:
         optional: true
-
-  '@tetherto/pear-apps-utils-pattern-search@https://codeload.github.com/tetherto/pear-apps-utils-pattern-search/tar.gz/fdb7f98db21d1b02a6c025ed89e8ec5791358db2':
-    resolution: {gitHosted: true, integrity: sha512-CapSKM1PPhFo9TmFrx1FUw6A04OmwDrzCkq/ksRC0LSrYDHP3l3KX4Jxps+I8V/DveK23eHyzsVUvXcvwJz+Iw==, tarball: https://codeload.github.com/tetherto/pear-apps-utils-pattern-search/tar.gz/fdb7f98db21d1b02a6c025ed89e8ec5791358db2}
-    version: 0.0.5
 
   '@tetherto/pear-apps-utils-qr@https://codeload.github.com/tetherto/pear-apps-utils-qr/tar.gz/f5346165dcee9f2b54360897c429564b712083aa':
     resolution: {gitHosted: true, integrity: sha512-9daLV4tdPqrwJEE98rcj7rb8BASwnGEcIxI4sMvj3mtfL3uMR8r9wzboCHXHEKccz94gqFjZxrK+9Gd+KQTMkQ==, tarball: https://codeload.github.com/tetherto/pear-apps-utils-qr/tar.gz/f5346165dcee9f2b54360897c429564b712083aa}
@@ -9844,8 +9830,6 @@ snapshots:
       '@types/react': 19.2.7
       '@types/react-dom': 19.2.3(@types/react@19.2.7)
 
-  '@tetherto/pear-apps-lib-feedback@https://codeload.github.com/tetherto/pear-apps-lib-feedback/tar.gz/870e741f0ebf23c1da461d8f70d99ff461f548eb': {}
-
   '@tetherto/pear-apps-lib-ui-react-hooks@https://codeload.github.com/tetherto/pear-apps-lib-ui-react-hooks/tar.gz/9a2bf80dc26780c81fcefa78af7244f1fbfaff03(react-dom@19.1.0(react@19.1.0))(react@19.1.0)':
     dependencies:
       react: 19.1.0
@@ -9856,8 +9840,6 @@ snapshots:
   '@tetherto/pear-apps-utils-date@https://codeload.github.com/tetherto/pear-apps-utils-date/tar.gz/b998c84247ca93d806290e44648a300d39188865': {}
 
   '@tetherto/pear-apps-utils-generate-unique-id@https://codeload.github.com/tetherto/pear-apps-utils-generate-unique-id/tar.gz/8a9ccca79f4713df83ecdd5eacc92746d3f819dc': {}
-
-  '@tetherto/pear-apps-utils-pattern-search@https://codeload.github.com/tetherto/pear-apps-utils-pattern-search/tar.gz/fdb7f98db21d1b02a6c025ed89e8ec5791358db2': {}
 
   '@tetherto/pear-apps-utils-qr@https://codeload.github.com/tetherto/pear-apps-utils-qr/tar.gz/f5346165dcee9f2b54360897c429564b712083aa':
     dependencies:

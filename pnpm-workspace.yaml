@@ -10,12 +10,10 @@ overrides:
 
 allowBuilds:
   "@electron/node-gyp@https://codeload.github.com/electron/node-gyp/tar.gz/06b29aafb7708acef8b3669835c8a7857ebc92d2": true
-  "@tetherto/pear-apps-lib-feedback@https://codeload.github.com/tetherto/pear-apps-lib-feedback/tar.gz/870e741f0ebf23c1da461d8f70d99ff461f548eb": true
   "@tetherto/pear-apps-lib-ui-react-hooks@https://codeload.github.com/tetherto/pear-apps-lib-ui-react-hooks/tar.gz/9a2bf80dc26780c81fcefa78af7244f1fbfaff03": true
   "@tetherto/pear-apps-utils-avatar-initials@https://codeload.github.com/tetherto/pear-apps-utils-avatar-initials/tar.gz/42406bc95ebee8090ed37942ce4b7dcfade48374": true
   "@tetherto/pear-apps-utils-date@https://codeload.github.com/tetherto/pear-apps-utils-date/tar.gz/b998c84247ca93d806290e44648a300d39188865": true
   "@tetherto/pear-apps-utils-generate-unique-id@https://codeload.github.com/tetherto/pear-apps-utils-generate-unique-id/tar.gz/8a9ccca79f4713df83ecdd5eacc92746d3f819dc": true
-  "@tetherto/pear-apps-utils-pattern-search@https://codeload.github.com/tetherto/pear-apps-utils-pattern-search/tar.gz/fdb7f98db21d1b02a6c025ed89e8ec5791358db2": true
   "@tetherto/pear-apps-utils-qr@https://codeload.github.com/tetherto/pear-apps-utils-qr/tar.gz/f5346165dcee9f2b54360897c429564b712083aa": true
   "@tetherto/pear-apps-utils-validator@https://codeload.github.com/tetherto/pear-apps-utils-validator/tar.gz/bf6b3b6ce3e5c773d6df6a1956a38e578ce0e7ff": true
   "@tetherto/pearpass-lib-data-import@https://codeload.github.com/tetherto/pearpass-lib-data-import/tar.gz/1647d841c56e84e4a20fc59ec9d76305037229cf": true
