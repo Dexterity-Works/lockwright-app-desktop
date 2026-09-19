@@ -224,35 +224,35 @@ importers:
         specifier: 5.1.2
         version: 5.1.2(@lingui/babel-plugin-lingui-macro@5.9.5(babel-plugin-macros@3.1.0)(typescript@5.9.3))(babel-plugin-macros@3.1.0)(react@19.1.0)
       '@tetherto/pear-apps-lib-ui-react-hooks':
-        specifier: git+https://github.com/Dexterity-Works/pear-apps-lib-ui-react-hooks.git
-        version: https://codeload.github.com/Dexterity-Works/pear-apps-lib-ui-react-hooks/tar.gz/9a2bf80dc26780c81fcefa78af7244f1fbfaff03(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
+        specifier: git+https://github.com/Dexterity-Works/lockwright-lib-ui-react-hooks.git
+        version: https://codeload.github.com/Dexterity-Works/lockwright-lib-ui-react-hooks/tar.gz/9a2bf80dc26780c81fcefa78af7244f1fbfaff03(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
       '@tetherto/pear-apps-utils-avatar-initials':
-        specifier: git+https://github.com/Dexterity-Works/pear-apps-utils-avatar-initials.git
-        version: https://codeload.github.com/Dexterity-Works/pear-apps-utils-avatar-initials/tar.gz/42406bc95ebee8090ed37942ce4b7dcfade48374
+        specifier: git+https://github.com/Dexterity-Works/lockwright-utils-avatar-initials.git
+        version: https://codeload.github.com/Dexterity-Works/lockwright-utils-avatar-initials/tar.gz/42406bc95ebee8090ed37942ce4b7dcfade48374
       '@tetherto/pear-apps-utils-date':
-        specifier: git+https://github.com/Dexterity-Works/pear-apps-utils-date.git
-        version: https://codeload.github.com/Dexterity-Works/pear-apps-utils-date/tar.gz/b998c84247ca93d806290e44648a300d39188865
+        specifier: git+https://github.com/Dexterity-Works/lockwright-utils-date.git
+        version: https://codeload.github.com/Dexterity-Works/lockwright-utils-date/tar.gz/b998c84247ca93d806290e44648a300d39188865
       '@tetherto/pear-apps-utils-generate-unique-id':
-        specifier: git+https://github.com/Dexterity-Works/pear-apps-utils-generate-unique-id.git
-        version: https://codeload.github.com/Dexterity-Works/pear-apps-utils-generate-unique-id/tar.gz/8a9ccca79f4713df83ecdd5eacc92746d3f819dc
+        specifier: git+https://github.com/Dexterity-Works/lockwright-utils-generate-unique-id.git
+        version: https://codeload.github.com/Dexterity-Works/lockwright-utils-generate-unique-id/tar.gz/8a9ccca79f4713df83ecdd5eacc92746d3f819dc
       '@tetherto/pear-apps-utils-pattern-search':
-        specifier: git+https://github.com/Dexterity-Works/pear-apps-utils-pattern-search.git
-        version: https://codeload.github.com/Dexterity-Works/pear-apps-utils-pattern-search/tar.gz/8f7a184949c5e4a556bf4b0e066492aeae61b25c
+        specifier: git+https://github.com/Dexterity-Works/lockwright-utils-pattern-search.git
+        version: https://codeload.github.com/Dexterity-Works/lockwright-utils-pattern-search/tar.gz/8f7a184949c5e4a556bf4b0e066492aeae61b25c
       '@tetherto/pear-apps-utils-qr':
-        specifier: git+https://github.com/Dexterity-Works/pear-apps-utils-qr.git
-        version: https://codeload.github.com/Dexterity-Works/pear-apps-utils-qr/tar.gz/f5346165dcee9f2b54360897c429564b712083aa
+        specifier: git+https://github.com/Dexterity-Works/lockwright-utils-qr.git
+        version: https://codeload.github.com/Dexterity-Works/lockwright-utils-qr/tar.gz/f5346165dcee9f2b54360897c429564b712083aa
       '@tetherto/pear-apps-utils-validator':
-        specifier: git+https://github.com/Dexterity-Works/pear-apps-utils-validator.git
-        version: https://codeload.github.com/Dexterity-Works/pear-apps-utils-validator/tar.gz/bf6b3b6ce3e5c773d6df6a1956a38e578ce0e7ff
+        specifier: git+https://github.com/Dexterity-Works/lockwright-utils-validator.git
+        version: https://codeload.github.com/Dexterity-Works/lockwright-utils-validator/tar.gz/bf6b3b6ce3e5c773d6df6a1956a38e578ce0e7ff
       '@tetherto/pearpass-lib-constants':
         specifier: git+https://github.com/Dexterity-Works/lockwright-lib-constants.git#0cf657575130f2168f883579c17daf344e4aaefd
         version: https://codeload.github.com/Dexterity-Works/lockwright-lib-constants/tar.gz/0cf657575130f2168f883579c17daf344e4aaefd
       '@tetherto/pearpass-lib-data-export':
-        specifier: git+https://github.com/Dexterity-Works/pearpass-lib-data-export.git
-        version: https://codeload.github.com/Dexterity-Works/pearpass-lib-data-export/tar.gz/baff7490a4dedefa79121eabc3b3e3da86933ed1
+        specifier: git+https://github.com/Dexterity-Works/lockwright-lib-data-export.git
+        version: https://codeload.github.com/Dexterity-Works/lockwright-lib-data-export/tar.gz/baff7490a4dedefa79121eabc3b3e3da86933ed1
       '@tetherto/pearpass-lib-data-import':
-        specifier: git+https://github.com/Dexterity-Works/pearpass-lib-data-import.git
-        version: https://codeload.github.com/Dexterity-Works/pearpass-lib-data-import/tar.gz/1647d841c56e84e4a20fc59ec9d76305037229cf
+        specifier: git+https://github.com/Dexterity-Works/lockwright-lib-data-import.git
+        version: https://codeload.github.com/Dexterity-Works/lockwright-lib-data-import/tar.gz/1647d841c56e84e4a20fc59ec9d76305037229cf
       '@tetherto/pearpass-lib-native-messaging-bridge':
         specifier: git+https://github.com/Dexterity-Works/pearpass-lib-native-messaging-bridge.git
         version: https://codeload.github.com/Dexterity-Works/pearpass-lib-native-messaging-bridge/tar.gz/a1a3f4e71ce3e8d98172b13a6a9daa285f98eeae(bare-buffer@3.6.2)
@@ -266,11 +266,11 @@ importers:
         specifier: file:../pearpass-lib-vault-core
         version: file:../pearpass-lib-vault-core(bare-events@2.9.1)(bare-pipe@4.2.3(bare-buffer@3.6.2))(bare-url@2.4.7)
       '@tetherto/pearpass-utils-password-check':
-        specifier: git+https://github.com/Dexterity-Works/pearpass-utils-password-check.git
-        version: https://codeload.github.com/Dexterity-Works/pearpass-utils-password-check/tar.gz/5175d97c3c560221a6f1a36d4c3c8be9c45daf81
+        specifier: git+https://github.com/Dexterity-Works/lockwright-utils-password-check.git
+        version: https://codeload.github.com/Dexterity-Works/lockwright-utils-password-check/tar.gz/5175d97c3c560221a6f1a36d4c3c8be9c45daf81
       '@tetherto/pearpass-utils-password-generator':
-        specifier: git+https://github.com/Dexterity-Works/pearpass-utils-password-generator.git
-        version: https://codeload.github.com/Dexterity-Works/pearpass-utils-password-generator/tar.gz/a29d6fcd0d0191fc6e7647f9cea6ece42514e977
+        specifier: git+https://github.com/Dexterity-Works/lockwright-utils-password-generator.git
+        version: https://codeload.github.com/Dexterity-Works/lockwright-utils-password-generator/tar.gz/a29d6fcd0d0191fc6e7647f9cea6ece42514e977
       autopass:
         specifier: ~3.3.0
         version: 3.3.0(bare-buffer@3.6.2)(bare-events@2.9.1)(bare-url@2.4.7)
@@ -2284,23 +2284,23 @@ packages:
       '@types/react-dom':
         optional: true
 
-  '@tetherto/pear-apps-lib-ui-react-hooks@https://codeload.github.com/Dexterity-Works/pear-apps-lib-ui-react-hooks/tar.gz/9a2bf80dc26780c81fcefa78af7244f1fbfaff03':
-    resolution: {gitHosted: true, integrity: sha512-VVv+wqt1IsTHk8HNOsYL1/y2rUUJ7ZCEm2ApADCm6NhOu1O37YEupqQ5wnkXl4eTeUixk3JC5gZCuix5EFSdbQ==, tarball: https://codeload.github.com/Dexterity-Works/pear-apps-lib-ui-react-hooks/tar.gz/9a2bf80dc26780c81fcefa78af7244f1fbfaff03}
+  '@tetherto/pear-apps-lib-ui-react-hooks@https://codeload.github.com/Dexterity-Works/lockwright-lib-ui-react-hooks/tar.gz/9a2bf80dc26780c81fcefa78af7244f1fbfaff03':
+    resolution: {gitHosted: true, integrity: sha512-ADt0U6qHdK4SnjV3BYcHrOxAShIoQ9igZp3DF5bnbxFbbHxn/ZNsQjc/0TuNM4g94j145ip/B11BD5SSBmXTWQ==, tarball: https://codeload.github.com/Dexterity-Works/lockwright-lib-ui-react-hooks/tar.gz/9a2bf80dc26780c81fcefa78af7244f1fbfaff03}
     version: 0.0.11
     peerDependencies:
       react: '>=18.3.1'
       react-dom: '>=18.3.1'
 
-  '@tetherto/pear-apps-utils-avatar-initials@https://codeload.github.com/Dexterity-Works/pear-apps-utils-avatar-initials/tar.gz/42406bc95ebee8090ed37942ce4b7dcfade48374':
-    resolution: {gitHosted: true, integrity: sha512-60TM4Lf0uMz6dJDH0NP0dZNoYjfXfZJgCQi44dsTNXrJdqkEmOjkuL/xj8Ki0PXfNrFWznphev53l/Mn9DTIwg==, tarball: https://codeload.github.com/Dexterity-Works/pear-apps-utils-avatar-initials/tar.gz/42406bc95ebee8090ed37942ce4b7dcfade48374}
+  '@tetherto/pear-apps-utils-avatar-initials@https://codeload.github.com/Dexterity-Works/lockwright-utils-avatar-initials/tar.gz/42406bc95ebee8090ed37942ce4b7dcfade48374':
+    resolution: {gitHosted: true, integrity: sha512-Yy0bk4wWw/RdQDK4qktaRNOTae9N31SqcziUjEtc978g48cKtPpmE9/pHh00Vt0Pxf0S1/gJl7jB6K0itSlM7g==, tarball: https://codeload.github.com/Dexterity-Works/lockwright-utils-avatar-initials/tar.gz/42406bc95ebee8090ed37942ce4b7dcfade48374}
     version: 0.0.7
 
-  '@tetherto/pear-apps-utils-date@https://codeload.github.com/Dexterity-Works/pear-apps-utils-date/tar.gz/b998c84247ca93d806290e44648a300d39188865':
-    resolution: {gitHosted: true, integrity: sha512-e5Zjx/SjDfR+8XmRqdA95JAG3Jco79wIDIWkAY9RL0IAvbvxTQqOqb0G3XQP2RMXXhDCGUxNX7aG6YQHBMGhbw==, tarball: https://codeload.github.com/Dexterity-Works/pear-apps-utils-date/tar.gz/b998c84247ca93d806290e44648a300d39188865}
+  '@tetherto/pear-apps-utils-date@https://codeload.github.com/Dexterity-Works/lockwright-utils-date/tar.gz/b998c84247ca93d806290e44648a300d39188865':
+    resolution: {gitHosted: true, integrity: sha512-q9dB0TUGrv6yGOR3JhlyaWkYrJlUBt2ihzmEY6GjEGomsKZPsR93QAwEaXAzHyZM1gQ44ELzHqHEp9ybSnNOEA==, tarball: https://codeload.github.com/Dexterity-Works/lockwright-utils-date/tar.gz/b998c84247ca93d806290e44648a300d39188865}
     version: 0.0.8
 
-  '@tetherto/pear-apps-utils-generate-unique-id@https://codeload.github.com/Dexterity-Works/pear-apps-utils-generate-unique-id/tar.gz/8a9ccca79f4713df83ecdd5eacc92746d3f819dc':
-    resolution: {gitHosted: true, integrity: sha512-U5/70wmdJoMGFWD+kQ4BGDBUNGzhUtcBN9x9YpPDnbcVNkVVIow+gobcSP6spRB23E1prG4anVP8zn/WKJkcIA==, tarball: https://codeload.github.com/Dexterity-Works/pear-apps-utils-generate-unique-id/tar.gz/8a9ccca79f4713df83ecdd5eacc92746d3f819dc}
+  '@tetherto/pear-apps-utils-generate-unique-id@https://codeload.github.com/Dexterity-Works/lockwright-utils-generate-unique-id/tar.gz/8a9ccca79f4713df83ecdd5eacc92746d3f819dc':
+    resolution: {gitHosted: true, integrity: sha512-JrVLqXzaovEOL4GAV4g0UsVbXsdHlgcF10cwOwIt54wlmc8sJpfMvipFeGdvL5nAdSokYrGyu3mfngn7spuo7Q==, tarball: https://codeload.github.com/Dexterity-Works/lockwright-utils-generate-unique-id/tar.gz/8a9ccca79f4713df83ecdd5eacc92746d3f819dc}
     version: 0.0.6
     peerDependencies:
       expo-crypto: ~13.0.0
@@ -2308,28 +2308,28 @@ packages:
       expo-crypto:
         optional: true
 
-  '@tetherto/pear-apps-utils-pattern-search@https://codeload.github.com/Dexterity-Works/pear-apps-utils-pattern-search/tar.gz/8f7a184949c5e4a556bf4b0e066492aeae61b25c':
-    resolution: {gitHosted: true, integrity: sha512-y3p+ICT7U4bTVjATtcgHIYDV17J4+PsWhxNrj9U3CHnkL1BUhXltUUTvPbGOJ94wykQB0Sgj8HJ57cDY2L3FqQ==, tarball: https://codeload.github.com/Dexterity-Works/pear-apps-utils-pattern-search/tar.gz/8f7a184949c5e4a556bf4b0e066492aeae61b25c}
+  '@tetherto/pear-apps-utils-pattern-search@https://codeload.github.com/Dexterity-Works/lockwright-utils-pattern-search/tar.gz/8f7a184949c5e4a556bf4b0e066492aeae61b25c':
+    resolution: {gitHosted: true, integrity: sha512-TknyUVjpF3SPwl2hl0wk+IKKSAIR+KA0gQ8I4RsqFGPCENryt7n7qwO0et9ZOGH0QbYMJEdOaxZ75Upr760b6w==, tarball: https://codeload.github.com/Dexterity-Works/lockwright-utils-pattern-search/tar.gz/8f7a184949c5e4a556bf4b0e066492aeae61b25c}
     version: 0.0.5
 
-  '@tetherto/pear-apps-utils-qr@https://codeload.github.com/Dexterity-Works/pear-apps-utils-qr/tar.gz/f5346165dcee9f2b54360897c429564b712083aa':
-    resolution: {gitHosted: true, integrity: sha512-9daLV4tdPqrwJEE98rcj7rb8BASwnGEcIxI4sMvj3mtfL3uMR8r9wzboCHXHEKccz94gqFjZxrK+9Gd+KQTMkQ==, tarball: https://codeload.github.com/Dexterity-Works/pear-apps-utils-qr/tar.gz/f5346165dcee9f2b54360897c429564b712083aa}
+  '@tetherto/pear-apps-utils-qr@https://codeload.github.com/Dexterity-Works/lockwright-utils-qr/tar.gz/f5346165dcee9f2b54360897c429564b712083aa':
+    resolution: {gitHosted: true, integrity: sha512-G2+Y9Yw4vA07kRnFE3ez0bhkDDuEZjmZrB3q30LOlTjf5Eyk30SIg14UGKB+Hv4MTY6W3PXGiC8/ymnZwB2h6Q==, tarball: https://codeload.github.com/Dexterity-Works/lockwright-utils-qr/tar.gz/f5346165dcee9f2b54360897c429564b712083aa}
     version: 0.0.5
 
-  '@tetherto/pear-apps-utils-validator@https://codeload.github.com/Dexterity-Works/pear-apps-utils-validator/tar.gz/bf6b3b6ce3e5c773d6df6a1956a38e578ce0e7ff':
-    resolution: {gitHosted: true, tarball: https://codeload.github.com/Dexterity-Works/pear-apps-utils-validator/tar.gz/bf6b3b6ce3e5c773d6df6a1956a38e578ce0e7ff}
+  '@tetherto/pear-apps-utils-validator@https://codeload.github.com/Dexterity-Works/lockwright-utils-validator/tar.gz/bf6b3b6ce3e5c773d6df6a1956a38e578ce0e7ff':
+    resolution: {gitHosted: true, tarball: https://codeload.github.com/Dexterity-Works/lockwright-utils-validator/tar.gz/bf6b3b6ce3e5c773d6df6a1956a38e578ce0e7ff}
     version: 0.0.10
 
   '@tetherto/pearpass-lib-constants@https://codeload.github.com/Dexterity-Works/lockwright-lib-constants/tar.gz/0cf657575130f2168f883579c17daf344e4aaefd':
     resolution: {gitHosted: true, integrity: sha512-U7V3CpNi23LiMkfoXfI1TecsUumRnC63Kw9lQbnC4yiswli+zmyUKgDp2LSyYYLI0svncryB+DCDT0XXtdOKSQ==, tarball: https://codeload.github.com/Dexterity-Works/lockwright-lib-constants/tar.gz/0cf657575130f2168f883579c17daf344e4aaefd}
     version: 0.0.11
 
-  '@tetherto/pearpass-lib-data-export@https://codeload.github.com/Dexterity-Works/pearpass-lib-data-export/tar.gz/baff7490a4dedefa79121eabc3b3e3da86933ed1':
-    resolution: {gitHosted: true, integrity: sha512-rjK331MZoLO0qhzrpJINE5vBPq+IZuwqbofcANdxo4C9swpIn5ZlvDHLam5tl5jTxWxqpRAbBxwtGXucYyFnMA==, tarball: https://codeload.github.com/Dexterity-Works/pearpass-lib-data-export/tar.gz/baff7490a4dedefa79121eabc3b3e3da86933ed1}
+  '@tetherto/pearpass-lib-data-export@https://codeload.github.com/Dexterity-Works/lockwright-lib-data-export/tar.gz/baff7490a4dedefa79121eabc3b3e3da86933ed1':
+    resolution: {gitHosted: true, integrity: sha512-LA5DiIOZkDTIz105gBYIiSECgg0E8wWy6va5RJ2f99GKU3Yg/yDJV9QOjALSJJWss/hf2ycqDExSpIZID2Zqyw==, tarball: https://codeload.github.com/Dexterity-Works/lockwright-lib-data-export/tar.gz/baff7490a4dedefa79121eabc3b3e3da86933ed1}
     version: 0.0.13
 
-  '@tetherto/pearpass-lib-data-import@https://codeload.github.com/Dexterity-Works/pearpass-lib-data-import/tar.gz/1647d841c56e84e4a20fc59ec9d76305037229cf':
-    resolution: {gitHosted: true, integrity: sha512-PKeGBULll5C5MWbbUNF9q1UWHYYXBENZD6fObJmWchYOUSj7WhMg64nG4OiY78nvfSbh2MIB1YIOyrmerQhKBw==, tarball: https://codeload.github.com/Dexterity-Works/pearpass-lib-data-import/tar.gz/1647d841c56e84e4a20fc59ec9d76305037229cf}
+  '@tetherto/pearpass-lib-data-import@https://codeload.github.com/Dexterity-Works/lockwright-lib-data-import/tar.gz/1647d841c56e84e4a20fc59ec9d76305037229cf':
+    resolution: {gitHosted: true, integrity: sha512-eU9rEWZ0+NLheU1FuiF3iIGi2EBqE+E7HDNHu7p3804GII9xNNal4z1WY79ttNjH1wZfhzXIZy/ymddk9v3GMQ==, tarball: https://codeload.github.com/Dexterity-Works/lockwright-lib-data-import/tar.gz/1647d841c56e84e4a20fc59ec9d76305037229cf}
     version: 0.0.14
 
   '@tetherto/pearpass-lib-native-messaging-bridge@https://codeload.github.com/Dexterity-Works/pearpass-lib-native-messaging-bridge/tar.gz/a1a3f4e71ce3e8d98172b13a6a9daa285f98eeae':
@@ -2378,16 +2378,16 @@ packages:
       react: '>=18.3.1'
       react-dom: '>=18.3.1'
 
-  '@tetherto/pearpass-utils-password-check@https://codeload.github.com/Dexterity-Works/pearpass-utils-password-check/tar.gz/4705b7937691a446412b27df7f7c644d8915aba9':
-    resolution: {gitHosted: true, integrity: sha512-u175XaOx7m6qyi0ra7BjfSzTXLcLCPuwnAgCdIi2QVnSppmFK7VBMWrq0TDvz/ZgqlRhJ2gO6oZMj5j/UxTcPA==, tarball: https://codeload.github.com/Dexterity-Works/pearpass-utils-password-check/tar.gz/4705b7937691a446412b27df7f7c644d8915aba9}
+  '@tetherto/pearpass-utils-password-check@https://codeload.github.com/Dexterity-Works/lockwright-utils-password-check/tar.gz/4705b7937691a446412b27df7f7c644d8915aba9':
+    resolution: {gitHosted: true, integrity: sha512-MPh9HsUU8dv7/HKEvfJspGzKqYIrGQgst3ZQEKnla1ytey0VQ0etaHbn8Xh/9qbIf+GpRuz1MjYTdukEBqGVxA==, tarball: https://codeload.github.com/Dexterity-Works/lockwright-utils-password-check/tar.gz/4705b7937691a446412b27df7f7c644d8915aba9}
     version: 0.0.14
 
-  '@tetherto/pearpass-utils-password-check@https://codeload.github.com/Dexterity-Works/pearpass-utils-password-check/tar.gz/5175d97c3c560221a6f1a36d4c3c8be9c45daf81':
-    resolution: {gitHosted: true, integrity: sha512-hjBTn/VRC9c1MR92Jy7CD9vPAeiBifD6E7APG9x4ycfKV+KONd08IH0dway7/3dx/KTjxDvWocnbJs/miuCifw==, tarball: https://codeload.github.com/Dexterity-Works/pearpass-utils-password-check/tar.gz/5175d97c3c560221a6f1a36d4c3c8be9c45daf81}
+  '@tetherto/pearpass-utils-password-check@https://codeload.github.com/Dexterity-Works/lockwright-utils-password-check/tar.gz/5175d97c3c560221a6f1a36d4c3c8be9c45daf81':
+    resolution: {gitHosted: true, tarball: https://codeload.github.com/Dexterity-Works/lockwright-utils-password-check/tar.gz/5175d97c3c560221a6f1a36d4c3c8be9c45daf81}
     version: 0.0.14
 
-  '@tetherto/pearpass-utils-password-generator@https://codeload.github.com/Dexterity-Works/pearpass-utils-password-generator/tar.gz/a29d6fcd0d0191fc6e7647f9cea6ece42514e977':
-    resolution: {gitHosted: true, integrity: sha512-OEIN5/qOu6pFfxvQKs8kjeQnX8f2zzqoM1bcQyUnPhHvC25tzJeDLeRibnhy8JzPUaflzoiD2DJFIRsW5HHUWQ==, tarball: https://codeload.github.com/Dexterity-Works/pearpass-utils-password-generator/tar.gz/a29d6fcd0d0191fc6e7647f9cea6ece42514e977}
+  '@tetherto/pearpass-utils-password-generator@https://codeload.github.com/Dexterity-Works/lockwright-utils-password-generator/tar.gz/a29d6fcd0d0191fc6e7647f9cea6ece42514e977':
+    resolution: {gitHosted: true, integrity: sha512-Nhp+jUNRt6EdPRV4g5KiyDvDqHRkfvb08/d9vBXvpXkc4Fv8mJLZNyxNF8NveKIIMv1Y4BkKu+u0POUaBvG7Qg==, tarball: https://codeload.github.com/Dexterity-Works/lockwright-utils-password-generator/tar.gz/a29d6fcd0d0191fc6e7647f9cea6ece42514e977}
     version: 0.0.11
 
   '@tetherto/tether-dev-docs@https://codeload.github.com/Dexterity-Works/tether-dev-docs/tar.gz/cb82786f04714a56577df1555db947969ec90aeb':
@@ -9837,30 +9837,30 @@ snapshots:
       '@types/react': 19.2.7
       '@types/react-dom': 19.2.3(@types/react@19.2.7)
 
-  '@tetherto/pear-apps-lib-ui-react-hooks@https://codeload.github.com/Dexterity-Works/pear-apps-lib-ui-react-hooks/tar.gz/9a2bf80dc26780c81fcefa78af7244f1fbfaff03(react-dom@19.1.0(react@19.1.0))(react@19.1.0)':
+  '@tetherto/pear-apps-lib-ui-react-hooks@https://codeload.github.com/Dexterity-Works/lockwright-lib-ui-react-hooks/tar.gz/9a2bf80dc26780c81fcefa78af7244f1fbfaff03(react-dom@19.1.0(react@19.1.0))(react@19.1.0)':
     dependencies:
       react: 19.1.0
       react-dom: 19.1.0(react@19.1.0)
 
-  '@tetherto/pear-apps-utils-avatar-initials@https://codeload.github.com/Dexterity-Works/pear-apps-utils-avatar-initials/tar.gz/42406bc95ebee8090ed37942ce4b7dcfade48374': {}
+  '@tetherto/pear-apps-utils-avatar-initials@https://codeload.github.com/Dexterity-Works/lockwright-utils-avatar-initials/tar.gz/42406bc95ebee8090ed37942ce4b7dcfade48374': {}
 
-  '@tetherto/pear-apps-utils-date@https://codeload.github.com/Dexterity-Works/pear-apps-utils-date/tar.gz/b998c84247ca93d806290e44648a300d39188865': {}
+  '@tetherto/pear-apps-utils-date@https://codeload.github.com/Dexterity-Works/lockwright-utils-date/tar.gz/b998c84247ca93d806290e44648a300d39188865': {}
 
-  '@tetherto/pear-apps-utils-generate-unique-id@https://codeload.github.com/Dexterity-Works/pear-apps-utils-generate-unique-id/tar.gz/8a9ccca79f4713df83ecdd5eacc92746d3f819dc': {}
+  '@tetherto/pear-apps-utils-generate-unique-id@https://codeload.github.com/Dexterity-Works/lockwright-utils-generate-unique-id/tar.gz/8a9ccca79f4713df83ecdd5eacc92746d3f819dc': {}
 
-  '@tetherto/pear-apps-utils-pattern-search@https://codeload.github.com/Dexterity-Works/pear-apps-utils-pattern-search/tar.gz/8f7a184949c5e4a556bf4b0e066492aeae61b25c': {}
+  '@tetherto/pear-apps-utils-pattern-search@https://codeload.github.com/Dexterity-Works/lockwright-utils-pattern-search/tar.gz/8f7a184949c5e4a556bf4b0e066492aeae61b25c': {}
 
-  '@tetherto/pear-apps-utils-qr@https://codeload.github.com/Dexterity-Works/pear-apps-utils-qr/tar.gz/f5346165dcee9f2b54360897c429564b712083aa':
+  '@tetherto/pear-apps-utils-qr@https://codeload.github.com/Dexterity-Works/lockwright-utils-qr/tar.gz/f5346165dcee9f2b54360897c429564b712083aa':
     dependencies:
       qrcode: 1.5.4
 
-  '@tetherto/pear-apps-utils-validator@https://codeload.github.com/Dexterity-Works/pear-apps-utils-validator/tar.gz/bf6b3b6ce3e5c773d6df6a1956a38e578ce0e7ff': {}
+  '@tetherto/pear-apps-utils-validator@https://codeload.github.com/Dexterity-Works/lockwright-utils-validator/tar.gz/bf6b3b6ce3e5c773d6df6a1956a38e578ce0e7ff': {}
 
   '@tetherto/pearpass-lib-constants@https://codeload.github.com/Dexterity-Works/lockwright-lib-constants/tar.gz/0cf657575130f2168f883579c17daf344e4aaefd': {}
 
-  '@tetherto/pearpass-lib-data-export@https://codeload.github.com/Dexterity-Works/pearpass-lib-data-export/tar.gz/baff7490a4dedefa79121eabc3b3e3da86933ed1': {}
+  '@tetherto/pearpass-lib-data-export@https://codeload.github.com/Dexterity-Works/lockwright-lib-data-export/tar.gz/baff7490a4dedefa79121eabc3b3e3da86933ed1': {}
 
-  '@tetherto/pearpass-lib-data-import@https://codeload.github.com/Dexterity-Works/pearpass-lib-data-import/tar.gz/1647d841c56e84e4a20fc59ec9d76305037229cf':
+  '@tetherto/pearpass-lib-data-import@https://codeload.github.com/Dexterity-Works/lockwright-lib-data-import/tar.gz/1647d841c56e84e4a20fc59ec9d76305037229cf':
     dependencies:
       '@noble/ciphers': 1.2.1
       '@noble/hashes': 1.7.1
@@ -9897,7 +9897,7 @@ snapshots:
     dependencies:
       '@noble/ciphers': 2.2.0
       '@noble/hashes': 2.3.0
-      '@tetherto/pearpass-utils-password-check': https://codeload.github.com/Dexterity-Works/pearpass-utils-password-check/tar.gz/4705b7937691a446412b27df7f7c644d8915aba9
+      '@tetherto/pearpass-utils-password-check': https://codeload.github.com/Dexterity-Works/lockwright-utils-password-check/tar.gz/4705b7937691a446412b27df7f7c644d8915aba9
       autopass: 3.3.0(bare-buffer@3.6.2)(bare-events@2.9.1)(bare-url@2.4.7)
       b4a: 1.8.1
       bare-buffer: 3.6.2
@@ -9941,11 +9941,11 @@ snapshots:
       - '@types/react'
       - redux
 
-  '@tetherto/pearpass-utils-password-check@https://codeload.github.com/Dexterity-Works/pearpass-utils-password-check/tar.gz/4705b7937691a446412b27df7f7c644d8915aba9': {}
+  '@tetherto/pearpass-utils-password-check@https://codeload.github.com/Dexterity-Works/lockwright-utils-password-check/tar.gz/4705b7937691a446412b27df7f7c644d8915aba9': {}
 
-  '@tetherto/pearpass-utils-password-check@https://codeload.github.com/Dexterity-Works/pearpass-utils-password-check/tar.gz/5175d97c3c560221a6f1a36d4c3c8be9c45daf81': {}
+  '@tetherto/pearpass-utils-password-check@https://codeload.github.com/Dexterity-Works/lockwright-utils-password-check/tar.gz/5175d97c3c560221a6f1a36d4c3c8be9c45daf81': {}
 
-  '@tetherto/pearpass-utils-password-generator@https://codeload.github.com/Dexterity-Works/pearpass-utils-password-generator/tar.gz/a29d6fcd0d0191fc6e7647f9cea6ece42514e977': {}
+  '@tetherto/pearpass-utils-password-generator@https://codeload.github.com/Dexterity-Works/lockwright-utils-password-generator/tar.gz/a29d6fcd0d0191fc6e7647f9cea6ece42514e977': {}
 
   '@tetherto/tether-dev-docs@https://codeload.github.com/Dexterity-Works/tether-dev-docs/tar.gz/cb82786f04714a56577df1555db947969ec90aeb(jiti@2.7.0)(supports-color@5.5.0)(typescript@5.9.3)':
     dependencies:
