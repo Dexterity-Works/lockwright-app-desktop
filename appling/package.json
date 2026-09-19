@@ -19,14 +19,14 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/tetherto/pearpass-app-desktop.git"
+    "url": "git+https://github.com/Dexterity-Works/lockwright-app-desktop.git"
   },
   "author": "Tether Data S.A. de C.V.",
   "license": "Apache-2.0",
   "bugs": {
-    "url": "https://github.com/tetherto/pearpass-app-desktop/issues"
+    "url": "https://github.com/Dexterity-Works/lockwright-app-desktop/issues"
   },
-  "homepage": "https://github.com/tetherto/pearpass-app-desktop#readme",
+  "homepage": "https://github.com/Dexterity-Works/lockwright-app-desktop#readme",
   "dependencies": {
     "appling-native": "^1.4.0",
     "bare-thread": "^1.1.3",

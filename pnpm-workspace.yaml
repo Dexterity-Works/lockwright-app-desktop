@@ -5,35 +5,35 @@ nodeLinker: hoisted
 blockExoticSubdeps: false
 
 overrides:
-  "@tetherto/pearpass-lib-constants": "git+https://github.com/Thaoh/lockwright-lib-constants.git#0cf657575130f2168f883579c17daf344e4aaefd"
-  "@tetherto/pearpass-lib-ui-kit": "git+https://github.com/Thaoh/lockwright-lib-ui-react-native-components.git#design-system-v2"
+  "@tetherto/pearpass-lib-constants": "git+https://github.com/Dexterity-Works/lockwright-lib-constants.git#0cf657575130f2168f883579c17daf344e4aaefd"
+  "@tetherto/pearpass-lib-ui-kit": "git+https://github.com/Dexterity-Works/lockwright-lib-ui-react-native-components.git#design-system-v2"
 
 allowBuilds:
   "@electron/node-gyp@https://codeload.github.com/electron/node-gyp/tar.gz/06b29aafb7708acef8b3669835c8a7857ebc92d2": true
-  "@tetherto/pear-apps-lib-ui-react-hooks@https://codeload.github.com/tetherto/pear-apps-lib-ui-react-hooks/tar.gz/9a2bf80dc26780c81fcefa78af7244f1fbfaff03": true
-  "@tetherto/pear-apps-utils-avatar-initials@https://codeload.github.com/tetherto/pear-apps-utils-avatar-initials/tar.gz/42406bc95ebee8090ed37942ce4b7dcfade48374": true
-  "@tetherto/pear-apps-utils-date@https://codeload.github.com/tetherto/pear-apps-utils-date/tar.gz/b998c84247ca93d806290e44648a300d39188865": true
-  "@tetherto/pear-apps-utils-generate-unique-id@https://codeload.github.com/tetherto/pear-apps-utils-generate-unique-id/tar.gz/8a9ccca79f4713df83ecdd5eacc92746d3f819dc": true
-  "@tetherto/pear-apps-utils-pattern-search@https://codeload.github.com/tetherto/pear-apps-utils-pattern-search/tar.gz/8f7a184949c5e4a556bf4b0e066492aeae61b25c": true
-  "@tetherto/pear-apps-utils-qr@https://codeload.github.com/tetherto/pear-apps-utils-qr/tar.gz/f5346165dcee9f2b54360897c429564b712083aa": true
-  "@tetherto/pear-apps-utils-validator@https://codeload.github.com/tetherto/pear-apps-utils-validator/tar.gz/bf6b3b6ce3e5c773d6df6a1956a38e578ce0e7ff": true
-  "@tetherto/pearpass-lib-data-import@https://codeload.github.com/tetherto/pearpass-lib-data-import/tar.gz/1647d841c56e84e4a20fc59ec9d76305037229cf": true
-  "@tetherto/pearpass-lib-data-export@https://codeload.github.com/tetherto/pearpass-lib-data-export/tar.gz/baff7490a4dedefa79121eabc3b3e3da86933ed1": true
-  "@tetherto/pearpass-lib-native-messaging-bridge@https://codeload.github.com/tetherto/pearpass-lib-native-messaging-bridge/tar.gz/a1a3f4e71ce3e8d98172b13a6a9daa285f98eeae": true
-  "@tetherto/pearpass-lib-ui-react-native-components@https://codeload.github.com/tetherto/pearpass-lib-ui-react-native-components/tar.gz/5f175a543476cf21a30057d1b580a06d37b358bf": true
-  "@tetherto/pearpass-lib-ui-react-native-components@https://codeload.github.com/Thaoh/lockwright-lib-ui-react-native-components/tar.gz/4b254fff341c791a27a45f3e1488a3860f2b1987": true
-  "@tetherto/pearpass-utils-password-generator@https://codeload.github.com/tetherto/pearpass-utils-password-generator/tar.gz/a29d6fcd0d0191fc6e7647f9cea6ece42514e977": true
-  "@tetherto/tether-dev-docs@https://codeload.github.com/tetherto/tether-dev-docs/tar.gz/cb82786f04714a56577df1555db947969ec90aeb": true
+  "@tetherto/pear-apps-lib-ui-react-hooks@https://codeload.github.com/Dexterity-Works/pear-apps-lib-ui-react-hooks/tar.gz/9a2bf80dc26780c81fcefa78af7244f1fbfaff03": true
+  "@tetherto/pear-apps-utils-avatar-initials@https://codeload.github.com/Dexterity-Works/pear-apps-utils-avatar-initials/tar.gz/42406bc95ebee8090ed37942ce4b7dcfade48374": true
+  "@tetherto/pear-apps-utils-date@https://codeload.github.com/Dexterity-Works/pear-apps-utils-date/tar.gz/b998c84247ca93d806290e44648a300d39188865": true
+  "@tetherto/pear-apps-utils-generate-unique-id@https://codeload.github.com/Dexterity-Works/pear-apps-utils-generate-unique-id/tar.gz/8a9ccca79f4713df83ecdd5eacc92746d3f819dc": true
+  "@tetherto/pear-apps-utils-pattern-search@https://codeload.github.com/Dexterity-Works/pear-apps-utils-pattern-search/tar.gz/8f7a184949c5e4a556bf4b0e066492aeae61b25c": true
+  "@tetherto/pear-apps-utils-qr@https://codeload.github.com/Dexterity-Works/pear-apps-utils-qr/tar.gz/f5346165dcee9f2b54360897c429564b712083aa": true
+  "@tetherto/pear-apps-utils-validator@https://codeload.github.com/Dexterity-Works/pear-apps-utils-validator/tar.gz/bf6b3b6ce3e5c773d6df6a1956a38e578ce0e7ff": true
+  "@tetherto/pearpass-lib-data-import@https://codeload.github.com/Dexterity-Works/pearpass-lib-data-import/tar.gz/1647d841c56e84e4a20fc59ec9d76305037229cf": true
+  "@tetherto/pearpass-lib-data-export@https://codeload.github.com/Dexterity-Works/pearpass-lib-data-export/tar.gz/baff7490a4dedefa79121eabc3b3e3da86933ed1": true
+  "@tetherto/pearpass-lib-native-messaging-bridge@https://codeload.github.com/Dexterity-Works/pearpass-lib-native-messaging-bridge/tar.gz/a1a3f4e71ce3e8d98172b13a6a9daa285f98eeae": true
+  "@tetherto/pearpass-lib-ui-react-native-components@https://codeload.github.com/Dexterity-Works/pearpass-lib-ui-react-native-components/tar.gz/5f175a543476cf21a30057d1b580a06d37b358bf": true
+  "@tetherto/pearpass-lib-ui-react-native-components@https://codeload.github.com/Dexterity-Works/lockwright-lib-ui-react-native-components/tar.gz/4b254fff341c791a27a45f3e1488a3860f2b1987": true
+  "@tetherto/pearpass-utils-password-generator@https://codeload.github.com/Dexterity-Works/pearpass-utils-password-generator/tar.gz/a29d6fcd0d0191fc6e7647f9cea6ece42514e977": true
+  "@tetherto/tether-dev-docs@https://codeload.github.com/Dexterity-Works/tether-dev-docs/tar.gz/cb82786f04714a56577df1555db947969ec90aeb": true
   "@tetherto/pearpass-utils-password-check": true
-  "@tetherto/pearpass-utils-password-check@https://codeload.github.com/tetherto/pearpass-utils-password-check/tar.gz/4705b7937691a446412b27df7f7c644d8915aba9": true
-  "@tetherto/pearpass-utils-password-check@https://codeload.github.com/tetherto/pearpass-utils-password-check/tar.gz/5175d97c3c560221a6f1a36d4c3c8be9c45daf81": true
+  "@tetherto/pearpass-utils-password-check@https://codeload.github.com/Dexterity-Works/pearpass-utils-password-check/tar.gz/4705b7937691a446412b27df7f7c644d8915aba9": true
+  "@tetherto/pearpass-utils-password-check@https://codeload.github.com/Dexterity-Works/pearpass-utils-password-check/tar.gz/5175d97c3c560221a6f1a36d4c3c8be9c45daf81": true
   "@tetherto/pearpass-lib-constants": true
-  "@tetherto/pearpass-lib-constants@https://codeload.github.com/Thaoh/lockwright-lib-constants/tar.gz/e8ea95e7456ea9ffc7057bbb97093d6a9563d859": true
-  "@tetherto/pearpass-lib-constants@https://codeload.github.com/Thaoh/lockwright-lib-constants/tar.gz/12c63099acf78947e0ce01af279211a2b2eea372": true
-  "@tetherto/pearpass-lib-constants@https://codeload.github.com/Thaoh/lockwright-lib-constants/tar.gz/1f3338f06101e409255402e5ac6a4d696540d02b": true
-  "@tetherto/pearpass-lib-constants@https://codeload.github.com/Thaoh/lockwright-lib-constants/tar.gz/52680e3ab3f9ec5604ce2e12e951275101799de5": true
-  "@tetherto/pearpass-lib-constants@https://codeload.github.com/Thaoh/lockwright-lib-constants/tar.gz/0221dba94373926c7316c675d9bff774daf8464f": true
-  "@tetherto/pearpass-lib-constants@https://codeload.github.com/Thaoh/lockwright-lib-constants/tar.gz/0cf657575130f2168f883579c17daf344e4aaefd": true
+  "@tetherto/pearpass-lib-constants@https://codeload.github.com/Dexterity-Works/lockwright-lib-constants/tar.gz/e8ea95e7456ea9ffc7057bbb97093d6a9563d859": true
+  "@tetherto/pearpass-lib-constants@https://codeload.github.com/Dexterity-Works/lockwright-lib-constants/tar.gz/12c63099acf78947e0ce01af279211a2b2eea372": true
+  "@tetherto/pearpass-lib-constants@https://codeload.github.com/Dexterity-Works/lockwright-lib-constants/tar.gz/1f3338f06101e409255402e5ac6a4d696540d02b": true
+  "@tetherto/pearpass-lib-constants@https://codeload.github.com/Dexterity-Works/lockwright-lib-constants/tar.gz/52680e3ab3f9ec5604ce2e12e951275101799de5": true
+  "@tetherto/pearpass-lib-constants@https://codeload.github.com/Dexterity-Works/lockwright-lib-constants/tar.gz/0221dba94373926c7316c675d9bff774daf8464f": true
+  "@tetherto/pearpass-lib-constants@https://codeload.github.com/Dexterity-Works/lockwright-lib-constants/tar.gz/0cf657575130f2168f883579c17daf344e4aaefd": true
   "@tetherto/pearpass-lib-vault-core@file:../pearpass-lib-vault-core": true
   "@tetherto/pearpass-lib-vault@file:../pearpass-lib-vault": true
   electron: set this to true or false

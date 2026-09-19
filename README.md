@@ -45,7 +45,7 @@ The on-disk vault at the fork point is PearPass's. Vault work in this tree aims 
 - **Offline access.** Access your vault anytime, even without a network connection.
 - **Password health.** Analyse password strength and identify weak passwords.
 - **Random password generator.** Generate strong, unique passwords.
-- **Multi-platform.** Runs on macOS, Linux, and Windows. Lockwright is also available on [mobile](https://github.com/Thaoh/lockwright-app-mobile) and as a [browser extension](https://github.com/Thaoh/lockwright-app-browser-extension).
+- **Multi-platform.** Runs on macOS, Linux, and Windows. Lockwright is also available on [mobile](https://github.com/Dexterity-Works/lockwright-app-mobile) and as a [browser extension](https://github.com/Dexterity-Works/lockwright-app-browser-extension).
 
 ---
 
@@ -147,23 +147,23 @@ The `src/` folder is for development and it's ignored in `package.json`:
 
 The following sibling modules must be present in the workspace (they are not declared as npm dependencies). npm names are still `@tetherto/pearpass-*`. Git clones for vault, vault-core, and constants are the Lockwright repos.
 
-- [`@tetherto/tether-dev-docs`](../tether-dev-docs)
-- [`@tetherto/pear-apps-lib-feedback`](../pear-apps-lib-feedback)
-- [`@tetherto/pear-apps-lib-ui-react-hooks`](../pear-apps-lib-ui-react-hooks)
-- [`@tetherto/pear-apps-utils-avatar-initials`](../pear-apps-utils-avatar-initials)
-- [`@tetherto/pear-apps-utils-date`](../pear-apps-utils-date)
-- [`@tetherto/pear-apps-utils-generate-unique-id`](../pear-apps-utils-generate-unique-id)
-- [`@tetherto/pear-apps-utils-pattern-search`](../pear-apps-utils-pattern-search)
-- [`@tetherto/pear-apps-utils-qr`](../pear-apps-utils-qr)
-- [`@tetherto/pear-apps-utils-validator`](../pear-apps-utils-validator)
-- [`@tetherto/pearpass-lib-constants`](https://github.com/Thaoh/lockwright-lib-constants)
-- [`@tetherto/pearpass-lib-data-export`](../pearpass-lib-data-export)
-- [`@tetherto/pearpass-lib-data-import`](../pearpass-lib-data-import)
-- [`@tetherto/pearpass-lib-ui-theme-provider`](../pearpass-lib-ui-theme-provider)
-- [`@tetherto/pearpass-lib-vault`](https://github.com/Thaoh/lockwright-lib-vault)
-- [`@tetherto/pearpass-lib-vault-core`](https://github.com/Thaoh/lockwright-lib-vault-core)
-- [`@tetherto/pearpass-utils-password-check`](../pearpass-utils-password-check)
-- [`@tetherto/pearpass-utils-password-generator`](../pearpass-utils-password-generator)
+- [`@tetherto/tether-dev-docs`](https://github.com/Dexterity-Works/tether-dev-docs)
+- [`@tetherto/pear-apps-lib-feedback`](https://github.com/Dexterity-Works/pear-apps-lib-feedback)
+- [`@tetherto/pear-apps-lib-ui-react-hooks`](https://github.com/Dexterity-Works/pear-apps-lib-ui-react-hooks)
+- [`@tetherto/pear-apps-utils-avatar-initials`](https://github.com/Dexterity-Works/pear-apps-utils-avatar-initials)
+- [`@tetherto/pear-apps-utils-date`](https://github.com/Dexterity-Works/pear-apps-utils-date)
+- [`@tetherto/pear-apps-utils-generate-unique-id`](https://github.com/Dexterity-Works/pear-apps-utils-generate-unique-id)
+- [`@tetherto/pear-apps-utils-pattern-search`](https://github.com/Dexterity-Works/pear-apps-utils-pattern-search)
+- [`@tetherto/pear-apps-utils-qr`](https://github.com/Dexterity-Works/pear-apps-utils-qr)
+- [`@tetherto/pear-apps-utils-validator`](https://github.com/Dexterity-Works/pear-apps-utils-validator)
+- [`@tetherto/pearpass-lib-constants`](https://github.com/Dexterity-Works/lockwright-lib-constants)
+- [`@tetherto/pearpass-lib-data-export`](https://github.com/Dexterity-Works/pearpass-lib-data-export)
+- [`@tetherto/pearpass-lib-data-import`](https://github.com/Dexterity-Works/pearpass-lib-data-import)
+- [`@tetherto/pearpass-lib-ui-theme-provider`](https://github.com/Dexterity-Works/pearpass-lib-ui-theme-provider)
+- [`@tetherto/pearpass-lib-vault`](https://github.com/Dexterity-Works/lockwright-lib-vault)
+- [`@tetherto/pearpass-lib-vault-core`](https://github.com/Dexterity-Works/lockwright-lib-vault-core)
+- [`@tetherto/pearpass-utils-password-check`](https://github.com/Dexterity-Works/pearpass-utils-password-check)
+- [`@tetherto/pearpass-utils-password-generator`](https://github.com/Dexterity-Works/pearpass-utils-password-generator)
 
 ---
 
@@ -180,12 +180,12 @@ The following sibling modules must be present in the workspace (they are not dec
 
 | Project | Description |
 | --- | --- |
-| [`lockwright-app-mobile`](https://github.com/Thaoh/lockwright-app-mobile) | Mobile app for Lockwright |
-| [`lockwright-app-browser-extension`](https://github.com/Thaoh/lockwright-app-browser-extension) | Browser extension for Lockwright |
-| [`lockwright-lib-vault`](https://github.com/Thaoh/lockwright-lib-vault) | Vault management library |
-| [`lockwright-lib-vault-core`](https://github.com/Thaoh/lockwright-lib-vault-core) | Bare worker and client for Lockwright vaults |
-| [`lockwright-lib-constants`](https://github.com/Thaoh/lockwright-lib-constants) | Shared constants |
-| [`lockwright-lib-ui-react-native-components`](https://github.com/Thaoh/lockwright-lib-ui-react-native-components) | UI kit |
+| [`lockwright-app-mobile`](https://github.com/Dexterity-Works/lockwright-app-mobile) | Mobile app for Lockwright |
+| [`lockwright-app-browser-extension`](https://github.com/Dexterity-Works/lockwright-app-browser-extension) | Browser extension for Lockwright |
+| [`lockwright-lib-vault`](https://github.com/Dexterity-Works/lockwright-lib-vault) | Vault management library |
+| [`lockwright-lib-vault-core`](https://github.com/Dexterity-Works/lockwright-lib-vault-core) | Bare worker and client for Lockwright vaults |
+| [`lockwright-lib-constants`](https://github.com/Dexterity-Works/lockwright-lib-constants) | Shared constants |
+| [`lockwright-lib-ui-react-native-components`](https://github.com/Dexterity-Works/lockwright-lib-ui-react-native-components) | UI kit |
 
 ---
 
