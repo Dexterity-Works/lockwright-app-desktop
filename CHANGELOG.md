@@ -9,6 +9,14 @@ Starts at 0.0.17, after the Lockwright package rename. Earlier history is git.
 
 ## [Unreleased]
 
+## [0.0.23] - 2026-09-22
+
+`BUMP_SHA`
+
+### Fixed
+
+- Linux packaging finds the vault worklet under `lockwright-lib-vault-core`.
+
 ## [0.0.22] - 2026-09-10
 
 `7e308a0605a3b1a708fc700d82b01901211a545d`
@@ -71,7 +79,8 @@ Starts at 0.0.17, after the Lockwright package rename. Earlier history is git.
 
 - A PearPass vault copied onto disk is treated as a vault, not empty.
 
-[unreleased]: https://github.com/Dexterity-Works/lockwright-app-desktop/compare/7e308a0605a3b1a708fc700d82b01901211a545d...HEAD
+[unreleased]: https://github.com/Dexterity-Works/lockwright-app-desktop/compare/BUMP_SHA...HEAD
+[0.0.23]: https://github.com/Dexterity-Works/lockwright-app-desktop/compare/7e308a0605a3b1a708fc700d82b01901211a545d...BUMP_SHA
 [0.0.22]: https://github.com/Dexterity-Works/lockwright-app-desktop/compare/1959b3878630a34cad609a88e4a27568895c4acb...7e308a0605a3b1a708fc700d82b01901211a545d
 [0.0.21]: https://github.com/Dexterity-Works/lockwright-app-desktop/compare/44f1bbb00605b20c5301a7f3e5110a2c78eca7c9...1959b3878630a34cad609a88e4a27568895c4acb
 [0.0.20]: https://github.com/Dexterity-Works/lockwright-app-desktop/compare/eb6d08ec8b068eb517c80d1d2bddd1857ecc0521...44f1bbb00605b20c5301a7f3e5110a2c78eca7c9
