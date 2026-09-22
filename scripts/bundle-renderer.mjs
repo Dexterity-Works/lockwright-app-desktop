@@ -25,7 +25,7 @@ const strictDomCssInclude = [
 ]
 const strictDomRuntimePaths = [
   `${path.sep}node_modules${path.sep}react-strict-dom${path.sep}dist${path.sep}`,
-  `${path.sep}node_modules${path.sep}@tetherto${path.sep}pearpass-lib-ui-kit${path.sep}dist${path.sep}`
+  `${path.sep}node_modules${path.sep}lockwright-lib-ui-react-native-components${path.sep}dist${path.sep}`
 ]
 
 function shouldTransformStrictDomRuntime(filePath) {

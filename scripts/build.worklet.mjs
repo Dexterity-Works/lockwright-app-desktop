@@ -21,14 +21,15 @@ import * as esbuild from 'esbuild'
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const require = createRequire(import.meta.url)
 const root = path.join(__dirname, '..')
-const workletDir = path.join(
+export const workletAppEntry = path.join(
   root,
   'node_modules',
-  '@tetherto',
-  'pearpass-lib-vault-core',
+  'lockwright-lib-vault-core',
   'src',
-  'worklet'
+  'worklet',
+  'app.js'
 )
+const workletDir = path.dirname(workletAppEntry)
 
 const NODE_TO_BARE = {
   fs: 'bare-fs',
@@ -109,7 +110,7 @@ const externalizeNatives = {
 
 async function buildWorklet() {
   await esbuild.build({
-    entryPoints: [path.join(workletDir, 'app.js')],
+    entryPoints: [workletAppEntry],
     bundle: true,
     platform: 'node',
     format: 'cjs',
@@ -128,4 +129,9 @@ async function buildWorklet() {
   }
 }
 
-buildWorklet()
+const isDirectRun =
+  process.argv[1] &&
+  path.resolve(process.argv[1]) === fileURLToPath(import.meta.url)
+if (isDirectRun) {
+  buildWorklet()
+}
