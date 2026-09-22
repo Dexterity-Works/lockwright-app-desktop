@@ -14,7 +14,7 @@ jest.mock('./useTranslation', () => ({
     t: (value) => value
   })
 }))
-jest.mock('@tetherto/pearpass-lib-constants', () => ({
+jest.mock('lockwright-lib-constants', () => ({
   DEFAULT_CLIPBOARD_CLEAR_TIMEOUT: 1000
 }))
 

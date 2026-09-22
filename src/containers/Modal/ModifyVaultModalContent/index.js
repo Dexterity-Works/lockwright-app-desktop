@@ -1,11 +1,11 @@
 import { useEffect, useState, useMemo } from 'react'
 
-import { useForm } from '@tetherto/pear-apps-lib-ui-react-hooks'
-import { Validator } from '@tetherto/pear-apps-utils-validator'
-import { PROTECTED_VAULT_ENABLED } from '@tetherto/pearpass-lib-constants'
-import { Button, InputField } from '@tetherto/pearpass-lib-ui-kit'
-import { useVault } from '@tetherto/pearpass-lib-vault'
 import { html } from 'htm/react'
+import { PROTECTED_VAULT_ENABLED } from 'lockwright-lib-constants'
+import { useForm } from 'lockwright-lib-ui-react-hooks'
+import { Button, InputField } from 'lockwright-lib-ui-react-native-components'
+import { useVault } from 'lockwright-lib-vault'
+import { Validator } from 'lockwright-utils-validator'
 
 import { RadioSelect } from '../../../components/RadioSelect'
 import { useLoadingContext } from '../../../context/LoadingContext'

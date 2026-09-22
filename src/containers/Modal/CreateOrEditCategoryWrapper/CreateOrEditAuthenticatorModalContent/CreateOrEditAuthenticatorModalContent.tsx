@@ -1,7 +1,7 @@
 import React, { useMemo, useState } from 'react'
 
-import { useForm } from '@tetherto/pear-apps-lib-ui-react-hooks'
-import { Validator } from '@tetherto/pear-apps-utils-validator'
+import { useForm } from 'lockwright-lib-ui-react-hooks'
+import { Validator } from 'lockwright-utils-validator'
 import {
   AlertMessage,
   Button,
@@ -11,7 +11,7 @@ import {
   InputField,
   MultiSlotInput,
   PasswordField
-} from '@tetherto/pearpass-lib-ui-kit'
+} from 'lockwright-lib-ui-react-native-components'
 import {
   RECORD_TYPES,
   matchLoginRecords,
@@ -20,7 +20,7 @@ import {
   useCreateRecord,
   useRecords,
   validateOtpInput
-} from '@tetherto/pearpass-lib-vault'
+} from 'lockwright-lib-vault'
 import { createStyles } from './CreateOrEditAuthenticatorModalContent.styles'
 import { useGlobalLoading } from '../../../../context/LoadingContext'
 import { useModal } from '../../../../context/ModalContext'

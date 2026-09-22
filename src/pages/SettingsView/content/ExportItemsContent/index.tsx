@@ -1,7 +1,7 @@
 import React, { useCallback, useState } from 'react'
 
-import { useForm } from '@tetherto/pear-apps-lib-ui-react-hooks'
-import { Validator } from '@tetherto/pear-apps-utils-validator'
+import { useForm } from 'lockwright-lib-ui-react-hooks'
+import { Validator } from 'lockwright-utils-validator'
 import {
   Button,
   PageHeader,
@@ -9,7 +9,7 @@ import {
   Radio,
   ToggleSwitch,
   useTheme
-} from '@tetherto/pearpass-lib-ui-kit'
+} from 'lockwright-lib-ui-react-native-components'
 import {
   // @ts-expect-error — JS module without type declarations
   getMasterEncryption,
@@ -18,7 +18,7 @@ import {
   // @ts-expect-error — JS module without type declarations
   listRecords,
   useVault
-} from '@tetherto/pearpass-lib-vault'
+} from 'lockwright-lib-vault'
 
 import { AuthenticationModalContent } from '../../../../containers/Modal/AuthenticationModalContent'
 import { useModal } from '../../../../context/ModalContext'

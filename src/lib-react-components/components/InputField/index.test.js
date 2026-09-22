@@ -1,8 +1,8 @@
 import React from 'react'
 
 import { render, fireEvent } from '@testing-library/react'
-import { ThemeProvider } from '@tetherto/pearpass-lib-ui-kit'
-import { ExpandMore as DummyIcon } from '@tetherto/pearpass-lib-ui-kit/icons'
+import { ThemeProvider } from 'lockwright-lib-ui-react-native-components'
+import { ExpandMore as DummyIcon } from 'lockwright-lib-ui-react-native-components/icons'
 
 import { InputField } from './index'
 import '@testing-library/jest-dom'

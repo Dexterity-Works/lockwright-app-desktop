@@ -7,18 +7,18 @@ import {
   Text,
   Title,
   useTheme
-} from '@tetherto/pearpass-lib-ui-kit'
-import { KeyboardArrowRightFilled } from '@tetherto/pearpass-lib-ui-kit/icons'
+} from 'lockwright-lib-ui-react-native-components'
+import { KeyboardArrowRightFilled } from 'lockwright-lib-ui-react-native-components/icons'
 import {
   useCreateVault,
   useUserData,
   useVault,
   useVaults
-} from '@tetherto/pearpass-lib-vault'
+} from 'lockwright-lib-vault'
 import {
   clearBuffer,
   stringToBuffer
-} from '@tetherto/pearpass-lib-vault/src/utils/buffer'
+} from 'lockwright-lib-vault/src/utils/buffer'
 
 import { VaultUnlockAnimation } from '../../Intro/VaultUnlockAnimation'
 import { createStyles } from './styles'

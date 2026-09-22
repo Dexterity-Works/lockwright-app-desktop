@@ -5,8 +5,8 @@
  */
 import React, { useState, useEffect } from 'react'
 
-import { DEFAULT_CLIPBOARD_CLEAR_TIMEOUT } from '@tetherto/pearpass-lib-constants'
-import { Check } from '@tetherto/pearpass-lib-ui-kit/icons'
+import { DEFAULT_CLIPBOARD_CLEAR_TIMEOUT } from 'lockwright-lib-constants'
+import { Check } from 'lockwright-lib-ui-react-native-components/icons'
 
 import { useTranslation } from './useTranslation'
 import { LOCAL_STORAGE_KEYS } from '../constants/localStorage'

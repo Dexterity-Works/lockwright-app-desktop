@@ -8,7 +8,7 @@ import '@testing-library/jest-dom'
 
 const CLOSE_DURATION = BASE_TRANSITION_DURATION + STACK_CLEANUP_BUFFER
 
-jest.mock('@tetherto/pear-apps-utils-generate-unique-id', () => {
+jest.mock('lockwright-utils-generate-unique-id', () => {
   let n = 0
   return { generateUniqueId: jest.fn(() => `id-${n++}`) }
 })

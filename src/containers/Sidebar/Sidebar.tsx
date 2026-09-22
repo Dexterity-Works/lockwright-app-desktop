@@ -1,6 +1,6 @@
 import React, { useMemo, useState } from 'react'
 
-import { AUTHENTICATOR_ENABLED } from '@tetherto/pearpass-lib-constants'
+import { AUTHENTICATOR_ENABLED } from 'lockwright-lib-constants'
 import {
   closeAllInstances,
   useFolders,
@@ -8,15 +8,15 @@ import {
   useVault,
   useVaults,
   RECORD_TYPES
-} from '@tetherto/pearpass-lib-vault'
+} from 'lockwright-lib-vault'
 import {
   Button,
   ContextMenu,
   NavbarListItem,
   Text,
   useTheme
-} from '@tetherto/pearpass-lib-ui-kit'
-import { Pressable } from '@tetherto/pearpass-lib-ui-kit/components/Pressable'
+} from 'lockwright-lib-ui-react-native-components'
+import { Pressable } from 'lockwright-lib-ui-react-native-components/components/Pressable'
 import {
   Close,
   CreateNewFolder,
@@ -33,7 +33,7 @@ import {
   SyncLock,
   TrashOutlined,
   TwoFactorAuthenticationOutlined
-} from '@tetherto/pearpass-lib-ui-kit/icons'
+} from 'lockwright-lib-ui-react-native-components/icons'
 
 import {
   createStyles,

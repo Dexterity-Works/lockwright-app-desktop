@@ -1,9 +1,9 @@
 import React, { useState } from 'react'
 
-import { useForm } from '@tetherto/pear-apps-lib-ui-react-hooks'
-import { Validator } from '@tetherto/pear-apps-utils-validator'
+import { useForm } from 'lockwright-lib-ui-react-hooks'
+import { Validator } from 'lockwright-utils-validator'
 // @ts-ignore - declaration file is incomplete
-import { AUTHENTICATOR_ENABLED } from '@tetherto/pearpass-lib-constants'
+import { AUTHENTICATOR_ENABLED } from 'lockwright-lib-constants'
 import {
   AttachmentField as UiKitAttachmentField,
   Button,
@@ -17,12 +17,12 @@ import {
   Text,
   rawTokens,
   useTheme,
-} from '@tetherto/pearpass-lib-ui-kit'
-import { RECORD_TYPES, validateOtpInput } from '@tetherto/pearpass-lib-vault'
+} from 'lockwright-lib-ui-react-native-components'
+import { RECORD_TYPES, validateOtpInput } from 'lockwright-lib-vault'
 import {
   useCreateRecord,
   useRecords
-} from '@tetherto/pearpass-lib-vault'
+} from 'lockwright-lib-vault'
 import {
   Add,
   Close,
@@ -30,7 +30,7 @@ import {
   SyncLock,
   TrashOutlined,
   UploadFileFilled
-} from '@tetherto/pearpass-lib-ui-kit/icons'
+} from 'lockwright-lib-ui-react-native-components/icons'
 import { html } from 'htm/react'
 import { createStyles } from './CreateOrEditLoginModalContent.styles'
 import { ATTACHMENTS_FIELD_KEY } from '../../../../constants/formFields'

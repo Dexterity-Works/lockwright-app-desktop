@@ -1,4 +1,4 @@
-import { useCountDown } from '@tetherto/pear-apps-lib-ui-react-hooks'
+import { useCountDown } from 'lockwright-lib-ui-react-hooks'
 
 import { ExpireTime } from './styles'
 

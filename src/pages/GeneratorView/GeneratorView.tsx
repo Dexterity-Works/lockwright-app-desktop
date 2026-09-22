@@ -1,7 +1,7 @@
 import React, { useCallback, useState } from 'react'
 
-import { Button, PageHeader, useTheme } from '@tetherto/pearpass-lib-ui-kit'
-import { ContentCopy } from '@tetherto/pearpass-lib-ui-kit/icons'
+import { Button, PageHeader, useTheme } from 'lockwright-lib-ui-react-native-components'
+import { ContentCopy } from 'lockwright-lib-ui-react-native-components/icons'
 
 import { createStyles } from './GeneratorView.styles'
 import { PasswordGenerator } from '../../containers/PasswordGenerator/PasswordGenerator'

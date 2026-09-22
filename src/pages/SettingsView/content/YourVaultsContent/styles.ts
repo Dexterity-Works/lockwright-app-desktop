@@ -1,5 +1,5 @@
-import type { ThemeColors } from '@tetherto/pearpass-lib-ui-kit'
-import { rawTokens } from '@tetherto/pearpass-lib-ui-kit'
+import type { ThemeColors } from 'lockwright-lib-ui-react-native-components'
+import { rawTokens } from 'lockwright-lib-ui-react-native-components'
 
 const VAULT_LOCK_ICON_BACKGROUND = 'rgba(176, 217, 68, 0.18)'
 

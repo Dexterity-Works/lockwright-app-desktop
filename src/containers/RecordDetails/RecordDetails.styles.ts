@@ -1,4 +1,4 @@
-import { rawTokens, type ThemeColors } from '@tetherto/pearpass-lib-ui-kit'
+import { rawTokens, type ThemeColors } from 'lockwright-lib-ui-react-native-components'
 
 import { HEADER_MIN_HEIGHT } from '../../constants/layout'
 

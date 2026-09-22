@@ -8,12 +8,12 @@ import {
   Text,
   ToggleSwitch,
   useTheme
-} from '@tetherto/pearpass-lib-ui-kit'
-import { KeyboardArrowBottom } from '@tetherto/pearpass-lib-ui-kit/icons'
+} from 'lockwright-lib-ui-react-native-components'
+import { KeyboardArrowBottom } from 'lockwright-lib-ui-react-native-components/icons'
 import {
   AUTO_LOCK_ENABLED,
   AUTO_LOCK_TIMEOUT_OPTIONS
-} from '@tetherto/pearpass-lib-constants'
+} from 'lockwright-lib-constants'
 
 import { LOCAL_STORAGE_KEYS } from '../../../../constants/localStorage'
 import { useAutoLockPreferences } from '../../../../hooks/useAutoLockPreferences'

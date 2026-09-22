@@ -6,8 +6,8 @@ import {
   PageHeader,
   Text,
   useTheme
-} from '@tetherto/pearpass-lib-ui-kit'
-import { PublicOutlined, SwapVert } from '@tetherto/pearpass-lib-ui-kit/icons'
+} from 'lockwright-lib-ui-react-native-components'
+import { PublicOutlined, SwapVert } from 'lockwright-lib-ui-react-native-components/icons'
 
 import { useConnectExtension } from '../../../../hooks/useConnectExtension'
 import { useTranslation } from '../../../../hooks/useTranslation'

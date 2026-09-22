@@ -1,9 +1,9 @@
 import type { ChangeEvent } from 'react'
 import React, { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react'
 
-import { Button, Dialog, InputField, useTheme, Text } from '@tetherto/pearpass-lib-ui-kit'
-import { ContentPaste } from '@tetherto/pearpass-lib-ui-kit/icons'
-import { useVault, usePair } from '@tetherto/pearpass-lib-vault'
+import { Button, Dialog, InputField, useTheme, Text } from 'lockwright-lib-ui-react-native-components'
+import { ContentPaste } from 'lockwright-lib-ui-react-native-components/icons'
+import { useVault, usePair } from 'lockwright-lib-vault'
 import { useModal } from '../../../context/ModalContext'
 import { useToast } from '../../../context/ToastContext'
 import { useAutoLockPreferences } from '../../../hooks/useAutoLockPreferences'

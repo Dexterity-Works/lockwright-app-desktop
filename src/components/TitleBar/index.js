@@ -1,5 +1,5 @@
-import { useTheme } from '@tetherto/pearpass-lib-ui-kit'
 import { html } from 'htm/react'
+import { useTheme } from 'lockwright-lib-ui-react-native-components'
 import styled from 'styled-components'
 
 import { PearpassLogo } from '../../svgs/PearpassLogo'

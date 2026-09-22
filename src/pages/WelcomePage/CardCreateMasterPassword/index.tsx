@@ -1,19 +1,19 @@
 import React, { useRef, useState } from 'react'
 
-import { useForm } from '@tetherto/pear-apps-lib-ui-react-hooks'
-import { Validator } from '@tetherto/pear-apps-utils-validator'
-import { PRIVACY_POLICY } from '@tetherto/pearpass-lib-constants'
+import { useForm } from 'lockwright-lib-ui-react-hooks'
+import { Validator } from 'lockwright-utils-validator'
+import { PRIVACY_POLICY } from 'lockwright-lib-constants'
 import {
   useCreateVault,
   useUserData,
   useVault,
   useVaults
-} from '@tetherto/pearpass-lib-vault'
+} from 'lockwright-lib-vault'
 import {
   stringToBuffer,
   clearBuffer
-} from '@tetherto/pearpass-lib-vault/src/utils/buffer'
-import { checkPasswordStrength } from '@tetherto/pearpass-utils-password-check'
+} from 'lockwright-lib-vault/src/utils/buffer'
+import { checkPasswordStrength } from 'lockwright-utils-password-check'
 import {
   AlertMessage,
   Button,
@@ -23,10 +23,10 @@ import {
   PasswordField,
   Text,
   Title
-} from '@tetherto/pearpass-lib-ui-kit'
-import type { PasswordIndicatorVariant } from '@tetherto/pearpass-lib-ui-kit'
-import { KeyboardArrowRightFilled } from '@tetherto/pearpass-lib-ui-kit/icons'
-import { useTheme } from '@tetherto/pearpass-lib-ui-kit'
+} from 'lockwright-lib-ui-react-native-components'
+import type { PasswordIndicatorVariant } from 'lockwright-lib-ui-react-native-components'
+import { KeyboardArrowRightFilled } from 'lockwright-lib-ui-react-native-components/icons'
+import { useTheme } from 'lockwright-lib-ui-react-native-components'
 
 import { createStyles } from './styles'
 import { LOCAL_STORAGE_KEYS } from '../../../constants/localStorage'

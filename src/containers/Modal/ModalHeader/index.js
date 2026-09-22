@@ -1,5 +1,5 @@
-import { Close } from '@tetherto/pearpass-lib-ui-kit/icons'
 import { html } from 'htm/react'
+import { Close } from 'lockwright-lib-ui-react-native-components/icons'
 
 import { Header, HeaderChildrenWrapper } from './styles'
 

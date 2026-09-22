@@ -36,16 +36,16 @@ const mockRefreshMasterPasswordStatus = jest.fn<
   () => Promise<MasterPasswordLockStatus | undefined>
 >()
 
-jest.mock('@tetherto/pearpass-lib-vault', () => ({
+jest.mock('lockwright-lib-vault', () => ({
   useUserData: () => ({
     refreshMasterPasswordStatus: mockRefreshMasterPasswordStatus
   })
 }))
 
-jest.mock('@tetherto/pearpass-lib-ui-kit', () => {
+jest.mock('lockwright-lib-ui-react-native-components', () => {
   const actual = jest.requireActual<
-    typeof import('@tetherto/pearpass-lib-ui-kit')
-  >('@tetherto/pearpass-lib-ui-kit')
+    typeof import('lockwright-lib-ui-react-native-components')
+  >('lockwright-lib-ui-react-native-components')
 
   return {
     ...actual,
@@ -68,7 +68,7 @@ jest.mock('@tetherto/pearpass-lib-ui-kit', () => {
   }
 })
 
-jest.mock('@tetherto/pearpass-lib-ui-kit/icons', () => ({
+jest.mock('lockwright-lib-ui-react-native-components/icons', () => ({
   WatchLater: () => <span data-testid="icon-watch-later" />
 }))
 
@@ -77,7 +77,7 @@ const mockUseCountDown = jest.fn(
     '00:42'
 )
 
-jest.mock('@tetherto/pear-apps-lib-ui-react-hooks', () => ({
+jest.mock('lockwright-lib-ui-react-hooks', () => ({
   useCountDown: (opts: {
     initialSeconds: number
     onFinish: () => void | Promise<void>

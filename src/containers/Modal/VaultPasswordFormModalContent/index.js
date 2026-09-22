@@ -1,10 +1,10 @@
 import { useMemo } from 'react'
 
 import { useLingui } from '@lingui/react'
-import { useForm } from '@tetherto/pear-apps-lib-ui-react-hooks'
-import { Validator } from '@tetherto/pear-apps-utils-validator'
-import { Button, InputField } from '@tetherto/pearpass-lib-ui-kit'
 import { html } from 'htm/react'
+import { useForm } from 'lockwright-lib-ui-react-hooks'
+import { Button, InputField } from 'lockwright-lib-ui-react-native-components'
+import { Validator } from 'lockwright-utils-validator'
 
 import { Description, Header, Title, UnlockVaultContainer } from './styles'
 import { FormModalHeaderWrapper } from '../../../components/FormModalHeaderWrapper'

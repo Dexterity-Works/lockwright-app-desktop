@@ -30,7 +30,7 @@ jest.mock('../../components/RecordItemIcon', () => {
   }
 })
 
-jest.mock('@tetherto/pearpass-lib-ui-kit', () => {
+jest.mock('lockwright-lib-ui-react-native-components', () => {
   const React = require('react')
   return {
     useTheme: () => ({
@@ -87,7 +87,7 @@ jest.mock('@tetherto/pearpass-lib-ui-kit', () => {
   }
 })
 
-jest.mock('@tetherto/pearpass-lib-ui-kit/icons', () => {
+jest.mock('lockwright-lib-ui-react-native-components/icons', () => {
   const React = require('react')
   const Stub = (name: string) =>
     React.forwardRef((_: Record<string, unknown>, _ref: unknown) =>

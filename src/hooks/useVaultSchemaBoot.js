@@ -5,8 +5,8 @@ import {
   VAULT_EXT_KEY,
   emitSchemaMigrationWarning,
   useVault
-} from '@tetherto/pearpass-lib-vault'
-import { pearpassVaultClient } from '@tetherto/pearpass-lib-vault/src/instances'
+} from 'lockwright-lib-vault'
+import { pearpassVaultClient } from 'lockwright-lib-vault/src/instances'
 
 import { logger } from '../utils/logger'
 

@@ -3,8 +3,8 @@ import { join } from 'path'
 
 import IPC from 'pear-ipc'
 
-jest.mock('@tetherto/pearpass-lib-constants', () => ({
-  ...jest.requireActual('@tetherto/pearpass-lib-constants'),
+jest.mock('lockwright-lib-constants', () => ({
+  ...jest.requireActual('lockwright-lib-constants'),
   IPC_SOCKET_DIR_NAME: '.lockwright'
 }))
 

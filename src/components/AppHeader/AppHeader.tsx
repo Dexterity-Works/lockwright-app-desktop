@@ -1,7 +1,7 @@
 import React, { type ReactNode } from 'react'
 
-import { Button, useTheme, SearchField } from '@tetherto/pearpass-lib-ui-kit'
-import { Add, ImportOutlined } from '@tetherto/pearpass-lib-ui-kit/icons'
+import { Button, useTheme, SearchField } from 'lockwright-lib-ui-react-native-components'
+import { Add, ImportOutlined } from 'lockwright-lib-ui-react-native-components/icons'
 
 import { createStyles } from './AppHeader.styles'
 import { useTranslation } from '../../hooks/useTranslation'

@@ -1,5 +1,5 @@
-import { generateUniqueId } from '@tetherto/pear-apps-utils-generate-unique-id'
-import { pearpassVaultClient } from '@tetherto/pearpass-lib-vault/src/instances'
+import { pearpassVaultClient } from 'lockwright-lib-vault/src/instances'
+import { generateUniqueId } from 'lockwright-utils-generate-unique-id'
 
 /**
  * Password generator history — shared vault key for extension / desktop / Android.

@@ -5,8 +5,8 @@ import {
   PageHeader,
   ToggleSwitch,
   useTheme
-} from '@tetherto/pearpass-lib-ui-kit'
-import { FolderOpen } from '@tetherto/pearpass-lib-ui-kit/icons'
+} from 'lockwright-lib-ui-react-native-components'
+import { FolderOpen } from 'lockwright-lib-ui-react-native-components/icons'
 
 import { useTranslation } from '../../../../hooks/useTranslation'
 import { logger } from '../../../../utils/logger'

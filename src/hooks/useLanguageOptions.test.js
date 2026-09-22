@@ -8,7 +8,7 @@ jest.mock('@lingui/react', () => ({
   })
 }))
 
-jest.mock('@tetherto/pearpass-lib-constants', () => ({
+jest.mock('lockwright-lib-constants', () => ({
   LANGUAGES: [
     { value: 'en' },
     { value: 'it' },

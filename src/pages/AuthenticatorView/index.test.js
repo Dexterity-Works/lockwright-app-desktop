@@ -2,17 +2,17 @@ import React from 'react'
 
 import '@testing-library/jest-dom'
 import { fireEvent, render, screen } from '@testing-library/react'
-import { useOtpWatch } from '@tetherto/pearpass-lib-vault'
+import { useOtpWatch } from 'lockwright-lib-vault'
 
 let mockSearchValue = ''
 let mockRecords = []
 
-jest.mock('@tetherto/pearpass-lib-constants', () => ({
+jest.mock('lockwright-lib-constants', () => ({
   DESKTOP_DESIGN_VERSION: 2,
   DESKTOP_2FA_IMPORTS_ENABLED: true
 }))
 
-jest.mock('@tetherto/pearpass-lib-vault', () => ({
+jest.mock('lockwright-lib-vault', () => ({
   useRecords: () => ({
     data: mockRecords,
     updateFavoriteState: jest.fn()
@@ -83,7 +83,7 @@ jest.mock('../../hooks/useCopyToClipboard.electron', () => ({
   useCopyToClipboard: () => ({ copyToClipboard: jest.fn() })
 }))
 
-jest.mock('@tetherto/pearpass-lib-ui-kit', () => {
+jest.mock('lockwright-lib-ui-react-native-components', () => {
   const ReactInner = require('react')
   return {
     Breadcrumb: ({ items, actions }) =>
@@ -157,7 +157,7 @@ jest.mock('@tetherto/pearpass-lib-ui-kit', () => {
   }
 })
 
-jest.mock('@tetherto/pearpass-lib-ui-kit/icons', () => {
+jest.mock('lockwright-lib-ui-react-native-components/icons', () => {
   const ReactInner = require('react')
   const Stub = () => ReactInner.createElement('span')
   return {

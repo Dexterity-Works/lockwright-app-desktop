@@ -2,7 +2,7 @@ import fs from 'fs'
 import { homedir, platform } from 'os'
 import { join } from 'path'
 
-import { IPC_SOCKET_DIR_NAME } from '@tetherto/pearpass-lib-constants'
+import { IPC_SOCKET_DIR_NAME } from 'lockwright-lib-constants'
 
 import { logger } from '../../utils/logger'
 

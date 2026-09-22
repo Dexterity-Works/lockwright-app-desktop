@@ -5,8 +5,8 @@ import {
   useVault,
   useVaults,
   type Vault
-} from '@tetherto/pearpass-lib-vault'
-import { pearpassVaultClient } from '@tetherto/pearpass-lib-vault/src/instances'
+} from 'lockwright-lib-vault'
+import { pearpassVaultClient } from 'lockwright-lib-vault/src/instances'
 
 import { useVaultSwitch } from './useVaultSwitch'
 import { AccessRemovedModalContent } from '../containers/Modal/AccessRemovedModalContent'

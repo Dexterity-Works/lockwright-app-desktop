@@ -1,12 +1,12 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react'
 
-import { DESKTOP_2FA_IMPORTS_ENABLED } from '@tetherto/pearpass-lib-constants'
+import { DESKTOP_2FA_IMPORTS_ENABLED } from 'lockwright-lib-constants'
 import {
   Button,
   NavbarListItem,
   Text,
   useTheme
-} from '@tetherto/pearpass-lib-ui-kit'
+} from 'lockwright-lib-ui-react-native-components'
 import {
   ArrowBackOutined,
   BugReportFilled,
@@ -28,7 +28,7 @@ import {
   TerminalTone,
   Translate,
   TwoFactorAuthenticationOutlined
-} from '@tetherto/pearpass-lib-ui-kit/icons'
+} from 'lockwright-lib-ui-react-native-components/icons'
 
 import { UnsavedChangesModalContent } from '../../containers/Modal/UnsavedChangesModalContent'
 import { useModal } from '../../context/ModalContext'

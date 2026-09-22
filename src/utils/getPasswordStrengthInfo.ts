@@ -1,7 +1,7 @@
 import {
   checkPassphraseStrength,
   checkPasswordStrength
-} from '@tetherto/pearpass-utils-password-check'
+} from 'lockwright-utils-password-check'
 import { PassType } from '../shared/types'
 
 type StrengthResult = {

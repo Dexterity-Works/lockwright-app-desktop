@@ -1,7 +1,8 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 
 import { useLingui } from '@lingui/react'
-import { DESKTOP_2FA_IMPORTS_ENABLED } from '@tetherto/pearpass-lib-constants'
+import { html } from 'htm/react'
+import { DESKTOP_2FA_IMPORTS_ENABLED } from 'lockwright-lib-constants'
 import {
   Breadcrumb,
   Button,
@@ -11,7 +12,7 @@ import {
   Text,
   Title,
   useTheme
-} from '@tetherto/pearpass-lib-ui-kit'
+} from 'lockwright-lib-ui-react-native-components'
 import {
   Add,
   CalendarToday,
@@ -21,7 +22,7 @@ import {
   FilterList,
   ImportExport,
   SortByAlpha
-} from '@tetherto/pearpass-lib-ui-kit/icons'
+} from 'lockwright-lib-ui-react-native-components/icons'
 import {
   formatOtpCode,
   groupOtpRecords,
@@ -30,8 +31,7 @@ import {
   useFolders,
   useOtpWatch,
   useRecords
-} from '@tetherto/pearpass-lib-vault'
-import { html } from 'htm/react'
+} from 'lockwright-lib-vault'
 
 import { createStyles } from './styles'
 import { RecordItemIcon } from '../../components/RecordItemIcon'

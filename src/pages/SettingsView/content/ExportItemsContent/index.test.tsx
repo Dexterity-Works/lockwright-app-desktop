@@ -30,7 +30,7 @@ jest.mock('../../../../context/ModalContext', () => ({
 }))
 
 const mockRefetchVault = jest.fn()
-jest.mock('@tetherto/pearpass-lib-vault', () => ({
+jest.mock('lockwright-lib-vault', () => ({
   useVault: () => ({
     data: { id: 'vault-1' },
     refetch: mockRefetchVault
@@ -83,7 +83,7 @@ const mockTheme = {
   }
 }
 
-jest.mock('@tetherto/pearpass-lib-ui-kit', () => ({
+jest.mock('lockwright-lib-ui-react-native-components', () => ({
   useTheme: () => mockTheme,
   PageHeader: ({ title }: { title: React.ReactNode }) => <h1>{title}</h1>,
   Text: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,

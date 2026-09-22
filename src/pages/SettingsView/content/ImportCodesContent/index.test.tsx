@@ -6,8 +6,8 @@ import { act, fireEvent, render, screen, waitFor } from '@testing-library/react'
 import {
   normalizeImport,
   normalizeProtonAuthenticator
-} from '@tetherto/pearpass-lib-data-import'
-import { decryptProtonExport } from '@tetherto/pearpass-lib-vault'
+} from 'lockwright-lib-data-import'
+import { decryptProtonExport } from 'lockwright-lib-vault'
 
 import { decodeQrFromImage } from '../../../../features/qr-decoder/decodeQrFromImage'
 import { readFileContent } from '../../../../pages/SettingsView/utils/readFileContent'
@@ -28,12 +28,12 @@ jest.mock('../../../../pages/SettingsView/utils/readFileContent', () => ({
   readFileContent: jest.fn()
 }))
 
-jest.mock('@tetherto/pearpass-lib-data-import', () => ({
+jest.mock('lockwright-lib-data-import', () => ({
   normalizeImport: jest.fn(),
   normalizeProtonAuthenticator: jest.fn()
 }))
 
-jest.mock('@tetherto/pearpass-lib-vault', () => ({
+jest.mock('lockwright-lib-vault', () => ({
   decryptProtonExport: jest.fn()
 }))
 
@@ -79,7 +79,7 @@ const mockTheme = {
   }
 }
 
-jest.mock('@tetherto/pearpass-lib-ui-kit', () => ({
+jest.mock('lockwright-lib-ui-react-native-components', () => ({
   useTheme: () => mockTheme,
   PageHeader: ({ title }: { title: React.ReactNode }) => <h1>{title}</h1>,
   Text: ({ children }: { children: React.ReactNode }) => (
@@ -166,7 +166,7 @@ jest.mock('@tetherto/pearpass-lib-ui-kit', () => ({
   )
 }))
 
-jest.mock('@tetherto/pearpass-lib-ui-kit/icons', () => ({
+jest.mock('lockwright-lib-ui-react-native-components/icons', () => ({
   ArrowBackOutined: () => null,
   KeyboardArrowRightFilled: () => null
 }))

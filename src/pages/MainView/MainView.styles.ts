@@ -1,4 +1,4 @@
-import type { ThemeColors } from '@tetherto/pearpass-lib-ui-kit'
+import type { ThemeColors } from 'lockwright-lib-ui-react-native-components'
 
 export const createStyles = (colors: ThemeColors) => ({
   wrapper: {

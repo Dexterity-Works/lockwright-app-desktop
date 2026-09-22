@@ -65,7 +65,7 @@ const fromBase64 = (base64String) =>
 
 /**
  * Load or create the pairing secret used for pairing token derivation.
- * @param {import('@tetherto/pearpass-lib-vault-core').PearpassVaultClient} client
+ * @param {import('lockwright-lib-vault-core').PearpassVaultClient} client
  * @returns {Promise<string>} base64-encoded secret
  */
 const getOrCreatePairingSecret = async (client) => {
@@ -102,7 +102,7 @@ const getOrCreatePairingSecret = async (client) => {
 
 /**
  * Ensure encryption is initialized on the client.
- * @param {import('@tetherto/pearpass-lib-vault-core').PearpassVaultClient} client
+ * @param {import('lockwright-lib-vault-core').PearpassVaultClient} client
  */
 const ensureEncryptionInitialized = async (client) => {
   try {
@@ -143,7 +143,7 @@ const ensureEncryptionInitialized = async (client) => {
 
 /**
  * Generate new identity keys and persist them.
- * @param {import('@tetherto/pearpass-lib-vault-core').PearpassVaultClient} client
+ * @param {import('lockwright-lib-vault-core').PearpassVaultClient} client
  * @returns {Promise<{ ed25519PublicKey: string, x25519PublicKey: string, creationDate: string }>}
  */
 const generateAndPersistIdentity = async (client) => {
@@ -228,7 +228,7 @@ const generateAndPersistIdentity = async (client) => {
 
 /**
  * Create or load the long-term identity key-pairs.
- * @param {import('@tetherto/pearpass-lib-vault-core').PearpassVaultClient} client
+ * @param {import('lockwright-lib-vault-core').PearpassVaultClient} client
  * @returns {Promise<{ ed25519PublicKey: string, x25519PublicKey: string, creationDate: string }>} base64-encoded public keys and creation date
  */
 export const getOrCreateIdentity = async (client) => {
@@ -331,7 +331,7 @@ export const getFingerprint = (ed25519PublicKeyB64) => {
 
 /**
  * Derive the pairing token for the given identity from the stored pairing secret.
- * @param {import('@tetherto/pearpass-lib-vault-core').PearpassVaultClient} client
+ * @param {import('lockwright-lib-vault-core').PearpassVaultClient} client
  * @param {string} ed25519PublicKeyB64
  * @returns {Promise<string>}
  */
@@ -342,7 +342,7 @@ export const getPairingToken = async (client, ed25519PublicKeyB64) => {
 
 /**
  * Verify a pairing token against the expected value derived from the stored secret.
- * @param {import('@tetherto/pearpass-lib-vault-core').PearpassVaultClient} client
+ * @param {import('lockwright-lib-vault-core').PearpassVaultClient} client
  * @param {string} ed25519PublicKeyB64
  * @param {string} userProvidedToken
  * @returns {Promise<boolean>}
@@ -365,7 +365,7 @@ export const verifyPairingToken = async (
 /**
  * Reset the app identity by deleting existing keys and generating new ones
  * This will unpair any connected extensions
- * @param {import('@tetherto/pearpass-lib-vault-core').PearpassVaultClient} client
+ * @param {import('lockwright-lib-vault-core').PearpassVaultClient} client
  * @returns {Promise<{ ed25519PublicKey: string, x25519PublicKey: string, creationDate: string }>} new base64-encoded public keys and creation date
  */
 export const resetIdentity = async (client) => {
@@ -412,7 +412,7 @@ export const __getMemIdentity = () => MEMORY_IDENTITY
 /**
  * Store client (extension) Ed25519 public key with pairing state.
  * Adds or updates this client without dropping other paired extensions.
- * @param {import('@tetherto/pearpass-lib-vault-core').PearpassVaultClient} client
+ * @param {import('lockwright-lib-vault-core').PearpassVaultClient} client
  * @param {string} ed25519PublicKeyB64
  * @param {string} state - PAIRING_STATES.PENDING or PAIRING_STATES.CONFIRMED
  */
@@ -485,7 +485,7 @@ const parseClientRecords = (data) => {
 
 /**
  * Helper to get parsed client data from vault
- * @param {import('@tetherto/pearpass-lib-vault-core').PearpassVaultClient} client
+ * @param {import('lockwright-lib-vault-core').PearpassVaultClient} client
  */
 const getClientData = async (client) => {
   const data = normalizeEncryptionGet(
@@ -501,7 +501,7 @@ const getClientData = async (client) => {
 
 /**
  * Load all registered extension clients from the vault.
- * @param {import('@tetherto/pearpass-lib-vault-core').PearpassVaultClient} client
+ * @param {import('lockwright-lib-vault-core').PearpassVaultClient} client
  * @returns {Promise<{ publicKey: string, pairingState: string }[]>}
  */
 export const getPairedClients = async (client) =>
@@ -515,7 +515,7 @@ const persistPairedClients = async (client, clients) => {
  * Load client (extension) Ed25519 public key from vault.
  * When several clients are paired, returns the first confirmed key
  * (legacy callers that still expect a single identity).
- * @param {import('@tetherto/pearpass-lib-vault-core').PearpassVaultClient} client
+ * @param {import('lockwright-lib-vault-core').PearpassVaultClient} client
  * @returns {Promise<string|null>}
  */
 export const getClientIdentityPublicKey = async (client) => {
@@ -563,7 +563,7 @@ const persistCachedClientIdentityPublicKeys = (keys) => {
 
 /**
  * Get the current pairing state.
- * @param {import('@tetherto/pearpass-lib-vault-core').PearpassVaultClient} client
+ * @param {import('lockwright-lib-vault-core').PearpassVaultClient} client
  * @returns {Promise<string|null>} - PAIRING_STATES.PENDING, PAIRING_STATES.CONFIRMED, or null
  */
 export const getClientPairingState = async (client) => {
@@ -576,7 +576,7 @@ export const getClientPairingState = async (client) => {
 
 /**
  * Confirm pairing after extension successfully encrypted its keypair.
- * @param {import('@tetherto/pearpass-lib-vault-core').PearpassVaultClient} client
+ * @param {import('lockwright-lib-vault-core').PearpassVaultClient} client
  * @param {string} clientEd25519PublicKeyB64
  */
 export const confirmClientPairing = async (
@@ -614,7 +614,7 @@ export const confirmClientPairing = async (
 
 /**
  * Remove one extension client without resetting desktop identity.
- * @param {import('@tetherto/pearpass-lib-vault-core').PearpassVaultClient} client
+ * @param {import('lockwright-lib-vault-core').PearpassVaultClient} client
  * @param {string} clientEd25519PublicKeyB64
  * @returns {Promise<{ publicKey: string, pairingState: string, browserName?: string }[]>}
  */

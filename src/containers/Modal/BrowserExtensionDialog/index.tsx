@@ -1,8 +1,8 @@
 import React from 'react'
 
-import { Button, Dialog, Text, Title } from '@tetherto/pearpass-lib-ui-kit'
-import { OpenInNew } from '@tetherto/pearpass-lib-ui-kit/icons'
-import { useTheme } from '@tetherto/pearpass-lib-ui-kit'
+import { Button, Dialog, Text, Title } from 'lockwright-lib-ui-react-native-components'
+import { OpenInNew } from 'lockwright-lib-ui-react-native-components/icons'
+import { useTheme } from 'lockwright-lib-ui-react-native-components'
 
 import { createStyles } from './styles'
 import { LOCAL_STORAGE_KEYS } from '../../../constants/localStorage'

@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react'
-import { Text, Title, useTheme } from '@tetherto/pearpass-lib-ui-kit'
+import { Text, Title, useTheme } from 'lockwright-lib-ui-react-native-components'
 import { OnboardingShell } from '../../components/OnboardingShell'
 import {
   ArtFrame,

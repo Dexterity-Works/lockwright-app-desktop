@@ -1,4 +1,4 @@
-import { generateUniqueId } from '@tetherto/pear-apps-utils-generate-unique-id'
+import { generateUniqueId } from 'lockwright-utils-generate-unique-id'
 
 import { logger } from './logger'
 import { readFileContent } from '../pages/SettingsView/utils/readFileContent'

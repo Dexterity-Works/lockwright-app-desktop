@@ -15,7 +15,7 @@ jest.mock('../../../../hooks/useTranslation', () => ({
   })
 }))
 
-jest.mock('@tetherto/pearpass-lib-constants', () => ({
+jest.mock('lockwright-lib-constants', () => ({
   PEARPASS_WEBSITE: 'https://lockwright.dexterity.works'
 }))
 
@@ -26,11 +26,11 @@ jest.mock('./styles', () => ({
   })
 }))
 
-jest.mock('@tetherto/pearpass-lib-ui-kit/icons', () => ({
+jest.mock('lockwright-lib-ui-react-native-components/icons', () => ({
   Send: () => null
 }))
 
-jest.mock('@tetherto/pearpass-lib-ui-kit', () => ({
+jest.mock('lockwright-lib-ui-react-native-components', () => ({
   PageHeader: ({ title, subtitle }: { title: string; subtitle?: string }) => (
     <div data-testid="settings-report-page-header">
       <h1>{title}</h1>

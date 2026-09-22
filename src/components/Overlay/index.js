@@ -1,7 +1,7 @@
 import { useRef } from 'react'
 
-import { useTheme } from '@tetherto/pearpass-lib-ui-kit'
 import { html } from 'htm/react'
+import { useTheme } from 'lockwright-lib-ui-react-native-components'
 
 import { OverlayComponent } from './styles'
 import { BASE_TRANSITION_DURATION } from '../../constants/transitions'

@@ -1,9 +1,9 @@
-import { PearpassVaultClient } from '@tetherto/pearpass-lib-vault-core'
+import { PearpassVaultClient } from 'lockwright-lib-vault-core'
 
 let pearpassClient = null
 
 /**
- * @param {import('@tetherto/pearpass-lib-vault-core').PearpassVaultClient} [ipc]
+ * @param {import('lockwright-lib-vault-core').PearpassVaultClient} [ipc]
  * @param {string} [storagePath]  absolute path where vaults live
  * @param {{ debugMode?: boolean }} [opts={}]
  * @returns {PearpassVaultClient}

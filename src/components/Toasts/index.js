@@ -1,5 +1,5 @@
-import { Snackbar } from '@tetherto/pearpass-lib-ui-kit'
 import { html } from 'htm/react'
+import { Snackbar } from 'lockwright-lib-ui-react-native-components'
 
 import { ToastStack } from './styles'
 

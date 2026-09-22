@@ -20,7 +20,7 @@ jest.mock('./AppHeader.styles', () => ({
 
 const mockTheme = { colors: {} }
 
-jest.mock('@tetherto/pearpass-lib-ui-kit', () => ({
+jest.mock('lockwright-lib-ui-react-native-components', () => ({
   useTheme: () => ({ theme: mockTheme }),
   SearchField: ({ value, onChangeText, placeholderText, testID }) => (
     <input
@@ -38,7 +38,7 @@ jest.mock('@tetherto/pearpass-lib-ui-kit', () => ({
   )
 }))
 
-jest.mock('@tetherto/pearpass-lib-ui-kit/icons', () => ({
+jest.mock('lockwright-lib-ui-react-native-components/icons', () => ({
   Add: () => null,
   ImportOutlined: () => null
 }))

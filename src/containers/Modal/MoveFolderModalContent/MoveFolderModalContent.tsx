@@ -1,9 +1,9 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react'
 
 // @ts-ignore - JS module without type declarations
-import { generateAvatarInitials } from '@tetherto/pear-apps-utils-avatar-initials'
-import { Button, Dialog, Text, useTheme } from '@tetherto/pearpass-lib-ui-kit'
-import { useFolders, useRecords } from '@tetherto/pearpass-lib-vault'
+import { generateAvatarInitials } from 'lockwright-utils-avatar-initials'
+import { Button, Dialog, Text, useTheme } from 'lockwright-lib-ui-react-native-components'
+import { useFolders, useRecords } from 'lockwright-lib-vault'
 
 import { createStyles } from './MoveFolderModalContent.styles'
 import { RECORD_COLOR_BY_TYPE } from '../../../constants/recordColorByType'
@@ -12,7 +12,7 @@ import { useModal } from '../../../context/ModalContext'
 import { useGlobalLoading } from '../../../context/LoadingContext'
 import { useScrollOverflow } from '../../../hooks/useScrollOverflow'
 import { useTranslation } from '../../../hooks/useTranslation'
-import { Folder, Layers } from '@tetherto/pearpass-lib-ui-kit/icons'
+import { Folder, Layers } from 'lockwright-lib-ui-react-native-components/icons'
 import { RecordAvatar } from '../../../components/RecordAvatar'
 
 const CHIP_ID_ALL = '__all__'

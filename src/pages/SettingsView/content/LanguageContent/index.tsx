@@ -8,8 +8,8 @@ import {
   PageHeader,
   Text,
   useTheme
-} from '@tetherto/pearpass-lib-ui-kit'
-import { ExpandMore } from '@tetherto/pearpass-lib-ui-kit/icons'
+} from 'lockwright-lib-ui-react-native-components'
+import { ExpandMore } from 'lockwright-lib-ui-react-native-components/icons'
 
 import { useLanguageOptions } from '../../../../hooks/useLanguageOptions'
 import { useTranslation } from '../../../../hooks/useTranslation'

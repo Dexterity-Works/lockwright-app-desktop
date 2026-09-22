@@ -8,8 +8,8 @@ import {
   useRef
 } from 'react'
 
-import { generateUniqueId } from '@tetherto/pear-apps-utils-generate-unique-id'
 import { html } from 'htm/react'
+import { generateUniqueId } from 'lockwright-utils-generate-unique-id'
 
 import { Overlay } from '../components/Overlay'
 import { BASE_TRANSITION_DURATION } from '../constants/transitions'

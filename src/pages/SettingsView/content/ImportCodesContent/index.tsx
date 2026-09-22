@@ -3,15 +3,15 @@ import { useMemo, useState } from 'react'
 import type {
   OTPRecord,
   NormalizeResult
-} from '@tetherto/pearpass-lib-data-import'
+} from 'lockwright-lib-data-import'
 import {
   normalizeImport,
   normalizeProtonAuthenticator
-} from '@tetherto/pearpass-lib-data-import'
-import { useForm } from '@tetherto/pear-apps-lib-ui-react-hooks'
-import { Validator } from '@tetherto/pear-apps-utils-validator'
-import { decryptProtonExport } from '@tetherto/pearpass-lib-vault'
-import type { UploadedFile } from '@tetherto/pearpass-lib-ui-kit'
+} from 'lockwright-lib-data-import'
+import { useForm } from 'lockwright-lib-ui-react-hooks'
+import { Validator } from 'lockwright-utils-validator'
+import { decryptProtonExport } from 'lockwright-lib-vault'
+import type { UploadedFile } from 'lockwright-lib-ui-react-native-components'
 import {
   AlertMessage,
   Button,
@@ -23,11 +23,11 @@ import {
   Title,
   UploadField,
   useTheme
-} from '@tetherto/pearpass-lib-ui-kit'
+} from 'lockwright-lib-ui-react-native-components'
 import {
   ArrowBackOutined,
   KeyboardArrowRightFilled
-} from '@tetherto/pearpass-lib-ui-kit/icons'
+} from 'lockwright-lib-ui-react-native-components/icons'
 
 import { decodeQrFromImage } from '../../../../features/qr-decoder/decodeQrFromImage'
 import { useTranslation } from '../../../../hooks/useTranslation'

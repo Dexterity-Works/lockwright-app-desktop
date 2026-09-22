@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useState } from 'react'
 
-import { ContentCopy } from '@tetherto/pearpass-lib-ui-kit/icons'
+import { ContentCopy } from 'lockwright-lib-ui-react-native-components/icons'
 
 import { useCopyToClipboard } from './useCopyToClipboard.electron'
 import { useTranslation } from './useTranslation'

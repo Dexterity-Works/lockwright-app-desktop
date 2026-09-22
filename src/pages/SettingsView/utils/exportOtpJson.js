@@ -1,5 +1,5 @@
-import { parseOtpToJson } from '@tetherto/pearpass-lib-data-export'
-import { encryptExportData } from '@tetherto/pearpass-lib-vault'
+import { parseOtpToJson } from 'lockwright-lib-data-export'
+import { encryptExportData } from 'lockwright-lib-vault'
 
 import { downloadFile } from './downloadFile'
 

@@ -8,7 +8,7 @@ import {
   CHROMIUM_EXTENSION_ID,
   FIREFOX_EXTENSION_ID,
   FIREFOX_NIGHTLY_EXTENSION_ID
-} from '@tetherto/pearpass-lib-constants'
+} from 'lockwright-lib-constants'
 
 import { logger } from './logger'
 import flatpakPaths from '../../electron/flatpak-paths.cjs'

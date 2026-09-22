@@ -145,25 +145,25 @@ The `src/` folder is for development and it's ignored in `package.json`:
 
 ## Workspace Dependencies
 
-The following sibling modules must be present in the workspace (they are not declared as npm dependencies). npm names are still `@tetherto/pearpass-*`. Git clones for vault, vault-core, and constants are the Lockwright repos.
+Package names match the repo names. Vault and vault-core are `file:../pearpass-lib-vault` and `file:../pearpass-lib-vault-core`.
 
 - [`@tetherto/tether-dev-docs`](https://github.com/Dexterity-Works/tether-dev-docs)
-- [`@tetherto/pear-apps-lib-feedback`](https://github.com/Dexterity-Works/lockwright-lib-feedback)
-- [`@tetherto/pear-apps-lib-ui-react-hooks`](https://github.com/Dexterity-Works/lockwright-lib-ui-react-hooks)
-- [`@tetherto/pear-apps-utils-avatar-initials`](https://github.com/Dexterity-Works/lockwright-utils-avatar-initials)
-- [`@tetherto/pear-apps-utils-date`](https://github.com/Dexterity-Works/lockwright-utils-date)
-- [`@tetherto/pear-apps-utils-generate-unique-id`](https://github.com/Dexterity-Works/lockwright-utils-generate-unique-id)
-- [`@tetherto/pear-apps-utils-pattern-search`](https://github.com/Dexterity-Works/lockwright-utils-pattern-search)
-- [`@tetherto/pear-apps-utils-qr`](https://github.com/Dexterity-Works/lockwright-utils-qr)
-- [`@tetherto/pear-apps-utils-validator`](https://github.com/Dexterity-Works/lockwright-utils-validator)
-- [`@tetherto/pearpass-lib-constants`](https://github.com/Dexterity-Works/lockwright-lib-constants)
-- [`@tetherto/pearpass-lib-data-export`](https://github.com/Dexterity-Works/lockwright-lib-data-export)
-- [`@tetherto/pearpass-lib-data-import`](https://github.com/Dexterity-Works/lockwright-lib-data-import)
-- [`@tetherto/pearpass-lib-ui-theme-provider`](https://github.com/Dexterity-Works/lockwright-lib-ui-theme-provider)
-- [`@tetherto/pearpass-lib-vault`](https://github.com/Dexterity-Works/lockwright-lib-vault)
-- [`@tetherto/pearpass-lib-vault-core`](https://github.com/Dexterity-Works/lockwright-lib-vault-core)
-- [`@tetherto/pearpass-utils-password-check`](https://github.com/Dexterity-Works/lockwright-utils-password-check)
-- [`@tetherto/pearpass-utils-password-generator`](https://github.com/Dexterity-Works/lockwright-utils-password-generator)
+- [`lockwright-lib-feedback`](https://github.com/Dexterity-Works/lockwright-lib-feedback)
+- [`lockwright-lib-ui-react-hooks`](https://github.com/Dexterity-Works/lockwright-lib-ui-react-hooks)
+- [`lockwright-utils-avatar-initials`](https://github.com/Dexterity-Works/lockwright-utils-avatar-initials)
+- [`lockwright-utils-date`](https://github.com/Dexterity-Works/lockwright-utils-date)
+- [`lockwright-utils-generate-unique-id`](https://github.com/Dexterity-Works/lockwright-utils-generate-unique-id)
+- [`lockwright-utils-pattern-search`](https://github.com/Dexterity-Works/lockwright-utils-pattern-search)
+- [`lockwright-utils-qr`](https://github.com/Dexterity-Works/lockwright-utils-qr)
+- [`lockwright-utils-validator`](https://github.com/Dexterity-Works/lockwright-utils-validator)
+- [`lockwright-lib-constants`](https://github.com/Dexterity-Works/lockwright-lib-constants)
+- [`lockwright-lib-data-export`](https://github.com/Dexterity-Works/lockwright-lib-data-export)
+- [`lockwright-lib-data-import`](https://github.com/Dexterity-Works/lockwright-lib-data-import)
+- [`lockwright-lib-ui-theme-provider`](https://github.com/Dexterity-Works/lockwright-lib-ui-theme-provider)
+- [`lockwright-lib-vault`](https://github.com/Dexterity-Works/lockwright-lib-vault)
+- [`lockwright-lib-vault-core`](https://github.com/Dexterity-Works/lockwright-lib-vault-core)
+- [`lockwright-utils-password-check`](https://github.com/Dexterity-Works/lockwright-utils-password-check)
+- [`lockwright-utils-password-generator`](https://github.com/Dexterity-Works/lockwright-utils-password-generator)
 
 ---
 

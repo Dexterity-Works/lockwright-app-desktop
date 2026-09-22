@@ -6,7 +6,7 @@ import { PasswordFieldStrengthIndicator } from './index'
 import { PassType } from '../../shared/types'
 
 // mocks
-jest.mock('@tetherto/pearpass-lib-ui-kit', () => ({
+jest.mock('lockwright-lib-ui-react-native-components', () => ({
   PasswordField: jest.fn(({ onChange, ...props }) => (
     <input
       data-testid={props.testID}
@@ -122,7 +122,7 @@ describe('PasswordFieldStrengthIndicator', () => {
 
   test('computes password strength and maps indicator', () => {
     const { getPasswordStrength } = require('../../utils/getPasswordStrengthInfo')
-    const { PasswordField } = require('@tetherto/pearpass-lib-ui-kit')
+    const { PasswordField } = require('lockwright-lib-ui-react-native-components')
 
     getPasswordStrength.mockReturnValue({ strengthType: 'success' })
 

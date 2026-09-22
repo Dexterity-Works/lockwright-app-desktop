@@ -12,7 +12,7 @@ export default {
     '/out/'
   ],
   transformIgnorePatterns: [
-    'node_modules/(?!(htm|react-strict-dom|@tetherto/pearpass-lib-ui-react-components|@tetherto/pear-apps-lib-ui-react-hooks|@tetherto/pear-apps-utils-validator|@tetherto/pearpass-lib-vault|@tetherto/pearpass-lib-vault-core|@tetherto/pearpass-lib-ui-kit|@tetherto/pearpass-utils-password-check|@tetherto/pearpass-utils-password-generator|@tetherto/pear-apps-utils-avatar-initials|@tetherto/pear-apps-utils-generate-unique-id|@tetherto/pearpass-lib-constants|@tetherto/pear-apps-utils-date|@tetherto/pear-apps-utils-qr)/)'
+    'node_modules/(?!(htm|react-strict-dom|@tetherto/pearpass-lib-ui-react-components|lockwright-lib-ui-react-hooks|lockwright-utils-validator|lockwright-lib-vault|lockwright-lib-vault-core|lockwright-lib-ui-react-native-components|lockwright-utils-password-check|lockwright-utils-password-generator|lockwright-utils-avatar-initials|lockwright-utils-generate-unique-id|lockwright-lib-constants|lockwright-utils-date|lockwright-utils-qr)/)'
   ],
   globals: {
     Pear: {

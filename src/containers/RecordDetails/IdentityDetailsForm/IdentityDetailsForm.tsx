@@ -1,14 +1,14 @@
 import { useEffect, useMemo } from 'react'
 
-import { useForm } from '@tetherto/pear-apps-lib-ui-react-hooks'
-import { DATE_FORMAT } from '@tetherto/pearpass-lib-constants'
+import { useForm } from 'lockwright-lib-ui-react-hooks'
+import { DATE_FORMAT } from 'lockwright-lib-constants'
 import {
   AttachmentField,
   InputField,
   MultiSlotInput,
   PasswordField,
   Text
-} from '@tetherto/pearpass-lib-ui-kit'
+} from 'lockwright-lib-ui-react-native-components'
 import { html } from 'htm/react'
 
 import { ATTACHMENTS_FIELD_KEY } from '../../../constants/formFields'

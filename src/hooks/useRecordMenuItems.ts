@@ -1,6 +1,6 @@
 import React, { useMemo } from 'react'
 
-import { RECORD_TYPES } from '@tetherto/pearpass-lib-vault'
+import { RECORD_TYPES } from 'lockwright-lib-vault'
 import {
   AccountCircleFilled,
   AccountCircleOutlined,
@@ -12,7 +12,7 @@ import {
   Layers,
   Note,
   WiFi
-} from '@tetherto/pearpass-lib-ui-kit/icons'
+} from 'lockwright-lib-ui-react-native-components/icons'
 
 import { useTranslation } from './useTranslation'
 

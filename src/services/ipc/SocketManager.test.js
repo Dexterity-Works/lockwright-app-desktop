@@ -8,7 +8,7 @@ jest.mock('os', () => ({
   platform: jest.fn(),
   homedir: jest.fn().mockReturnValue('/home/testuser')
 }))
-jest.mock('@tetherto/pearpass-lib-constants', () => ({
+jest.mock('lockwright-lib-constants', () => ({
   IPC_SOCKET_DIR_NAME: '.lockwright'
 }))
 jest.mock('../../utils/logger', () => ({

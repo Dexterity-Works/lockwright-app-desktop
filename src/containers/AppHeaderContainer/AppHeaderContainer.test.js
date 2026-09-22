@@ -5,7 +5,7 @@ import { render, screen, fireEvent } from '@testing-library/react'
 
 let mockAuthenticatorEnabled = false
 
-jest.mock('@tetherto/pearpass-lib-constants', () => ({
+jest.mock('lockwright-lib-constants', () => ({
   get AUTHENTICATOR_ENABLED() {
     return mockAuthenticatorEnabled
   }

@@ -1,7 +1,7 @@
 import React from 'react'
 
 import { render } from '@testing-library/react'
-import { ThemeProvider } from '@tetherto/pearpass-lib-ui-kit'
+import { ThemeProvider } from 'lockwright-lib-ui-react-native-components'
 
 import { Toasts } from './index'
 import '@testing-library/jest-dom'
@@ -20,7 +20,7 @@ const mockSnackbar = jest.fn(({ text, icon }) => (
   </div>
 ))
 
-jest.mock('@tetherto/pearpass-lib-ui-kit', () => ({
+jest.mock('lockwright-lib-ui-react-native-components', () => ({
   Snackbar: (props) => mockSnackbar(props),
   ThemeProvider: ({ children }) => children
 }))

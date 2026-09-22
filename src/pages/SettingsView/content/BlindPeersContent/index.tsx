@@ -4,7 +4,7 @@ import {
   BLIND_PEER_TYPE,
   BLIND_PEERS_LEARN_MORE,
   BLIND_PEERS_LIMIT
-} from '@tetherto/pearpass-lib-constants'
+} from 'lockwright-lib-constants'
 import {
   Button,
   InputField,
@@ -13,9 +13,9 @@ import {
   Radio,
   ToggleSwitch,
   useTheme
-} from '@tetherto/pearpass-lib-ui-kit'
-import { Add, Close } from '@tetherto/pearpass-lib-ui-kit/icons'
-import { useBlindMirrors } from '@tetherto/pearpass-lib-vault'
+} from 'lockwright-lib-ui-react-native-components'
+import { Add, Close } from 'lockwright-lib-ui-react-native-components/icons'
+import { useBlindMirrors } from 'lockwright-lib-vault'
 import { useLoadingContext } from '../../../../context/LoadingContext'
 import { useToast } from '../../../../context/ToastContext'
 import { useUnsavedChanges } from '../../../../context/UnsavedChangesContext'

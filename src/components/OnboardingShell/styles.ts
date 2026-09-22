@@ -1,5 +1,5 @@
 import styled from 'styled-components'
-import { rawTokens } from '@tetherto/pearpass-lib-ui-kit'
+import { rawTokens } from 'lockwright-lib-ui-react-native-components'
 
 interface SolidBackgroundProps {
   $backgroundColor: string

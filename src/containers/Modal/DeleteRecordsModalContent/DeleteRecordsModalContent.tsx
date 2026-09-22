@@ -1,7 +1,7 @@
 import React, { useRef } from 'react'
 
-import { Button, Dialog, Text, useTheme } from '@tetherto/pearpass-lib-ui-kit'
-import { useRecords } from '@tetherto/pearpass-lib-vault'
+import { Button, Dialog, Text, useTheme } from 'lockwright-lib-ui-react-native-components'
+import { useRecords } from 'lockwright-lib-vault'
 
 import { createStyles } from './DeleteRecordsModalContent.styles'
 import { RecordItemIcon } from '../../../components/RecordItemIcon'

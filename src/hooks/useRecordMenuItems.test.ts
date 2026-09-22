@@ -6,7 +6,7 @@ jest.mock('./useTranslation', () => ({
   useTranslation: () => ({ t: (s: string) => s })
 }))
 
-jest.mock('@tetherto/pearpass-lib-vault', () => ({
+jest.mock('lockwright-lib-vault', () => ({
   RECORD_TYPES: {
     LOGIN: 'login',
     IDENTITY: 'identity',
@@ -20,7 +20,7 @@ jest.mock('@tetherto/pearpass-lib-vault', () => ({
 
 const iconStub = () => null
 
-jest.mock('@tetherto/pearpass-lib-ui-kit/icons', () => ({
+jest.mock('lockwright-lib-ui-react-native-components/icons', () => ({
   AccountCircleFilled: iconStub,
   AccountCircleOutlined: iconStub,
   AssignmentInd: iconStub,

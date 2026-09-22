@@ -1,6 +1,6 @@
-import { AUTHENTICATOR_ENABLED } from '@tetherto/pearpass-lib-constants'
-import { OtpRefreshProvider, RECORD_TYPES } from '@tetherto/pearpass-lib-vault'
 import { html } from 'htm/react'
+import { AUTHENTICATOR_ENABLED } from 'lockwright-lib-constants'
+import { OtpRefreshProvider, RECORD_TYPES } from 'lockwright-lib-vault'
 
 import { LayoutWithSidebar } from '../../containers/LayoutWithSidebar'
 import { RecordDetails } from '../../containers/RecordDetails/RecordDetails'

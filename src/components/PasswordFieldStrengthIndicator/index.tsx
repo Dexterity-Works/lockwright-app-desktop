@@ -2,7 +2,7 @@ import React, { useMemo } from 'react'
 import {
   PasswordField,
   PasswordIndicatorVariant
-} from '@tetherto/pearpass-lib-ui-kit'
+} from 'lockwright-lib-ui-react-native-components'
 import { PassType } from '../../shared/types'
 import { getPasswordStrength } from '../../utils/getPasswordStrengthInfo'
 import { STRENGTH_MAP } from '../../constants/password'

@@ -1,5 +1,5 @@
-import { RECORD_TYPES } from '@tetherto/pearpass-lib-vault'
 import { html } from 'htm/react'
+import { RECORD_TYPES } from 'lockwright-lib-vault'
 
 import { CreditCardDetailsForm } from '../CreditCardDetailsForm/CreditCardDetailsForm'
 import { CustomDetailsForm } from '../CustomDetailsForm/CustomDetailsForm'

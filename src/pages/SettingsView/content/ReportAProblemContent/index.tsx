@@ -1,8 +1,8 @@
 import React from 'react'
 
-import { PEARPASS_WEBSITE } from '@tetherto/pearpass-lib-constants'
-import { Button, PageHeader } from '@tetherto/pearpass-lib-ui-kit'
-import { Send } from '@tetherto/pearpass-lib-ui-kit/icons'
+import { PEARPASS_WEBSITE } from 'lockwright-lib-constants'
+import { Button, PageHeader } from 'lockwright-lib-ui-react-native-components'
+import { Send } from 'lockwright-lib-ui-react-native-components/icons'
 
 import { useTranslation } from '../../../../hooks/useTranslation'
 import { createStyles } from './styles'

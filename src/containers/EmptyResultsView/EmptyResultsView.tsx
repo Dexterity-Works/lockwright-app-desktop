@@ -1,6 +1,6 @@
 import React from 'react'
 
-import { Text, useTheme } from '@tetherto/pearpass-lib-ui-kit'
+import { Text, useTheme } from 'lockwright-lib-ui-react-native-components'
 
 import { createStyles } from './EmptyResultsView.styles'
 import { useTranslation } from '../../hooks/useTranslation'

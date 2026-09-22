@@ -48,7 +48,7 @@ jest.mock('../../PasswordGenerator/PasswordGenerator', () => {
   }
 })
 
-jest.mock('@tetherto/pearpass-lib-ui-kit', () => {
+jest.mock('lockwright-lib-ui-react-native-components', () => {
   const React = require('react')
   return {
     useTheme: () => ({ theme: { colors: {} } }),
@@ -93,7 +93,7 @@ jest.mock('@tetherto/pearpass-lib-ui-kit', () => {
   }
 })
 
-jest.mock('@tetherto/pearpass-lib-ui-kit/icons', () => ({
+jest.mock('lockwright-lib-ui-react-native-components/icons', () => ({
   ContentCopy: () => null
 }))
 

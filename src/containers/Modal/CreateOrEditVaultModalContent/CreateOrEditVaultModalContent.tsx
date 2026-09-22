@@ -1,9 +1,9 @@
 import React, { useEffect, useState } from 'react'
 
-import { useForm } from '@tetherto/pear-apps-lib-ui-react-hooks'
-import { Validator } from '@tetherto/pear-apps-utils-validator'
-import { Button, Dialog, Form, InputField } from '@tetherto/pearpass-lib-ui-kit'
-import { useCreateVault, useVault, type Vault } from '@tetherto/pearpass-lib-vault'
+import { useForm } from 'lockwright-lib-ui-react-hooks'
+import { Validator } from 'lockwright-utils-validator'
+import { Button, Dialog, Form, InputField } from 'lockwright-lib-ui-react-native-components'
+import { useCreateVault, useVault, type Vault } from 'lockwright-lib-vault'
 
 import { createStyles } from './CreateOrEditVaultModalContent.styles'
 import { useGlobalLoading } from '../../../context/LoadingContext'

@@ -15,7 +15,7 @@ jest.mock('../../../hooks/useTranslation', () => ({
   useTranslation: jest.fn()
 }))
 
-jest.mock('@tetherto/pearpass-lib-ui-kit', () => {
+jest.mock('lockwright-lib-ui-react-native-components', () => {
   const liftTestID = ({ testID, ...rest }: any) =>
     testID ? { ...rest, 'data-testid': testID } : rest
   return {

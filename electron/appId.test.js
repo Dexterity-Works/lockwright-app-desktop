@@ -24,20 +24,20 @@ describe('Lockwright app id', () => {
     }
   })
 
-  it('pins @tetherto/pearpass-lib-constants to Dexterity-Works git, not Tether or file:', () => {
+  it('pins lockwright-lib-constants to Dexterity-Works git, not Tether or file:', () => {
     const pkg = JSON.parse(
       fs.readFileSync(path.join(root, 'package.json'), 'utf8')
     )
-    expect(pkg.dependencies['@tetherto/pearpass-lib-constants']).toBe(
+    expect(pkg.dependencies['lockwright-lib-constants']).toBe(
       'git+https://github.com/Dexterity-Works/lockwright-lib-constants.git#0cf657575130f2168f883579c17daf344e4aaefd'
     )
   })
 
-  it('pins @tetherto/pearpass-lib-ui-kit to Dexterity-Works git, not Tether', () => {
+  it('pins lockwright-lib-ui-react-native-components to Dexterity-Works git, not Tether', () => {
     const pkg = JSON.parse(
       fs.readFileSync(path.join(root, 'package.json'), 'utf8')
     )
-    expect(pkg.dependencies['@tetherto/pearpass-lib-ui-kit']).toBe(
+    expect(pkg.dependencies['lockwright-lib-ui-react-native-components']).toBe(
       'git+https://github.com/Dexterity-Works/lockwright-lib-ui-react-native-components.git#design-system-v2'
     )
   })

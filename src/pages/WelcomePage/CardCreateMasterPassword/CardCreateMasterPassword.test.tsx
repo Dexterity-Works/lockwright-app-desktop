@@ -33,7 +33,7 @@ jest.mock('../../../utils/logger', () => ({
   logger: { log: jest.fn(), error: jest.fn() }
 }))
 
-jest.mock('@tetherto/pearpass-lib-vault', () => ({
+jest.mock('lockwright-lib-vault', () => ({
   useUserData: () => ({
     createMasterPassword: mockCreateMasterPassword,
     logIn: jest.fn()
@@ -43,12 +43,12 @@ jest.mock('@tetherto/pearpass-lib-vault', () => ({
   useCreateVault: () => ({ createVault: jest.fn() })
 }))
 
-jest.mock('@tetherto/pearpass-lib-vault/src/utils/buffer', () => ({
+jest.mock('lockwright-lib-vault/src/utils/buffer', () => ({
   stringToBuffer: jest.fn(),
   clearBuffer: jest.fn()
 }))
 
-jest.mock('@tetherto/pear-apps-lib-ui-react-hooks', () => ({
+jest.mock('lockwright-lib-ui-react-hooks', () => ({
   useForm: () => ({
     register: () => ({ onChange: jest.fn() }),
     handleSubmit:
@@ -68,7 +68,7 @@ jest.mock('@tetherto/pear-apps-lib-ui-react-hooks', () => ({
   })
 }))
 
-jest.mock('@tetherto/pear-apps-utils-validator', () => ({
+jest.mock('lockwright-utils-validator', () => ({
   Validator: {
     object: () => ({
       validate: () => ({})
@@ -79,12 +79,12 @@ jest.mock('@tetherto/pear-apps-utils-validator', () => ({
   }
 }))
 
-jest.mock('@tetherto/pearpass-lib-constants', () => ({
+jest.mock('lockwright-lib-constants', () => ({
   TERMS_OF_USE: 'https://example.test/terms/',
   PRIVACY_POLICY: 'https://example.test/privacy/'
 }))
 
-jest.mock('@tetherto/pearpass-lib-ui-kit', () => ({
+jest.mock('lockwright-lib-ui-react-native-components', () => ({
   rawTokens: new Proxy({}, { get: () => 0 }),
   AlertMessage: () => null,
   Button: ({
@@ -153,7 +153,7 @@ jest.mock('@tetherto/pearpass-lib-ui-kit', () => ({
   })
 }))
 
-jest.mock('@tetherto/pearpass-lib-ui-kit/icons', () => ({
+jest.mock('lockwright-lib-ui-react-native-components/icons', () => ({
   KeyboardArrowRightFilled: () => null
 }))
 

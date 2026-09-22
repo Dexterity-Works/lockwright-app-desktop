@@ -8,9 +8,9 @@ import {
   FavoriteIcon,
   SelectedAvatarContainer
 } from './styles'
-import { useTheme } from '@tetherto/pearpass-lib-ui-kit'
-import { Check, StarFilled } from '@tetherto/pearpass-lib-ui-kit/icons'
-import { useFavicon } from '@tetherto/pearpass-lib-vault'
+import { useTheme } from 'lockwright-lib-ui-react-native-components'
+import { Check, StarFilled } from 'lockwright-lib-ui-react-native-components/icons'
+import { useFavicon } from 'lockwright-lib-vault'
 
 interface Props {
   websiteDomain: string

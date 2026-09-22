@@ -1,5 +1,5 @@
 import { useLingui } from '@lingui/react'
-import { formatDate } from '@tetherto/pear-apps-utils-date'
+import { formatDate } from 'lockwright-utils-date'
 
 /**
  * @param {string|Date} vaultCreatedDate

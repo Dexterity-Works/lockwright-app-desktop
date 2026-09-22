@@ -1,14 +1,14 @@
 import { useState } from 'react'
 
-import { UNSUPPORTED } from '@tetherto/pearpass-lib-constants'
+import { UNSUPPORTED } from 'lockwright-lib-constants'
 import {
   Button,
   Dialog,
   Radio,
   Text,
   useTheme
-} from '@tetherto/pearpass-lib-ui-kit'
-import { useFolders, useRecords } from '@tetherto/pearpass-lib-vault'
+} from 'lockwright-lib-ui-react-native-components'
+import { useFolders, useRecords } from 'lockwright-lib-vault'
 
 import { createStyles } from './DeleteFolderModalContent.styles'
 import { useModal } from '../../../context/ModalContext'

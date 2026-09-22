@@ -1,6 +1,6 @@
 import React, { useState, useEffect, ReactNode, CSSProperties } from 'react'
 import styled from 'styled-components'
-import { useTheme } from '@tetherto/pearpass-lib-ui-kit'
+import { useTheme } from 'lockwright-lib-ui-react-native-components'
 
 import { nextBackgroundSize } from './backgroundSize'
 

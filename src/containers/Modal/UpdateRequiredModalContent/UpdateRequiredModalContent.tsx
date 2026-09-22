@@ -1,7 +1,7 @@
 import React from 'react'
 
-import { useCountDown } from '@tetherto/pear-apps-lib-ui-react-hooks'
-import { Button, Dialog, Text, useTheme } from '@tetherto/pearpass-lib-ui-kit'
+import { useCountDown } from 'lockwright-lib-ui-react-hooks'
+import { Button, Dialog, Text, useTheme } from 'lockwright-lib-ui-react-native-components'
 
 import { createStyles } from './UpdateRequiredModalContent.styles'
 import { useModal } from '../../../context/ModalContext'

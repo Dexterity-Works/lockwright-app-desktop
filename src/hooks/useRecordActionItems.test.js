@@ -40,7 +40,7 @@ jest.mock('../context/RouterContext', () => ({
   useRouter: jest.fn()
 }))
 
-jest.mock('@tetherto/pearpass-lib-vault', () => ({
+jest.mock('lockwright-lib-vault', () => ({
   RECORD_TYPES: { LOGIN: 'login', OTP: 'otp' },
   useRecords: () => ({
     deleteRecords: mockDeleteRecord,

@@ -13,7 +13,7 @@ module.exports = {
   env: {
     test: {
       // Compile `css.create(...)` / `html.*` calls from react-strict-dom and
-      // @tetherto/pearpass-lib-ui-kit the same way the production bundler does
+      // lockwright-lib-ui-react-native-components the same way the production bundler does
       // (see `scripts/bundle-renderer.mjs`). Without this, evaluating those
       // modules in Jest throws "Styles must be compiled by '@stylexjs/babel-plugin'".
       presets: [

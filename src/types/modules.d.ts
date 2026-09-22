@@ -2,7 +2,7 @@
 
 /* eslint-disable */
 
-declare module '@tetherto/pearpass-lib-vault' {
+declare module 'lockwright-lib-vault' {
   export interface Vault {
     id: string
     name: string
@@ -308,7 +308,7 @@ declare module '@tetherto/pearpass-lib-vault' {
   }
 }
 
-declare module '@tetherto/pearpass-utils-password-check' {
+declare module 'lockwright-utils-password-check' {
   export type PasswordStrengthType = 'error' | 'warning' | 'success'
 
   export function checkPasswordStrength(password: string): {
@@ -336,24 +336,24 @@ declare module '@tetherto/pearpass-utils-password-check' {
   }
 }
 
-declare module '@tetherto/pear-apps-lib-ui-react-hooks' {
+declare module 'lockwright-lib-ui-react-hooks' {
   export const useCountDown: any
   export const useForm: any
 }
 
-declare module '@tetherto/pear-apps-utils-qr' {
+declare module 'lockwright-utils-qr' {
   export const generateQRCodeSVG: any
 }
 
-declare module '@tetherto/pear-apps-utils-avatar-initials' {
+declare module 'lockwright-utils-avatar-initials' {
   export function generateAvatarInitials(name: string): string
 }
 
-declare module '@tetherto/pear-apps-utils-validator' {
+declare module 'lockwright-utils-validator' {
   export const Validator: any
 }
 
-declare module '@tetherto/pear-apps-utils-date' {
+declare module 'lockwright-utils-date' {
   export function formatDate(
     date: string | Date,
     format: string,
@@ -361,12 +361,12 @@ declare module '@tetherto/pear-apps-utils-date' {
   ): string
 }
 
-declare module '@tetherto/pearpass-lib-vault/src/utils/buffer' {
+declare module 'lockwright-lib-vault/src/utils/buffer' {
   export const clearBuffer: (buffer: any) => void
   export const stringToBuffer: (value: string) => any
 }
 
-declare module '@tetherto/pearpass-lib-vault/src/instances' {
+declare module 'lockwright-lib-vault/src/instances' {
   export const pearpassVaultClient: {
     on?: (event: string, handler: (...args: any[]) => void) => void
     off?: (event: string, handler: (...args: any[]) => void) => void
@@ -401,7 +401,7 @@ declare module '@tetherto/pearpass-lib-vault/src/instances' {
   export const setStoragePath: (path: string) => Promise<void>
 }
 
-declare module '@tetherto/pearpass-lib-constants' {
+declare module 'lockwright-lib-constants' {
   export const BLIND_PEERS_LIMIT: number
   export const BLIND_PEER_TYPE: {
     DEFAULT: 'default'
@@ -439,7 +439,7 @@ declare module '@tetherto/pearpass-lib-constants' {
   export const VALID_WORD_COUNTS: number[]
 }
 
-declare module '@tetherto/pearpass-utils-password-generator' {
+declare module 'lockwright-utils-password-generator' {
   export function generatePassword(
     length: number,
     rulesConfig?: {
@@ -457,7 +457,7 @@ declare module '@tetherto/pearpass-utils-password-generator' {
   ): string[]
 }
 
-declare module '@tetherto/pearpass-lib-data-import' {
+declare module 'lockwright-lib-data-import' {
   export function decryptKeePassKdbx(
     fileContent: string | ArrayBuffer,
     password: string,

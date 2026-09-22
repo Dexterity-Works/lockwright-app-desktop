@@ -28,11 +28,11 @@ jest.mock('../../../../hooks/useAutoLockPreferences', () => ({
   })
 }))
 
-jest.mock('@tetherto/pearpass-lib-ui-kit/icons', () => ({
+jest.mock('lockwright-lib-ui-react-native-components/icons', () => ({
   KeyboardArrowBottom: () => null
 }))
 
-jest.mock('@tetherto/pearpass-lib-constants', () => ({
+jest.mock('lockwright-lib-constants', () => ({
   AUTO_LOCK_ENABLED: true,
   AUTO_LOCK_TIMEOUT_OPTIONS: {
     ONE_MINUTE: { label: '1 Minute', value: 60_000 },
@@ -62,7 +62,7 @@ const mockTheme = {
   }
 }
 
-jest.mock('@tetherto/pearpass-lib-ui-kit', () => ({
+jest.mock('lockwright-lib-ui-react-native-components', () => ({
   useTheme: () => mockTheme,
   PageHeader: (props: { title: string; subtitle?: React.ReactNode }) => (
     <div>

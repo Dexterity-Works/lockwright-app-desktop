@@ -1,7 +1,7 @@
 import { useState } from 'react'
 
-import { RECORD_TYPES } from '@tetherto/pearpass-lib-vault'
 import { html } from 'htm/react'
+import { RECORD_TYPES } from 'lockwright-lib-vault'
 
 import { CreateOrEditAuthenticatorModalContent } from './CreateOrEditAuthenticatorModalContent/CreateOrEditAuthenticatorModalContent'
 import { CreateOrEditCreditCardModalContent } from './CreateOrEditCreditCardModalContent/CreateOrEditCreditCardModalContent'

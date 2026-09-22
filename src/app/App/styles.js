@@ -1,4 +1,4 @@
-import { rawTokens } from '@tetherto/pearpass-lib-ui-kit'
+import { rawTokens } from 'lockwright-lib-ui-react-native-components'
 import styled from 'styled-components'
 
 export const AppWrapper = styled.div`

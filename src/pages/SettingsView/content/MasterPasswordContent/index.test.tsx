@@ -19,7 +19,7 @@ jest.mock('../../../../context/LoadingContext', () => ({
 }))
 
 const mockUpdateMasterPassword = jest.fn(() => Promise.resolve())
-jest.mock('@tetherto/pearpass-lib-vault', () => ({
+jest.mock('lockwright-lib-vault', () => ({
   useUserData: () => ({
     updateMasterPassword: mockUpdateMasterPassword
   })
@@ -28,12 +28,12 @@ jest.mock('@tetherto/pearpass-lib-vault', () => ({
 const mockStringToBuffer = jest.fn((value: string) => `buf:${value}`)
 const mockClearBuffer = jest.fn()
 
-jest.mock('@tetherto/pearpass-lib-vault/src/utils/buffer', () => ({
+jest.mock('lockwright-lib-vault/src/utils/buffer', () => ({
   stringToBuffer: (value: string) => mockStringToBuffer(value),
   clearBuffer: (value: unknown) => mockClearBuffer(value)
 }))
 
-jest.mock('@tetherto/pearpass-utils-password-check', () => ({
+jest.mock('lockwright-utils-password-check', () => ({
   checkPasswordStrength: (value: string) =>
     value.length > 0 ? { strengthType: 'success' } : { strengthType: 'error' },
   validatePasswordChange: () => ({ success: true })
@@ -56,7 +56,7 @@ const mockTheme = {
   }
 }
 
-jest.mock('@tetherto/pearpass-lib-ui-kit', () => ({
+jest.mock('lockwright-lib-ui-react-native-components', () => ({
   useTheme: () => mockTheme,
   PageHeader: ({ title }: { title: React.ReactNode }) => <h1>{title}</h1>,
   Form: (props: {

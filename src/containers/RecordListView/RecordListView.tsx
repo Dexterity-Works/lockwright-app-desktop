@@ -1,11 +1,11 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react'
 
-import { ListItem, useTheme } from '@tetherto/pearpass-lib-ui-kit'
+import { ListItem, useTheme } from 'lockwright-lib-ui-react-native-components'
 import {
   ErrorFilled,
   ExpandMore,
   StarFilled
-} from '@tetherto/pearpass-lib-ui-kit/icons'
+} from 'lockwright-lib-ui-react-native-components/icons'
 
 import { createStyles } from './RecordListView.styles'
 import { RecordRowContextMenu } from './RecordRowContextMenu'

@@ -1,6 +1,6 @@
 import React from 'react'
-import { AUTHENTICATOR_ENABLED } from '@tetherto/pearpass-lib-constants'
-import { ContextMenu, NavbarListItem, useTheme } from '@tetherto/pearpass-lib-ui-kit'
+import { AUTHENTICATOR_ENABLED } from 'lockwright-lib-constants'
+import { ContextMenu, NavbarListItem, useTheme } from 'lockwright-lib-ui-react-native-components'
 import {
   AccountCircleOutlined,
   AssignmentInd,
@@ -11,8 +11,8 @@ import {
   Note,
   QrCode,
   WiFi
-} from '@tetherto/pearpass-lib-ui-kit/icons'
-import { RECORD_TYPES } from '@tetherto/pearpass-lib-vault'
+} from 'lockwright-lib-ui-react-native-components/icons'
+import { RECORD_TYPES } from 'lockwright-lib-vault'
 
 import {
   AppHeaderAddItemTrigger,

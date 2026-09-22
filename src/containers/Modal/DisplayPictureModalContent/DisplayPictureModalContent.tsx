@@ -1,7 +1,7 @@
 import React from 'react'
 
-import { Button, Dialog } from '@tetherto/pearpass-lib-ui-kit'
-import { Download } from '@tetherto/pearpass-lib-ui-kit/icons'
+import { Button, Dialog } from 'lockwright-lib-ui-react-native-components'
+import { Download } from 'lockwright-lib-ui-react-native-components/icons'
 
 import { createStyles } from './DisplayPictureModalContent.styles'
 import { useModal } from '../../../context/ModalContext'

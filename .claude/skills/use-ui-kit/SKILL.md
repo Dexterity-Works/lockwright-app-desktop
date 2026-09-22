@@ -1,13 +1,13 @@
 ---
 name: use-ui-kit
-description: Use whenever creating or editing UI in this repo — React components, modals, dialogs, forms, buttons, inputs, typography, styling, icons, or any .tsx/.jsx work. The repo uses `@tetherto/pearpass-lib-ui-kit` as the single source for UI primitives; do not roll custom ones. Load this before suggesting any UI change, especially when touching src/components, src/containers/Modal, or src/pages.
+description: Use whenever creating or editing UI in this repo — React components, modals, dialogs, forms, buttons, inputs, typography, styling, icons, or any .tsx/.jsx work. The repo uses `lockwright-lib-ui-react-native-components` as the single source for UI primitives; do not roll custom ones. Load this before suggesting any UI change, especially when touching src/components, src/containers/Modal, or src/pages.
 ---
 
 <!-- Mirror of AGENTS.md at repo root — keep in sync. AGENTS.md is the canonical copy; this file exists so Claude Code's skill-trigger mechanism can lazy-load the same content on UI work. -->
 
 # UI conventions for pearpass-app-desktop-tether
 
-This is the Electron desktop app for Lockwright. It's written in React + TypeScript. UI is built on the shared component library `@tetherto/pearpass-lib-ui-kit`.
+This is the Electron desktop app for Lockwright. It's written in React + TypeScript. UI is built on the shared component library `lockwright-lib-ui-react-native-components`.
 
 This document is for **anyone contributing UI** to the repo — new hires, current engineers, and AI coding assistants (Claude Code, Cursor, Codex, etc.). It captures the component catalog, styling conventions, file-naming rules, and patterns we use when building UI in this app. Read it once before your first UI change; keep it open when you're in doubt.
 
@@ -18,15 +18,15 @@ Files use their natural names — no version suffixes. A few small components (`
 ## Golden rules
 
 1. **Check the catalog below before creating any component.** If it exists in the kit, use it — never wrap or reimplement.
-2. **All new UI goes through the kit.** Any new `.tsx`/`.jsx` file — suffixed or not — must import from `@tetherto/pearpass-lib-ui-kit`, not from [src/lib-react-components/](../../../src/lib-react-components/).
+2. **All new UI goes through the kit.** Any new `.tsx`/`.jsx` file — suffixed or not — must import from `lockwright-lib-ui-react-native-components`, not from [src/lib-react-components/](../../../src/lib-react-components/).
 3. **Never add variants under [src/lib-react-components/components/](../../../src/lib-react-components/components/)** (`ButtonThin`, `ButtonPrimary`, `ButtonRoundIcon`, `PearPassInputField`, etc.). That tree is legacy; the kit's `Button` takes variants.
 4. **Style with tokens.** Use `useTheme()` + `rawTokens`. No hardcoded hex colors or px spacing.
-5. **Icons come from the kit.** `@tetherto/pearpass-lib-ui-kit/icons` has 530 icons. Do not add new SVGs under `src/`.
+5. **Icons come from the kit.** `lockwright-lib-ui-react-native-components/icons` has 530 icons. Do not add new SVGs under `src/`.
 6. **If the kit lacks something you need, stop and ask the user.** Don't silently roll a custom component.
 
 ## Component catalog (31 components)
 
-Import pattern: `import { ComponentName } from '@tetherto/pearpass-lib-ui-kit'`
+Import pattern: `import { ComponentName } from 'lockwright-lib-ui-react-native-components'`
 
 ### Actions
 - `Button` — all CTAs. Takes variants; use instead of `ButtonThin`, `ButtonPrimary`, `ButtonSecondary`, `ButtonRoundIcon`, `ButtonLittle`, `ButtonFilter`, `ButtonFolder`, `ButtonRadio`, `ButtonSingleInput`, `ButtonCreate`.
@@ -74,7 +74,7 @@ Import pattern: `import { ComponentName } from '@tetherto/pearpass-lib-ui-kit'`
 - `ThemeColors`, `Theme`, `ThemeType`, `RawTokens`
 - `PasswordIndicatorVariant` — `'vulnerable' | 'decent' | 'strong'`
 
-Import types with `import type { ... } from '@tetherto/pearpass-lib-ui-kit'`.
+Import types with `import type { ... } from 'lockwright-lib-ui-react-native-components'`.
 
 ## Component props (15 most-used)
 
@@ -85,7 +85,7 @@ Required props have no `?`. **Always include a test ID on interactive components
 - **InputField** — `label`, `value`, `onChange?: (e) => void`, `placeholder?`, `error?: string`, `inputType?: 'text' | 'password'`, `disabled?`, `readOnly?`, `copyable?`, `onCopy?`, `leftSlot?`, `rightSlot?`, `testID?`.
 - **PasswordField** — `label`, `value`, `onChange?`, `placeholder?`, `error?`, `passwordIndicator?: 'vulnerable' | 'decent' | 'strong' | 'match'`, `infoBox?: string`, `copyable?`, `testID?`.
 - **SearchField** — `value`, `onChangeText` (yes, this one is still current), `placeholderText?`, `size?: 'small' | 'medium'`, `testID?`.
-- **Form** — `children`, `onSubmit?`, `noValidate?`, `testID?`. Wrap fields here; pair with `useForm` from `@tetherto/pear-apps-lib-ui-react-hooks`.
+- **Form** — `children`, `onSubmit?`, `noValidate?`, `testID?`. Wrap fields here; pair with `useForm` from `lockwright-lib-ui-react-hooks`.
 - **Text** — `children`, `as?: 'p' | 'span'`, `variant?: 'label' | 'labelEmphasized' | 'body' | 'bodyEmphasized' | 'caption'`, `color?`, `numberOfLines?`, `data-testid?`.
 - **Title** — `children`, `as?: 'h1' | 'h2' | ... | 'h6'`, `data-testid?`.
 - **AlertMessage** — `variant: 'info' | 'warning' | 'error'`, `size: 'small' | 'medium' | 'big'`, `title`, `description`, `actionText?`, `onAction?`, `testID?`, `actionTestId?`.
@@ -96,7 +96,7 @@ Required props have no `?`. **Always include a test ID on interactive components
 - **TextArea** — `value`, `onChange?`, `label?`, `placeholder?`, `error?`, `disabled?`, `testID?`.
 - **Link** — `children`, `href?`, `isExternal?`, `onClick?`, `data-testid?` (and standard `<a>` attributes).
 
-For components not listed, open `node_modules/@tetherto/pearpass-lib-ui-kit/dist/components/<Name>/types.d.ts`.
+For components not listed, open `node_modules/lockwright-lib-ui-react-native-components/dist/components/<Name>/types.d.ts`.
 
 ### Test IDs — `testID` vs `data-testid`
 
@@ -128,7 +128,7 @@ The codebase does **not** use styled-components. The convention is a `createStyl
 **In the component** (reference: `src/pages/WelcomePage/CardCreateMasterPassword/index.tsx`):
 
 ```tsx
-import { useTheme } from '@tetherto/pearpass-lib-ui-kit'
+import { useTheme } from 'lockwright-lib-ui-react-native-components'
 import { createStyles } from './styles'
 
 const Component = () => {
@@ -141,8 +141,8 @@ const Component = () => {
 **In the companion `styles.ts`** (reference: `src/pages/WelcomePage/CardCreateMasterPassword/styles.ts`):
 
 ```ts
-import type { ThemeColors } from '@tetherto/pearpass-lib-ui-kit'
-import { rawTokens } from '@tetherto/pearpass-lib-ui-kit'
+import type { ThemeColors } from 'lockwright-lib-ui-react-native-components'
+import { rawTokens } from 'lockwright-lib-ui-react-native-components'
 
 export const createStyles = (colors: ThemeColors) => ({
   card: {
@@ -165,7 +165,7 @@ export const createStyles = (colors: ThemeColors) => ({
 
 ### `theme.colors` — common keys seen in this repo
 
-`colorSurfacePrimary`, `colorSurfaceHover`, `colorBorderPrimary`, `colorBorderSecondary`, `colorTextPrimary`, `colorTextSecondary`, `colorTextTertiary`, `colorLinkText`. If you need one you haven't seen, inspect the `ThemeColors` type from `@tetherto/pearpass-lib-ui-kit`.
+`colorSurfacePrimary`, `colorSurfaceHover`, `colorBorderPrimary`, `colorBorderSecondary`, `colorTextPrimary`, `colorTextSecondary`, `colorTextTertiary`, `colorLinkText`. If you need one you haven't seen, inspect the `ThemeColors` type from `lockwright-lib-ui-react-native-components`.
 
 ### When hardcoded values are OK
 
@@ -174,7 +174,7 @@ Tokens cover the design-system primitives. Feature-specific layout values (a car
 ## Icons
 
 ```tsx
-import { Add, Download, Folder, OpenInNew } from '@tetherto/pearpass-lib-ui-kit/icons'
+import { Add, Download, Folder, OpenInNew } from 'lockwright-lib-ui-react-native-components/icons'
 ```
 
 530 icons, mostly Material Design, with style variants as suffixes: `Filled`, `Outlined`, `Round`, `Sharp`, `Tone` (e.g. `LockFilled`, `InfoOutlined`, `KeyboardArrowRightRound`). If a name has no suffix, it exists as a single variant.
@@ -188,7 +188,7 @@ import { Add, Download, Folder, OpenInNew } from '@tetherto/pearpass-lib-ui-kit/
 - **Security:** `LockFilled`, `Key`, `SecurityFilled`, `Fingerprint`, `TwoFactorAuthenticationFilled`
 - **External / misc:** `ImportOutlined`, `OpenInNew`
 
-**Discovering others:** `ls node_modules/@tetherto/pearpass-lib-ui-kit/dist/icons/components/ | grep -i <keyword>` — names are PascalCase, grep is case-insensitive friendly.
+**Discovering others:** `ls node_modules/lockwright-lib-ui-react-native-components/dist/icons/components/ | grep -i <keyword>` — names are PascalCase, grep is case-insensitive friendly.
 
 ## Anti-patterns to avoid
 
@@ -204,6 +204,6 @@ When creating new UI or editing existing files, do **not**:
 
 ## When the kit truly lacks something
 
-1. Confirm by grepping `node_modules/@tetherto/pearpass-lib-ui-kit/dist/components/` for the concept.
+1. Confirm by grepping `node_modules/lockwright-lib-ui-react-native-components/dist/components/` for the concept.
 2. Check if a composition of existing kit primitives covers it (e.g. `Pressable` + `Text` + tokens).
 3. If still missing, surface it to the user: "The kit doesn't export X — options are (a) compose from Y + Z, (b) request X be added upstream, (c) temporary local component. Which?" Do not silently create (c).

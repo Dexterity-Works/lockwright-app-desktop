@@ -1,7 +1,7 @@
 import React from 'react'
 
 import { render, screen, fireEvent } from '@testing-library/react'
-import { ThemeProvider } from '@tetherto/pearpass-lib-ui-kit'
+import { ThemeProvider } from 'lockwright-lib-ui-react-native-components'
 
 import { RadioSelect } from './index'
 import '@testing-library/jest-dom'

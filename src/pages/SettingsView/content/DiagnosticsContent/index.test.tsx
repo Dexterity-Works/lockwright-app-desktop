@@ -23,11 +23,11 @@ jest.mock('./styles', () => ({
   })
 }))
 
-jest.mock('@tetherto/pearpass-lib-ui-kit/icons', () => ({
+jest.mock('lockwright-lib-ui-react-native-components/icons', () => ({
   FolderOpen: () => null
 }))
 
-jest.mock('@tetherto/pearpass-lib-ui-kit', () => ({
+jest.mock('lockwright-lib-ui-react-native-components', () => ({
   useTheme: () => ({ theme: { colors: {} } }),
   PageHeader: ({ title, subtitle }: { title: string; subtitle?: string }) => (
     <div data-testid="settings-diagnostics-page-header">

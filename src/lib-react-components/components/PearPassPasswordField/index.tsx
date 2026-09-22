@@ -10,8 +10,8 @@ import {
   MainWrapper,
   NoticeWrapper
 } from './styles'
-import { useTheme } from '@tetherto/pearpass-lib-ui-kit'
-import { EyeFilled, EyeOutlined } from '@tetherto/pearpass-lib-ui-kit/icons'
+import { useTheme } from 'lockwright-lib-ui-react-native-components'
+import { EyeFilled, EyeOutlined } from 'lockwright-lib-ui-react-native-components/icons'
 import { NoticeText } from '../NoticeText'
 import { PearPassPasswordFieldProps } from './types'
 

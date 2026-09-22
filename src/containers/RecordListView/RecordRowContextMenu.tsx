@@ -8,8 +8,8 @@ import React, {
 } from 'react'
 import { createPortal } from 'react-dom'
 
-import { UNSUPPORTED } from '@tetherto/pearpass-lib-constants'
-import { NavbarListItem, useTheme } from '@tetherto/pearpass-lib-ui-kit'
+import { UNSUPPORTED } from 'lockwright-lib-constants'
+import { NavbarListItem, useTheme } from 'lockwright-lib-ui-react-native-components'
 import {
   CheckBox,
   CopyAll,
@@ -18,9 +18,9 @@ import {
   Share,
   StarOutlined,
   TrashOutlined
-} from '@tetherto/pearpass-lib-ui-kit/icons'
+} from 'lockwright-lib-ui-react-native-components/icons'
 // @ts-expect-error - declaration file is incomplete
-import { useCreateRecord, useRecords, vaultGetFile } from '@tetherto/pearpass-lib-vault'
+import { useCreateRecord, useRecords, vaultGetFile } from 'lockwright-lib-vault'
 
 import {
   createStyles,

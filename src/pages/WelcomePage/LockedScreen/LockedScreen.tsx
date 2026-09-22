@@ -1,9 +1,9 @@
 import React, { useCallback, useEffect, useState } from 'react'
 
-import { useCountDown } from '@tetherto/pear-apps-lib-ui-react-hooks'
-import { useUserData } from '@tetherto/pearpass-lib-vault'
-import { PageHeader, useTheme } from '@tetherto/pearpass-lib-ui-kit'
-import { WatchLater } from '@tetherto/pearpass-lib-ui-kit/icons'
+import { useCountDown } from 'lockwright-lib-ui-react-hooks'
+import { useUserData } from 'lockwright-lib-vault'
+import { PageHeader, useTheme } from 'lockwright-lib-ui-react-native-components'
+import { WatchLater } from 'lockwright-lib-ui-react-native-components/icons'
 
 import { OnboardingShell } from '../../../components/OnboardingShell'
 import { NAVIGATION_ROUTES } from '../../../constants/navigation'

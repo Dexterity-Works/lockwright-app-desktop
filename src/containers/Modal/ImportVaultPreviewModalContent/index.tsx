@@ -1,9 +1,9 @@
 import { useCallback, useMemo, useState } from 'react'
 
-import { generateAvatarInitials } from '@tetherto/pear-apps-utils-avatar-initials'
-import { useRecords, useVault } from '@tetherto/pearpass-lib-vault'
-import { Button, Dialog, ListItem, Text, useTheme } from '@tetherto/pearpass-lib-ui-kit'
-import { ExpandMore, LockOutlined } from '@tetherto/pearpass-lib-ui-kit/icons'
+import { generateAvatarInitials } from 'lockwright-utils-avatar-initials'
+import { useRecords, useVault } from 'lockwright-lib-vault'
+import { Button, Dialog, ListItem, Text, useTheme } from 'lockwright-lib-ui-react-native-components'
+import { ExpandMore, LockOutlined } from 'lockwright-lib-ui-react-native-components/icons'
 
 import { RecordAvatar } from '../../../components/RecordAvatar'
 import { RECORD_COLOR_BY_TYPE } from '../../../constants/recordColorByType'

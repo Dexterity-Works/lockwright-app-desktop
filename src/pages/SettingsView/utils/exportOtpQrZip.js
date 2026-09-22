@@ -1,4 +1,4 @@
-import { parseOtpToQrSvgs } from '@tetherto/pearpass-lib-data-export'
+import { parseOtpToQrSvgs } from 'lockwright-lib-data-export'
 
 import { downloadZip } from './downloadZip'
 

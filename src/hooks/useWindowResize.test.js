@@ -1,9 +1,9 @@
 import { renderHook, act } from '@testing-library/react'
-import { useThrottle } from '@tetherto/pear-apps-lib-ui-react-hooks'
+import { useThrottle } from 'lockwright-lib-ui-react-hooks'
 
 import { useWindowResize } from './useWindowResize'
 
-jest.mock('@tetherto/pear-apps-lib-ui-react-hooks', () => ({
+jest.mock('lockwright-lib-ui-react-hooks', () => ({
   useThrottle: jest.fn()
 }))
 

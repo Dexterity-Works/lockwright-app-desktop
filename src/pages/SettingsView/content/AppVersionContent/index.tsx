@@ -1,11 +1,11 @@
 import React from 'react'
 
-import { Link, PageHeader, Text, useTheme } from '@tetherto/pearpass-lib-ui-kit'
+import { Link, PageHeader, Text, useTheme } from 'lockwright-lib-ui-react-native-components'
 import {
   PEARPASS_WEBSITE,
   PRIVACY_POLICY,
   TERMS_OF_USE
-} from '@tetherto/pearpass-lib-constants'
+} from 'lockwright-lib-constants'
 
 import { useTranslation } from '../../../../hooks/useTranslation'
 import { createStyles } from './styles'

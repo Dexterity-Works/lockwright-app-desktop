@@ -17,10 +17,10 @@ export { getIpcPath }
  */
 export class NativeMessagingIPCServer {
   /**
-   * @param {import('@tetherto/pearpass-lib-vault-core').PearpassVaultClient} pearpassClient
+   * @param {import('lockwright-lib-vault-core').PearpassVaultClient} pearpassClient
    */
   constructor(pearpassClient) {
-    /** @type {import('@tetherto/pearpass-lib-vault-core').PearpassVaultClient} */
+    /** @type {import('lockwright-lib-vault-core').PearpassVaultClient} */
     this.client = pearpassClient
     /** @type {import('pear-ipc').Server|null} */
     this.server = null
@@ -498,7 +498,7 @@ let ipcServerInstance = null
 let startPromise = null
 
 /**
- * @param {import('@tetherto/pearpass-lib-vault-core').PearpassVaultClient} pearpassClient
+ * @param {import('lockwright-lib-vault-core').PearpassVaultClient} pearpassClient
  * @returns {Promise<NativeMessagingIPCServer>}
  */
 export const startNativeMessagingIPC = async (pearpassClient) => {

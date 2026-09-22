@@ -9,7 +9,7 @@ import {
   PageHeader,
   Text,
   useTheme
-} from '@tetherto/pearpass-lib-ui-kit'
+} from 'lockwright-lib-ui-react-native-components'
 import {
   Add,
   Devices,
@@ -20,13 +20,13 @@ import {
   MoreVert,
   PersonAdd,
   TrashOutlined
-} from '@tetherto/pearpass-lib-ui-kit/icons'
+} from 'lockwright-lib-ui-react-native-components/icons'
 import {
   useRecords,
   useVault,
   useVaults,
   type Vault
-} from '@tetherto/pearpass-lib-vault'
+} from 'lockwright-lib-vault'
 
 import { AddDeviceModalContent } from '../../../../containers/Modal/AddDeviceModalContent/AddDeviceModalContent'
 import { CreateOrEditVaultModalContent } from '../../../../containers/Modal/CreateOrEditVaultModalContent/CreateOrEditVaultModalContent'

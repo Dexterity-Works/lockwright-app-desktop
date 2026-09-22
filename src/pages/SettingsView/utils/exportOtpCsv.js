@@ -1,4 +1,4 @@
-import { parseOtpToCsvText } from '@tetherto/pearpass-lib-data-export'
+import { parseOtpToCsvText } from 'lockwright-lib-data-export'
 
 import { downloadFile } from './downloadFile'
 

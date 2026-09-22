@@ -1,4 +1,4 @@
-import { Button, Dialog, Text, useTheme } from '@tetherto/pearpass-lib-ui-kit'
+import { Button, Dialog, Text, useTheme } from 'lockwright-lib-ui-react-native-components'
 
 import { useModal } from '../../../context/ModalContext'
 import { useTranslation } from '../../../hooks/useTranslation'

@@ -41,7 +41,7 @@ const mockAddDefaultBlindMirrors = jest.fn(() => Promise.resolve())
 
 let mockVaultData: Array<{ isDefault: boolean; key: string }> = []
 
-jest.mock('@tetherto/pearpass-lib-vault', () => ({
+jest.mock('lockwright-lib-vault', () => ({
   useBlindMirrors: () => ({
     getBlindMirrors: mockGetBlindMirrors,
     removeAllBlindMirrors: mockRemoveAllBlindMirrors,
@@ -51,7 +51,7 @@ jest.mock('@tetherto/pearpass-lib-vault', () => ({
   })
 }))
 
-jest.mock('@tetherto/pearpass-lib-constants', () => ({
+jest.mock('lockwright-lib-constants', () => ({
   BLIND_PEER_TYPE: {
     PERSONAL: 'personal',
     DEFAULT: 'default'
@@ -85,7 +85,7 @@ const mockTheme = {
   }
 }
 
-jest.mock('@tetherto/pearpass-lib-ui-kit', () => ({
+jest.mock('lockwright-lib-ui-react-native-components', () => ({
   useTheme: () => mockTheme,
   Title: ({ children }: { children: React.ReactNode }) => <h1>{children}</h1>,
   Text: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
@@ -183,7 +183,7 @@ jest.mock('@tetherto/pearpass-lib-ui-kit', () => ({
   )
 }))
 
-jest.mock('@tetherto/pearpass-lib-ui-kit/icons', () => ({
+jest.mock('lockwright-lib-ui-react-native-components/icons', () => ({
   Add: () => null,
   Close: () => null
 }))

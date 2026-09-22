@@ -1,4 +1,4 @@
-import { stringToBuffer } from '@tetherto/pearpass-lib-vault/src/utils/buffer'
+import { stringToBuffer } from 'lockwright-lib-vault/src/utils/buffer'
 
 import { HANDLER_EVENTS } from '../../constants/services'
 import { logger } from '../../utils/logger'

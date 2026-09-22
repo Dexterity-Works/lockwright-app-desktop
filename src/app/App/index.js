@@ -1,9 +1,9 @@
 import { useState, useCallback, useEffect, useRef } from 'react'
 
-import { useTheme } from '@tetherto/pearpass-lib-ui-kit'
-import { useVault, useVaults } from '@tetherto/pearpass-lib-vault'
-import { pearpassVaultClient } from '@tetherto/pearpass-lib-vault/src/instances'
 import { html } from 'htm/react'
+import { useTheme } from 'lockwright-lib-ui-react-native-components'
+import { useVault, useVaults } from 'lockwright-lib-vault'
+import { pearpassVaultClient } from 'lockwright-lib-vault/src/instances'
 
 import { appConfig } from './appConfig'
 import { useInactivity } from './hooks/useInactivity'

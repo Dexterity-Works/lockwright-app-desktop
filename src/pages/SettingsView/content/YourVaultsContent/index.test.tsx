@@ -46,7 +46,7 @@ jest.mock('../../../../hooks/useTranslation', () => ({
   })
 }))
 
-jest.mock('@tetherto/pearpass-lib-vault', () => ({
+jest.mock('lockwright-lib-vault', () => ({
   useVault: () => ({ data: vaultState.current.data }),
   useVaults: () => ({ data: vaultState.all.data }),
   useRecords: (_args?: unknown) => ({ data: vaultState.records.data })
@@ -64,7 +64,7 @@ jest.mock('./styles', () => ({
   })
 }))
 
-jest.mock('@tetherto/pearpass-lib-ui-kit', () => ({
+jest.mock('lockwright-lib-ui-react-native-components', () => ({
   useTheme: () => ({
     theme: {
       colors: {
@@ -189,7 +189,7 @@ jest.mock('@tetherto/pearpass-lib-ui-kit', () => ({
   }) => <Component>{children}</Component>
 }))
 
-jest.mock('@tetherto/pearpass-lib-ui-kit/icons', () => ({
+jest.mock('lockwright-lib-ui-react-native-components/icons', () => ({
   Add: () => null,
   Devices: () => null,
   Edit: () => null,

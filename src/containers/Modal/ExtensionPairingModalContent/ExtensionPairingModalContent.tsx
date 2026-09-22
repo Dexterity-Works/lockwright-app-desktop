@@ -6,8 +6,8 @@ import {
   InputField,
   Text,
   useTheme
-} from '@tetherto/pearpass-lib-ui-kit'
-import { ContentCopy, Extension } from '@tetherto/pearpass-lib-ui-kit/icons'
+} from 'lockwright-lib-ui-react-native-components'
+import { ContentCopy, Extension } from 'lockwright-lib-ui-react-native-components/icons'
 
 import { LockwrightMark } from '../../../svgs/PearpassLogo'
 

@@ -1,7 +1,7 @@
 import React from 'react'
 
 import { render, fireEvent } from '@testing-library/react'
-import { ThemeProvider } from '@tetherto/pearpass-lib-ui-kit'
+import { ThemeProvider } from 'lockwright-lib-ui-react-native-components'
 
 import { TextArea } from './index'
 import '@testing-library/jest-dom'

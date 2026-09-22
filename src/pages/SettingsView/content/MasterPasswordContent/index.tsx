@@ -1,25 +1,25 @@
 import { useState } from 'react'
 
-import { useForm } from '@tetherto/pear-apps-lib-ui-react-hooks'
-import { Validator } from '@tetherto/pear-apps-utils-validator'
-import { useUserData } from '@tetherto/pearpass-lib-vault'
+import { useForm } from 'lockwright-lib-ui-react-hooks'
+import { Validator } from 'lockwright-utils-validator'
+import { useUserData } from 'lockwright-lib-vault'
 import {
   clearBuffer,
   stringToBuffer
-} from '@tetherto/pearpass-lib-vault/src/utils/buffer'
+} from 'lockwright-lib-vault/src/utils/buffer'
 // @ts-ignore - JS module without type declarations
-import type { PasswordIndicatorVariant } from '@tetherto/pearpass-lib-ui-kit'
+import type { PasswordIndicatorVariant } from 'lockwright-lib-ui-react-native-components'
 import {
   AlertMessage,
   Button,
   Form,
   PageHeader,
   PasswordField
-} from '@tetherto/pearpass-lib-ui-kit'
+} from 'lockwright-lib-ui-react-native-components'
 import {
   checkPasswordStrength,
   validatePasswordChange
-} from '@tetherto/pearpass-utils-password-check'
+} from 'lockwright-utils-password-check'
 
 import { useGlobalLoading } from '../../../../context/LoadingContext'
 import { useTranslation } from '../../../../hooks/useTranslation'

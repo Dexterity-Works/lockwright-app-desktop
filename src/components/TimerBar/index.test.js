@@ -7,7 +7,7 @@ import { TimerBar } from './index'
 
 const mockUseTimerAnimation = jest.fn()
 
-jest.mock('@tetherto/pearpass-lib-vault', () => ({
+jest.mock('lockwright-lib-vault', () => ({
   useTimerAnimation: (...args) => mockUseTimerAnimation(...args)
 }))
 

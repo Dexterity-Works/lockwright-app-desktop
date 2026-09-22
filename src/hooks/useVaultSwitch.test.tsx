@@ -3,7 +3,7 @@ import React from 'react'
 import { act, renderHook } from '@testing-library/react'
 import '@testing-library/jest-dom'
 
-import { type Vault, useVault } from '@tetherto/pearpass-lib-vault'
+import { type Vault, useVault } from 'lockwright-lib-vault'
 
 import { useVaultSwitch } from './useVaultSwitch'
 
@@ -19,7 +19,7 @@ const vaultB: Vault = { id: 'vault-b', name: 'Bravo' }
 
 const mockUseVault = jest.mocked(useVault)
 
-jest.mock('@tetherto/pearpass-lib-vault', () => ({
+jest.mock('lockwright-lib-vault', () => ({
   useVault: jest.fn()
 }))
 

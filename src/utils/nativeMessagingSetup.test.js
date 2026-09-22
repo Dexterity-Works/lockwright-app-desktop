@@ -13,7 +13,7 @@ import {
 } from './nativeMessagingSetup'
 
 // Mock dependencies
-jest.mock('@tetherto/pearpass-lib-constants', () => ({
+jest.mock('lockwright-lib-constants', () => ({
   MANIFEST_NAME: 'com.pearpass.native_messaging',
   CHROMIUM_EXTENSION_ID: 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa',
   FIREFOX_EXTENSION_ID: 'pearpass@example.com',

@@ -1,16 +1,16 @@
 import React from 'react'
 
 import { useLingui } from '@lingui/react'
-import { Button, Text, useTheme } from '@tetherto/pearpass-lib-ui-kit'
-import { ContentCopy } from '@tetherto/pearpass-lib-ui-kit/icons'
+import { Button, Text, useTheme } from 'lockwright-lib-ui-react-native-components'
+import { ContentCopy } from 'lockwright-lib-ui-react-native-components/icons'
 import {
   OTP_TYPE,
   formatOtpCode,
   useOtp,
   useTimerAnimation
-} from '@tetherto/pearpass-lib-vault'
+} from 'lockwright-lib-vault'
 
-import type { OtpPublic } from '@tetherto/pearpass-lib-vault/src/types'
+import type { OtpPublic } from 'lockwright-lib-vault/src/types'
 
 import { useCopyToClipboard } from '../../hooks/useCopyToClipboard.electron'
 import { createStyles } from './styles'

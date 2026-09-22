@@ -1,7 +1,7 @@
 import React, { useState } from 'react'
 
-import { Button, Dialog, Text, useTheme } from '@tetherto/pearpass-lib-ui-kit'
-import { kickDevice } from '@tetherto/pearpass-lib-vault'
+import { Button, Dialog, Text, useTheme } from 'lockwright-lib-ui-react-native-components'
+import { kickDevice } from 'lockwright-lib-vault'
 
 import { createStyles } from './RevokeAccessModalContentV2.styles'
 import { useModal } from '../../../context/ModalContext'

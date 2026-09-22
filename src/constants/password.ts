@@ -1,4 +1,4 @@
-import { PasswordIndicatorVariant } from '@tetherto/pearpass-lib-ui-kit'
+import { PasswordIndicatorVariant } from 'lockwright-lib-ui-react-native-components'
 
 const STRENGTH_MAP: Record<string, PasswordIndicatorVariant> = {
   error: 'vulnerable',

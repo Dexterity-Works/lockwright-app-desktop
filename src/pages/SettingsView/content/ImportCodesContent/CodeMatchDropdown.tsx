@@ -6,8 +6,8 @@ import {
   ListItem,
   Text,
   useTheme
-} from '@tetherto/pearpass-lib-ui-kit'
-import { Link } from '@tetherto/pearpass-lib-ui-kit/icons'
+} from 'lockwright-lib-ui-react-native-components'
+import { Link } from 'lockwright-lib-ui-react-native-components/icons'
 
 import { RecordItemIcon } from '../../../../components/RecordItemIcon/RecordItemIcon'
 import { useTranslation } from '../../../../hooks/useTranslation'

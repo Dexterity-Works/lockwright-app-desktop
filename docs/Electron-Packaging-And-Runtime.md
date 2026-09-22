@@ -49,19 +49,19 @@ This document describes how the Lockwright desktop app is built, packaged, and h
 
 ## 3. Worklet: dev vs packaged
 
-The vault worklet lives in `@tetherto/pearpass-lib-vault-core` (Git dependency) under `src/worklet/`. It is loaded in two different ways so it works in both dev and packaged app.
+The vault worklet lives in `lockwright-lib-vault-core` (Git dependency) under `src/worklet/`. It is loaded in two different ways so it works in both dev and packaged app.
 
 ### 3.1 Dev
 
 - **Path:** `getWorkletPath()` returns  
-  `app.getAppPath()/node_modules/@tetherto/pearpass-lib-vault-core/src/worklet/app.js`.
+  `app.getAppPath()/node_modules/lockwright-lib-vault-core/src/worklet/app.js`.
 - **Format:** ESM (`app.js`). The Bare loader in dev can run ESM and resolve Node built-ins to its own shims.
 - **No bundle:** Dependencies are required from the real `node_modules` tree.
 
 ### 3.2 Packaged
 
 - **Path:** `getWorkletPath()` returns  
-  `process.resourcesPath/app/node_modules/@tetherto/pearpass-lib-vault-core/src/worklet/app.cjs`.
+  `process.resourcesPath/app/node_modules/lockwright-lib-vault-core/src/worklet/app.cjs`.
 - **Format:** CommonJS bundle (`app.cjs`). The Bare runtime used in the packaged app loads the entry as CJS; giving it ESM `app.js` would throw “Cannot use import statement outside a module”.
 - **Bundle:** Produced by `scripts/build.worklet.mjs` (see below). Only the worklet **source** (relative imports) is bundled; all `node_modules` are external so Bare resolves them at runtime and native addons work.
 
@@ -70,8 +70,8 @@ The vault worklet lives in `@tetherto/pearpass-lib-vault-core` (Git dependency) 
 ## 4. Worklet build (scripts/build.worklet.mjs)
 
 - **Runs as part of `npm run build`** (before `tsc` and the renderer bundle).
-- **Input:** `node_modules/@tetherto/pearpass-lib-vault-core/src/worklet/app.js` (ESM).
-- **Output:** `node_modules/@tetherto/pearpass-lib-vault-core/src/worklet/app.cjs` (single CJS file).
+- **Input:** `node_modules/lockwright-lib-vault-core/src/worklet/app.js` (ESM).
+- **Output:** `node_modules/lockwright-lib-vault-core/src/worklet/app.cjs` (single CJS file).
 - **Behaviour (current esbuild config):**
   - `entryPoints`: the ESM worklet entry; `bundle: true`, `platform: 'node'`, `format: 'cjs'`, `target: 'node18'`.
   - **Externalize Node built-ins and native-heavy modules:** `fs`, `path`, `os`, `net`, `crypto`, `child_process`, `fs/promises`, `require-addon`, `fs-native-extensions`, `sodium-native` are marked as `external` so they resolve at runtime from `node_modules`.
@@ -131,8 +131,8 @@ The vault worklet lives in `@tetherto/pearpass-lib-vault-core` (Git dependency) 
 | Main process                   | `electron/main.cjs`                                                              |
 | Preload                        | `electron/preload.cjs`                                                           |
 | Flatpak path helper            | `electron/flatpak-paths.cjs`                                                     |
-| Worklet entry (ESM)            | `node_modules/@tetherto/pearpass-lib-vault-core/src/worklet/app.js`              |
-| Worklet bundle (CJS, packaged) | `node_modules/@tetherto/pearpass-lib-vault-core/src/worklet/app.cjs` (generated) |
+| Worklet entry (ESM)            | `node_modules/lockwright-lib-vault-core/src/worklet/app.js`              |
+| Worklet bundle (CJS, packaged) | `node_modules/lockwright-lib-vault-core/src/worklet/app.cjs` (generated) |
 | Worklet build script           | `scripts/build.worklet.mjs`                                                      |
 | Renderer bundle                | `scripts/bundle-renderer.mjs` → `dist/renderer.bundle.js`                        |
 | Build pipeline                 | `package.json` scripts: `build`, `dist:*`, `pear:build:*`                        |

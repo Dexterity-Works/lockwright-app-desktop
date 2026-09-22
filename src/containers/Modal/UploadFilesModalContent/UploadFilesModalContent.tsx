@@ -4,8 +4,8 @@ import {
   Button,
   Dialog,
   UploadField
-} from '@tetherto/pearpass-lib-ui-kit'
-import type { UploadedFile } from '@tetherto/pearpass-lib-ui-kit'
+} from 'lockwright-lib-ui-react-native-components'
+import type { UploadedFile } from 'lockwright-lib-ui-react-native-components'
 
 import { createStyles } from './UploadFilesModalContent.styles'
 import { useModal } from '../../../context/ModalContext'

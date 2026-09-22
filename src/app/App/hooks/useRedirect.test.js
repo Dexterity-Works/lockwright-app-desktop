@@ -1,12 +1,12 @@
 import { act, renderHook, waitFor } from '@testing-library/react'
-import { useUserData } from '@tetherto/pearpass-lib-vault'
+import { useUserData } from 'lockwright-lib-vault'
 
 import { useRedirect } from './useRedirect'
 import { useRouter } from '../../../context/RouterContext'
 
 // Mock dependencies
 
-jest.mock('@tetherto/pearpass-lib-vault')
+jest.mock('lockwright-lib-vault')
 jest.mock('../../../context/RouterContext')
 jest.mock('../../../utils/logger', () => ({
   logger: { error: jest.fn(), log: jest.fn() }

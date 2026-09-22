@@ -1,6 +1,6 @@
 import { useEffect, useMemo } from 'react'
 
-import { useForm } from '@tetherto/pear-apps-lib-ui-react-hooks'
+import { useForm } from 'lockwright-lib-ui-react-hooks'
 import {
   AttachmentField,
   InputField,
@@ -8,7 +8,7 @@ import {
   PasswordField,
   Text,
   useTheme
-} from '@tetherto/pearpass-lib-ui-kit'
+} from 'lockwright-lib-ui-react-native-components'
 import { html } from 'htm/react'
 
 import { ATTACHMENTS_FIELD_KEY } from '../../../constants/formFields'

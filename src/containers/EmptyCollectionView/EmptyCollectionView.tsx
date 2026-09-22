@@ -1,7 +1,7 @@
 import React, { useMemo } from 'react'
 
-import { Button, Text, Title, useTheme } from '@tetherto/pearpass-lib-ui-kit'
-import { Add, ImportExport } from '@tetherto/pearpass-lib-ui-kit/icons'
+import { Button, Text, Title, useTheme } from 'lockwright-lib-ui-react-native-components'
+import { Add, ImportExport } from 'lockwright-lib-ui-react-native-components/icons'
 
 import { ILLUSTRATION_HEIGHT, createStyles } from './EmptyCollectionView.styles'
 import { useAppHeaderContext } from '../../context/AppHeaderContext'

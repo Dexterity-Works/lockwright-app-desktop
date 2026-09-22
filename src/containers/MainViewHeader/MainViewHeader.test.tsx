@@ -25,7 +25,7 @@ jest.mock('../../hooks/useRecordMenuItems', () => ({
   })
 }))
 
-jest.mock('@tetherto/pearpass-lib-ui-kit', () => {
+jest.mock('lockwright-lib-ui-react-native-components', () => {
   const React = require('react')
   return {
     useTheme: () => ({
@@ -105,7 +105,7 @@ jest.mock('@tetherto/pearpass-lib-ui-kit', () => {
   }
 })
 
-jest.mock('@tetherto/pearpass-lib-ui-kit/icons', () => {
+jest.mock('lockwright-lib-ui-react-native-components/icons', () => {
   const React = require('react')
   const Icon = (name: string) => () =>
     React.createElement('span', { 'data-icon': name })

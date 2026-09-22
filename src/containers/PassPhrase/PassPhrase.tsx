@@ -4,7 +4,7 @@ import {
   DEFAULT_SELECTED_TYPE,
   PASSPHRASE_WORD_COUNTS,
   VALID_WORD_COUNTS
-} from '@tetherto/pearpass-lib-constants'
+} from 'lockwright-lib-constants'
 import {
   Button,
   FieldError,
@@ -12,11 +12,11 @@ import {
   Radio,
   useTheme,
   Text
-} from '@tetherto/pearpass-lib-ui-kit'
+} from 'lockwright-lib-ui-react-native-components'
 import {
   ContentCopy,
   ContentPaste
-} from '@tetherto/pearpass-lib-ui-kit/icons'
+} from 'lockwright-lib-ui-react-native-components/icons'
 
 import { useCopyToClipboard } from '../../hooks/useCopyToClipboard.electron'
 import { usePasteFromClipboard } from '../../hooks/usePasteFromClipboard'

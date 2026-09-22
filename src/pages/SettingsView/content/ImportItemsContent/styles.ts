@@ -1,4 +1,4 @@
-import { rawTokens, ThemeColors } from '@tetherto/pearpass-lib-ui-kit'
+import { rawTokens, ThemeColors } from 'lockwright-lib-ui-react-native-components'
 
 export const createStyles = (colors: ThemeColors) => ({
   container: {

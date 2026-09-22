@@ -1,9 +1,9 @@
+import { html } from 'htm/react'
 import {
   Check,
   ErrorFilled,
   ReportProblem
-} from '@tetherto/pearpass-lib-ui-kit/icons'
-import { html } from 'htm/react'
+} from 'lockwright-lib-ui-react-native-components/icons'
 
 import { NoticeTextComponent, NoticeTextWrapper } from './styles'
 

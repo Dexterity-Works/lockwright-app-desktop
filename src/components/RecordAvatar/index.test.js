@@ -1,14 +1,14 @@
 import React from 'react'
 
 import { render } from '@testing-library/react'
-import { ThemeProvider } from '@tetherto/pearpass-lib-ui-kit'
+import { ThemeProvider } from 'lockwright-lib-ui-react-native-components'
 
 import { RecordAvatar } from './index'
 import '@testing-library/jest-dom'
 
 const mockUseFavicon = jest.fn()
-jest.mock('@tetherto/pearpass-lib-vault', () => ({
-  ...jest.requireActual('@tetherto/pearpass-lib-vault'),
+jest.mock('lockwright-lib-vault', () => ({
+  ...jest.requireActual('lockwright-lib-vault'),
   useFavicon: (params) => mockUseFavicon(params)
 }))
 

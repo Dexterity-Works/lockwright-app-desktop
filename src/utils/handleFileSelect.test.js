@@ -5,7 +5,7 @@ import { readFileContent } from '../pages/SettingsView/utils/readFileContent'
 jest.mock('./logger', () => ({
   logger: { error: jest.fn() }
 }))
-jest.mock('@tetherto/pear-apps-utils-generate-unique-id', () => ({
+jest.mock('lockwright-utils-generate-unique-id', () => ({
   generateUniqueId: jest.fn(() => 'unique-id')
 }))
 

@@ -4,7 +4,7 @@ import { render, act } from '@testing-library/react'
 
 const { useInactivity } = require('./useInactivity')
 
-jest.mock('@tetherto/pearpass-lib-vault', () => ({
+jest.mock('lockwright-lib-vault', () => ({
   closeAllInstances: jest.fn(() => Promise.resolve()),
   useVaults: () => ({
     resetState: jest.fn()

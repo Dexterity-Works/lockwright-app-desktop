@@ -21,11 +21,11 @@ let mockFoldersData: {
   favorites: { records: unknown[] }
 } = { customFolders: {}, favorites: { records: [] } }
 
-jest.mock('@tetherto/pearpass-lib-constants', () => ({
+jest.mock('lockwright-lib-constants', () => ({
   AUTHENTICATOR_ENABLED: true
 }))
 
-jest.mock('@tetherto/pearpass-lib-vault', () => ({
+jest.mock('lockwright-lib-vault', () => ({
   RECORD_TYPES: {
     LOGIN: 'login',
     IDENTITY: 'identity',
@@ -46,7 +46,7 @@ jest.mock('@tetherto/pearpass-lib-vault', () => ({
   useVaults: () => ({ resetState: mockResetState })
 }))
 
-jest.mock('@tetherto/pearpass-lib-ui-kit', () => {
+jest.mock('lockwright-lib-ui-react-native-components', () => {
   const React = require('react')
   return {
     useTheme: () => ({ theme: { colors: {} } }),
@@ -100,7 +100,7 @@ jest.mock('@tetherto/pearpass-lib-ui-kit', () => {
 })
 
 jest.mock(
-  '@tetherto/pearpass-lib-ui-kit/components/Pressable',
+  'lockwright-lib-ui-react-native-components/components/Pressable',
   () => {
     const React = require('react')
     return {
@@ -125,7 +125,7 @@ jest.mock(
 
 const iconStub = () => null
 
-jest.mock('@tetherto/pearpass-lib-ui-kit/icons', () => ({
+jest.mock('lockwright-lib-ui-react-native-components/icons', () => ({
   Add: iconStub,
   Close: iconStub,
   CreateNewFolder: iconStub,

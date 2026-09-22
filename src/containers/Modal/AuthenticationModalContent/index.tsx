@@ -1,20 +1,20 @@
 import React, { useState } from 'react'
 
-import { useForm } from '@tetherto/pear-apps-lib-ui-react-hooks'
-import { Validator } from '@tetherto/pear-apps-utils-validator'
+import { useForm } from 'lockwright-lib-ui-react-hooks'
+import { Validator } from 'lockwright-utils-validator'
 import {
   Button,
   Dialog,
   Form,
   PasswordField,
   Text
-} from '@tetherto/pearpass-lib-ui-kit'
-import { KeyboardArrowRightRound } from '@tetherto/pearpass-lib-ui-kit/icons'
-import { useUserData } from '@tetherto/pearpass-lib-vault'
+} from 'lockwright-lib-ui-react-native-components'
+import { KeyboardArrowRightRound } from 'lockwright-lib-ui-react-native-components/icons'
+import { useUserData } from 'lockwright-lib-vault'
 import {
   clearBuffer,
   stringToBuffer
-} from '@tetherto/pearpass-lib-vault/src/utils/buffer'
+} from 'lockwright-lib-vault/src/utils/buffer'
 
 import { useGlobalLoading } from '../../../context/LoadingContext'
 import { useModal } from '../../../context/ModalContext'

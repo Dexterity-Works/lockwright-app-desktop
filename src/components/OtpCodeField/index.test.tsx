@@ -7,7 +7,7 @@ const mockGenerateNext = jest.fn()
 const mockUseOtp = jest.fn()
 const mockCopyToClipboard = jest.fn()
 
-jest.mock('@tetherto/pearpass-lib-vault', () => ({
+jest.mock('lockwright-lib-vault', () => ({
   useOtp: (...args: unknown[]) => mockUseOtp(...args),
   formatOtpCode: (code: string | null) => {
     if (!code) return ''
@@ -34,7 +34,7 @@ jest.mock('../../hooks/useCopyToClipboard.electron', () => ({
   })
 }))
 
-jest.mock('@tetherto/pearpass-lib-ui-kit', () => ({
+jest.mock('lockwright-lib-ui-react-native-components', () => ({
   Button: ({
     children,
     onClick,
@@ -88,7 +88,7 @@ jest.mock('@tetherto/pearpass-lib-ui-kit', () => ({
   }
 }))
 
-jest.mock('@tetherto/pearpass-lib-ui-kit/icons', () => ({
+jest.mock('lockwright-lib-ui-react-native-components/icons', () => ({
   ContentCopy: () => <span data-testid="content-copy-icon" />
 }))
 

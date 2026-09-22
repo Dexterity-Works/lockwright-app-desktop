@@ -151,7 +151,7 @@ let pearRuntime = null
 /** @type {import('bare-sidecar') | null} */
 let workletSidecar = null
 
-/** @type {import('@tetherto/pearpass-lib-vault-core').PearpassVaultClient | null} */
+/** @type {import('lockwright-lib-vault-core').PearpassVaultClient | null} */
 let vaultClient = null
 
 function getExecPath() {
@@ -164,7 +164,7 @@ function getExecPath() {
 function getWorkletPath() {
   const workletDir = path.join(
     'node_modules',
-    '@tetherto/pearpass-lib-vault-core',
+    'lockwright-lib-vault-core',
     'src',
     'worklet'
   )
@@ -403,7 +403,7 @@ async function startRuntime() {
   const workletPath = getWorkletPath()
 
   const { PearpassVaultClient } = await import(
-    '@tetherto/pearpass-lib-vault-core'
+    'lockwright-lib-vault-core'
   )
   // MSIX (Store/Forge) vs NSIS/portable: Pear OTA artifact extension must match.
   const extension = isLinux
@@ -523,7 +523,7 @@ async function startWorkletOnly() {
   // this app's node_modules, so we can require it directly.
   const Sidecar = require('bare-sidecar')
   const { PearpassVaultClient } = await import(
-    '@tetherto/pearpass-lib-vault-core'
+    'lockwright-lib-vault-core'
   )
 
   const workletPath = getWorkletPath()

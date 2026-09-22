@@ -1,10 +1,6 @@
 import { useEffect, useRef } from 'react'
 
-import {
-  closeAllInstances,
-  useUserData,
-  useVaults
-} from '@tetherto/pearpass-lib-vault'
+import { closeAllInstances, useUserData, useVaults } from 'lockwright-lib-vault'
 
 import { useLoadingContext } from '../../../context/LoadingContext'
 import { useModal } from '../../../context/ModalContext'

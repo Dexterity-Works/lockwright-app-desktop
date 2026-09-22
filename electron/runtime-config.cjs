@@ -13,7 +13,7 @@ function readDesignVersion() {
       __dirname,
       '..',
       'node_modules',
-      '@tetherto/pearpass-lib-constants',
+      'lockwright-lib-constants',
       'src',
       'constants',
       'flags.js'

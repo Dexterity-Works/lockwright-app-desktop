@@ -10,8 +10,8 @@ import {
   decryptKeePassKdbx,
   parseBitwardenData,
   parseKeePassData
-} from '@tetherto/pearpass-lib-data-import'
-import { pearpassVaultClient } from '@tetherto/pearpass-lib-vault/src/instances'
+} from 'lockwright-lib-data-import'
+import { pearpassVaultClient } from 'lockwright-lib-vault/src/instances'
 
 import { readFileContent } from '../../utils/readFileContent'
 import { ImportItemsContent } from './index'
@@ -34,26 +34,26 @@ jest.mock('../../../../context/ToastContext', () => ({
   })
 }))
 
-jest.mock('@tetherto/pearpass-lib-vault', () => ({
+jest.mock('lockwright-lib-vault', () => ({
   useCreateRecord: () => ({
     createRecord: jest.fn()
   }),
   decryptExportData: jest.fn()
 }))
 
-jest.mock('@tetherto/pearpass-lib-vault/src/instances', () => ({
+jest.mock('lockwright-lib-vault/src/instances', () => ({
   pearpassVaultClient: {
     decryptBitwardenExport: jest.fn(),
     keepassArgon2: jest.fn()
   }
 }))
 
-jest.mock('@tetherto/pearpass-lib-constants', () => ({
+jest.mock('lockwright-lib-constants', () => ({
   MAX_IMPORT_RECORDS: 1000,
   PEARPASS_WEBSITE: 'https://lockwright.dexterity.works'
 }))
 
-jest.mock('@tetherto/pearpass-lib-data-import', () => ({
+jest.mock('lockwright-lib-data-import', () => ({
   decryptKeePassKdbx: jest.fn(),
   decryptBitwardenJson: jest.fn(),
   parse1PasswordData: jest.fn(),
@@ -101,7 +101,7 @@ const mockTheme = {
 // Drives the mock UploadField — tests set this before triggering an upload.
 let mockUploadFile = { name: 'bitwarden-export.json', size: 2048 }
 
-jest.mock('@tetherto/pearpass-lib-ui-kit', () => ({
+jest.mock('lockwright-lib-ui-react-native-components', () => ({
   useTheme: () => mockTheme,
   PageHeader: ({ title }: { title: React.ReactNode }) => <h1>{title}</h1>,
   Text: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
@@ -167,7 +167,7 @@ jest.mock('@tetherto/pearpass-lib-ui-kit', () => ({
   )
 }))
 
-jest.mock('@tetherto/pearpass-lib-ui-kit/icons', () => ({
+jest.mock('lockwright-lib-ui-react-native-components/icons', () => ({
   ArrowBackOutined: () => null,
   KeyboardArrowRightFilled: () => null
 }))

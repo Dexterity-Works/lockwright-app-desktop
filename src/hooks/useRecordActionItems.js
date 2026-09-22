@@ -1,8 +1,8 @@
 import React from 'react'
 
 import { useLingui } from '@lingui/react'
-import { RECORD_TYPES, useRecords } from '@tetherto/pearpass-lib-vault'
 import { html } from 'htm/react'
+import { RECORD_TYPES, useRecords } from 'lockwright-lib-vault'
 
 import { useCreateOrEditRecord } from './useCreateOrEditRecord'
 import { DeleteRecordsModalContent } from '../containers/Modal/DeleteRecordsModalContent'

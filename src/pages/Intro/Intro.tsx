@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
-import { Button, Text, Title } from '@tetherto/pearpass-lib-ui-kit'
-import { KeyboardArrowRightRound } from '@tetherto/pearpass-lib-ui-kit/icons'
+import { Button, Text, Title } from 'lockwright-lib-ui-react-native-components'
+import { KeyboardArrowRightRound } from 'lockwright-lib-ui-react-native-components/icons'
 import { OnboardingShell } from '../../components/OnboardingShell'
 import { NAVIGATION_ROUTES } from '../../constants/navigation'
 import { useRouter } from '../../context/RouterContext'

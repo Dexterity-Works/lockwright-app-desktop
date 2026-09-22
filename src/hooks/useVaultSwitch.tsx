@@ -1,6 +1,6 @@
 import React, { useCallback } from 'react'
 
-import { useVault, type Vault } from '@tetherto/pearpass-lib-vault'
+import { useVault, type Vault } from 'lockwright-lib-vault'
 
 import { VaultPasswordFormModalContent } from '../containers/Modal/VaultPasswordFormModalContent'
 import { useLoadingContext } from '../context/LoadingContext'

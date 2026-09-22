@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react'
 
 import { html } from 'htm/react'
-import { useVault, type Vault } from '@tetherto/pearpass-lib-vault'
+import { useVault, type Vault } from 'lockwright-lib-vault'
 
 import {
   HeaderContainer,
@@ -18,8 +18,8 @@ import { CreateOrEditVaultModalContent } from '../../containers/Modal/CreateOrEd
 import { VaultPasswordFormModalContent } from '../../containers/Modal/VaultPasswordFormModalContent'
 import { useModal } from '../../context/ModalContext'
 import { useTranslation } from '../../hooks/useTranslation'
-import { useTheme } from '@tetherto/pearpass-lib-ui-kit'
-import { ExpandMore, LockFilled, LockOutlined } from '@tetherto/pearpass-lib-ui-kit/icons'
+import { useTheme } from 'lockwright-lib-ui-react-native-components'
+import { ExpandMore, LockFilled, LockOutlined } from 'lockwright-lib-ui-react-native-components/icons'
 import { logger } from '../../utils/logger'
 
 interface DropdownSwapVaultProps {

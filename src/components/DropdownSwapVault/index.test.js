@@ -1,7 +1,7 @@
 import React from 'react'
 
 import { render, fireEvent } from '@testing-library/react'
-import { ThemeProvider } from '@tetherto/pearpass-lib-ui-kit'
+import { ThemeProvider } from 'lockwright-lib-ui-react-native-components'
 
 import '@testing-library/jest-dom'
 
@@ -12,7 +12,7 @@ jest.mock(
   })
 )
 
-jest.mock('@tetherto/pearpass-lib-vault', () => ({
+jest.mock('lockwright-lib-vault', () => ({
   useVault: () => ({
     refetch: jest.fn(),
     isVaultProtected: jest.fn()

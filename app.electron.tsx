@@ -7,9 +7,9 @@ import { I18nProvider } from '@lingui/react'
 import {
   setPearpassVaultClient,
   VaultProvider
-} from '@tetherto/pearpass-lib-vault'
+} from 'lockwright-lib-vault'
 import { createRoot } from 'react-dom/client'
-import { ThemeProvider as UIKitProvider } from '@tetherto/pearpass-lib-ui-kit'
+import { ThemeProvider as UIKitProvider } from 'lockwright-lib-ui-react-native-components'
 
 import './src/strict.css'
 import { App } from './src/app/App'

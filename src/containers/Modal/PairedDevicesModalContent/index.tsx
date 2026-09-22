@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react'
 
-import { formatDate } from '@tetherto/pear-apps-utils-date'
+import { formatDate } from 'lockwright-utils-date'
 import {
   Button,
   ContextMenu,
@@ -9,7 +9,7 @@ import {
   NavbarListItem,
   Text,
   useTheme
-} from '@tetherto/pearpass-lib-ui-kit'
+} from 'lockwright-lib-ui-react-native-components'
 import {
   Devices,
   DoNotDisturb,
@@ -18,8 +18,8 @@ import {
   MoreVert,
   PhoneIphone,
   Tablet
-} from '@tetherto/pearpass-lib-ui-kit/icons'
-import { getMyDeviceId, useVault } from '@tetherto/pearpass-lib-vault'
+} from 'lockwright-lib-ui-react-native-components/icons'
+import { getMyDeviceId, useVault } from 'lockwright-lib-vault'
 
 import { createStyles, DEVICE_ACTIONS_MENU_WIDTH } from './styles'
 import { useModal } from '../../../context/ModalContext'

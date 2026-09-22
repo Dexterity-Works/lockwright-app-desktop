@@ -1,6 +1,6 @@
 import { useCallback, useMemo, useRef, useState } from 'react'
 
-import type { OTPRecord } from '@tetherto/pearpass-lib-data-import'
+import type { OTPRecord } from 'lockwright-lib-data-import'
 import {
   AlertMessage,
   Button,
@@ -8,19 +8,19 @@ import {
   Text,
   rawTokens,
   useTheme
-} from '@tetherto/pearpass-lib-ui-kit'
+} from 'lockwright-lib-ui-react-native-components'
 import {
   LinkOff,
   ExpandMore,
   Link,
   ReportProblemRound
-} from '@tetherto/pearpass-lib-ui-kit/icons'
+} from 'lockwright-lib-ui-react-native-components/icons'
 import {
   RECORD_TYPES,
   matchLoginRecords,
   useCreateRecord,
   useRecords
-} from '@tetherto/pearpass-lib-vault'
+} from 'lockwright-lib-vault'
 
 import { useToast } from '../../../../context/ToastContext'
 

@@ -1,6 +1,6 @@
 import { useEffect } from 'react'
 
-import { useVaults } from '@tetherto/pearpass-lib-vault'
+import { useVaults } from 'lockwright-lib-vault'
 
 import { NAVIGATION_ROUTES } from '../../../constants/navigation'
 import { HANDLER_EVENTS } from '../../../constants/services'

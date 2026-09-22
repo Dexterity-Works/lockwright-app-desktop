@@ -3,11 +3,11 @@ import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import {
   checkPassphraseStrength,
   checkPasswordStrength
-} from '@tetherto/pearpass-utils-password-check'
+} from 'lockwright-utils-password-check'
 import {
   generatePassphrase,
   generatePassword
-} from '@tetherto/pearpass-utils-password-generator'
+} from 'lockwright-utils-password-generator'
 import {
   Button,
   InputField,
@@ -18,11 +18,11 @@ import {
   Title,
   ToggleSwitch,
   useTheme
-} from '@tetherto/pearpass-lib-ui-kit'
-import type { PasswordIndicatorVariant } from '@tetherto/pearpass-lib-ui-kit'
-import { ContentCopy } from '@tetherto/pearpass-lib-ui-kit/icons'
+} from 'lockwright-lib-ui-react-native-components'
+import type { PasswordIndicatorVariant } from 'lockwright-lib-ui-react-native-components'
+import { ContentCopy } from 'lockwright-lib-ui-react-native-components/icons'
 
-import { formatDate } from '@tetherto/pear-apps-utils-date'
+import { formatDate } from 'lockwright-utils-date'
 
 import { createStyles } from './PasswordGenerator.styles'
 import { useTranslation } from '../../hooks/useTranslation'

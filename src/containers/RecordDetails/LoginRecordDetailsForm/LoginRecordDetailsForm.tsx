@@ -1,8 +1,8 @@
 import { useEffect, useMemo } from 'react'
 
-import { useForm } from '@tetherto/pear-apps-lib-ui-react-hooks'
+import { useForm } from 'lockwright-lib-ui-react-hooks'
 // @ts-ignore - declaration file is missing
-import { isBefore, subtractDateUnits } from '@tetherto/pear-apps-utils-date'
+import { isBefore, subtractDateUnits } from 'lockwright-utils-date'
 import {
   AlertMessage,
   AttachmentField,
@@ -13,8 +13,8 @@ import {
   Text,
   rawTokens,
   useTheme
-} from '@tetherto/pearpass-lib-ui-kit'
-import { OpenInNew } from '@tetherto/pearpass-lib-ui-kit/icons'
+} from 'lockwright-lib-ui-react-native-components'
+import { OpenInNew } from 'lockwright-lib-ui-react-native-components/icons'
 import { html } from 'htm/react'
 
 import { OtpCodeField } from '../../../components/OtpCodeField'

@@ -1,8 +1,8 @@
 import React from 'react'
 
-import { useForm } from '@tetherto/pear-apps-lib-ui-react-hooks'
-import { Validator } from '@tetherto/pear-apps-utils-validator'
-import { VALID_WORD_COUNTS } from '@tetherto/pearpass-lib-constants'
+import { useForm } from 'lockwright-lib-ui-react-hooks'
+import { Validator } from 'lockwright-utils-validator'
+import { VALID_WORD_COUNTS } from 'lockwright-lib-constants'
 import {
   AttachmentField as UiKitAttachmentField,
   Button,
@@ -13,14 +13,14 @@ import {
   PasswordField,
   Text,
   useTheme
-} from '@tetherto/pearpass-lib-ui-kit'
-import { RECORD_TYPES } from '@tetherto/pearpass-lib-vault'
-import { useCreateRecord, useRecords } from '@tetherto/pearpass-lib-vault'
+} from 'lockwright-lib-ui-react-native-components'
+import { RECORD_TYPES } from 'lockwright-lib-vault'
+import { useCreateRecord, useRecords } from 'lockwright-lib-vault'
 import {
   Add,
   TrashOutlined,
   UploadFileFilled
-} from '@tetherto/pearpass-lib-ui-kit/icons'
+} from 'lockwright-lib-ui-react-native-components/icons'
 import { html } from 'htm/react'
 
 import { createStyles } from './CreateOrEditPassPhraseModalContent.styles'

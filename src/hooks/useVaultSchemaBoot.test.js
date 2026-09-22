@@ -9,7 +9,7 @@ const mockActiveVaultList = jest.fn()
 const mockActiveVaultGetWriterKey = jest.fn()
 const mockEmitSchemaMigrationWarning = jest.fn()
 
-jest.mock('@tetherto/pearpass-lib-vault', () => ({
+jest.mock('lockwright-lib-vault', () => ({
   SCHEMA_V2: 2,
   VAULT_EXT_KEY: 'vault-ext',
   emitSchemaMigrationWarning: (...args) =>
@@ -20,7 +20,7 @@ jest.mock('@tetherto/pearpass-lib-vault', () => ({
   })
 }))
 
-jest.mock('@tetherto/pearpass-lib-vault/src/instances', () => ({
+jest.mock('lockwright-lib-vault/src/instances', () => ({
   pearpassVaultClient: {
     getVaultMigrationStatus: (...args) => mockGetVaultMigrationStatus(...args),
     activeVaultGet: (...args) => mockActiveVaultGet(...args),

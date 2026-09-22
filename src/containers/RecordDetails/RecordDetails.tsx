@@ -7,7 +7,7 @@ import {
   NavbarListItem,
   rawTokens,
   useTheme
-} from '@tetherto/pearpass-lib-ui-kit'
+} from 'lockwright-lib-ui-react-native-components'
 import {
   KeyboardTab,
   ContentCopy,
@@ -17,9 +17,9 @@ import {
   StarBorder,
   StarFilled,
   TrashOutlined
-} from '@tetherto/pearpass-lib-ui-kit/icons'
+} from 'lockwright-lib-ui-react-native-components/icons'
 // @ts-expect-error - declaration file is incomplete
-import { useRecordById } from '@tetherto/pearpass-lib-vault'
+import { useRecordById } from 'lockwright-lib-vault'
 
 import { RecordItemIcon } from '../../components/RecordItemIcon'
 import { useRouter } from '../../context/RouterContext'

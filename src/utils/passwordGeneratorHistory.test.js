@@ -11,14 +11,14 @@ const mockGet = jest.fn()
 const mockAdd = jest.fn()
 let mockIdCounter = 0
 
-jest.mock('@tetherto/pearpass-lib-vault/src/instances', () => ({
+jest.mock('lockwright-lib-vault/src/instances', () => ({
   pearpassVaultClient: {
     activeVaultGet: (...args) => mockGet(...args),
     activeVaultAdd: (...args) => mockAdd(...args)
   }
 }))
 
-jest.mock('@tetherto/pear-apps-utils-generate-unique-id', () => ({
+jest.mock('lockwright-utils-generate-unique-id', () => ({
   generateUniqueId: () => `id-${++mockIdCounter}`
 }))
 
