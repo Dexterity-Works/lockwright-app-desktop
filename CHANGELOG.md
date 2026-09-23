@@ -9,6 +9,15 @@ Starts at 0.0.17, after the Lockwright package rename. Earlier history is git.
 
 ## [Unreleased]
 
+## [0.0.24] - 2026-09-24
+
+`BUMP_SHA`
+
+### Fixed
+
+- Clipboard replacement can be turned off.
+- Generator history shows each site and entry a generated password was used for.
+
 ## [0.0.23] - 2026-09-22
 
 `69c6e3c8c45f18beebfd59f0940da53876320166`
@@ -79,7 +88,8 @@ Starts at 0.0.17, after the Lockwright package rename. Earlier history is git.
 
 - A PearPass vault copied onto disk is treated as a vault, not empty.
 
-[unreleased]: https://github.com/Dexterity-Works/lockwright-app-desktop/compare/69c6e3c8c45f18beebfd59f0940da53876320166...HEAD
+[unreleased]: https://github.com/Dexterity-Works/lockwright-app-desktop/compare/BUMP_SHA...HEAD
+[0.0.24]: https://github.com/Dexterity-Works/lockwright-app-desktop/compare/69c6e3c8c45f18beebfd59f0940da53876320166...BUMP_SHA
 [0.0.23]: https://github.com/Dexterity-Works/lockwright-app-desktop/compare/7e308a0605a3b1a708fc700d82b01901211a545d...69c6e3c8c45f18beebfd59f0940da53876320166
 [0.0.22]: https://github.com/Dexterity-Works/lockwright-app-desktop/compare/1959b3878630a34cad609a88e4a27568895c4acb...7e308a0605a3b1a708fc700d82b01901211a545d
 [0.0.21]: https://github.com/Dexterity-Works/lockwright-app-desktop/compare/44f1bbb00605b20c5301a7f3e5110a2c78eca7c9...1959b3878630a34cad609a88e4a27568895c4acb
