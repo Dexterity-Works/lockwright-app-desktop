@@ -10,7 +10,11 @@ const mockOnPasswordInsert = jest.fn()
 
 jest.mock('../../../utils/passwordGeneratorHistory', () => ({
   markHistoryUsed: (value: string, context?: unknown) =>
-    mockMarkHistoryUsed(value, context)
+    mockMarkHistoryUsed(value, context),
+  appendHistory: async () => [],
+  clearHistory: async () => [],
+  loadHistory: async () => [],
+  historyUseLabels: () => []
 }))
 
 jest.mock('../../../hooks/useTranslation', () => ({

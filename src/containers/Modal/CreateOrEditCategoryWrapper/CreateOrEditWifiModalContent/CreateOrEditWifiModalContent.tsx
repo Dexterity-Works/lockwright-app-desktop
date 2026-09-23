@@ -34,7 +34,10 @@ import { useCreateOrEditRecord } from '../../../../hooks/useCreateOrEditRecord'
 import { useGetMultipleFiles } from '../../../../hooks/useGetMultipleFiles'
 import { getFilteredAttachmentsById } from '../../../../utils/getFilteredAttachmentsById'
 import { handleFileSelect } from '../../../../utils/handleFileSelect'
-import { resolveHistoryContext } from '../../../../utils/passwordGeneratorHistoryContext'
+import {
+  historyUses,
+  markHistoryUsed
+} from '../../../../utils/passwordGeneratorHistory'
 import { UploadFilesModalContent } from '../../UploadFilesModalContent'
 import { PasswordFieldStrengthIndicator } from '../../../../components/PasswordFieldStrengthIndicator'
 import { PassType } from '../../../../shared/types'
@@ -162,6 +165,13 @@ export const CreateOrEditWifiModalContent = ({
       }
     }
 
+    const password =
+      typeof formValues.password === 'string' ? formValues.password : ''
+    const uses = historyUses({ title: formValues.title })
+    if (password && uses.length) {
+      void markHistoryUsed(password, { uses, onlyExisting: true })
+    }
+
     if (initialRecord) {
       updateRecords([{ ...initialRecord, ...data }], onError)
     } else {
@@ -241,17 +251,17 @@ export const CreateOrEditWifiModalContent = ({
               type="button"
               iconBefore={<SyncLock width={16} height={16} />}
               onClick={() => {
-                const historyContext = resolveHistoryContext({
-                  title: titleField.value
-                })
                 handleCreateOrEditRecord({
                   recordType: 'password',
                   setValue: (value: string, type: PassType) => {
                     setValue('password', value)
-                    setPasswordType(type === PassType.PassPhrase ? PassType.PassPhrase : PassType.Password)
+                    setPasswordType(
+                      type === PassType.PassPhrase
+                        ? PassType.PassPhrase
+                        : PassType.Password
+                    )
                   },
-                  contextLabel: historyContext?.contextLabel,
-                  contextKind: historyContext?.contextKind
+                  uses: historyUses({ title: titleField.value })
                 })
               }}
               data-testid="createoredit-wifi-button-generatepassword"

@@ -17,12 +17,14 @@ export type GeneratePasswordModalContentProps = {
   /** Non-empty label stamped on USE (entry title or site hostname). */
   contextLabel?: string
   contextKind?: 'site' | 'entry'
+  uses?: Array<{ contextLabel: string; contextKind: 'site' | 'entry' }>
 }
 
 export const GeneratePasswordModalContent = ({
   onPasswordInsert,
   contextLabel,
-  contextKind = 'entry'
+  contextKind = 'entry',
+  uses
 }: GeneratePasswordModalContentProps) => {
   const { t } = useTranslation()
   const { closeModal } = useModal()
@@ -42,12 +44,16 @@ export const GeneratePasswordModalContent = ({
 
   const handlePrimaryAction = () => {
     if (onPasswordInsert) {
-      const label = contextLabel?.trim()
-      if (label) {
-        void markHistoryUsed(generated, {
-          contextLabel: label,
-          contextKind: contextKind === 'site' ? 'site' : 'entry'
-        })
+      if (uses?.length) {
+        void markHistoryUsed(generated, { uses })
+      } else {
+        const label = contextLabel?.trim()
+        if (label) {
+          void markHistoryUsed(generated, {
+            contextLabel: label,
+            contextKind: contextKind === 'site' ? 'site' : 'entry'
+          })
+        }
       }
       onPasswordInsert(generated, passTypeRef.current)
       closeModal()

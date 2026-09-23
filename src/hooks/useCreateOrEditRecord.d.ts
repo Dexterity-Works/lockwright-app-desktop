@@ -8,6 +8,7 @@ export type CreateOrEditRecordParams = {
   setValue?: (value: string, type: PassType) => void
   contextLabel?: string
   contextKind?: 'site' | 'entry'
+  uses?: Array<{ contextLabel: string; contextKind: 'site' | 'entry' }>
 }
 
 export function useCreateOrEditRecord(): {

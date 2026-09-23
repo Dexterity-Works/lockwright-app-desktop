@@ -32,6 +32,7 @@ import { PassType } from '../../shared/types'
 import {
   appendHistory,
   clearHistory,
+  historyUseLabels,
   loadHistory
 } from '../../utils/passwordGeneratorHistory'
 import {
@@ -77,6 +78,7 @@ type HistoryEntry = {
   contextLabel?: string
   contextKind?: 'site' | 'entry'
   usedAt?: number
+  uses?: Array<{ contextLabel: string; contextKind: 'site' | 'entry' }>
 }
 
 const HISTORY_DISPLAY_LIMIT = 20
@@ -639,17 +641,20 @@ export const PasswordGenerator = ({
                   >
                     {formatHistoryCreatedAt(entry.createdAt)}
                   </Text>
-                  {entry.contextLabel ? (
-                    <div style={styles.historyContext}>
+                  {historyUseLabels(entry).map((label, labelIndex) => (
+                    <div
+                      key={`${entry.id}-${labelIndex}`}
+                      style={styles.historyContext}
+                    >
                       <Text
                         as="span"
                         variant="caption"
                         color={theme.colors.colorTextTertiary}
                       >
-                        {entry.contextLabel}
+                        {label}
                       </Text>
                     </div>
-                  ) : null}
+                  ))}
                 </div>
                 <Button
                   variant="tertiary"

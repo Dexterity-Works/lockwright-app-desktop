@@ -3,6 +3,8 @@ import {
   PASSWORD_GENERATOR_HISTORY_MAX,
   appendHistory,
   clearHistory,
+  historyUseLabels,
+  historyUses,
   loadHistory,
   markHistoryUsed
 } from './passwordGeneratorHistory'
@@ -203,6 +205,58 @@ describe('passwordGeneratorHistory', () => {
       expect(next[next.length - 1].value).toBe(
         `v-${PASSWORD_GENERATOR_HISTORY_MAX - 2}`
       )
+    })
+
+    it('keeps the site and the entry on the same generated password', async () => {
+      expect(
+        historyUses({
+          title: 'Work bank',
+          websiteUrl: 'https://example.com/login'
+        })
+      ).toEqual([
+        { contextLabel: 'example.com', contextKind: 'site' },
+        { contextLabel: 'Work bank', contextKind: 'entry' }
+      ])
+
+      mockGet.mockResolvedValueOnce({
+        entries: [
+          {
+            id: 'pw',
+            value: 'same',
+            createdAt: 1,
+            contextLabel: 'example.com',
+            contextKind: 'site',
+            usedAt: 10
+          }
+        ]
+      })
+
+      const next = await markHistoryUsed('same', {
+        contextLabel: 'Work bank',
+        contextKind: 'entry'
+      })
+
+      expect(historyUseLabels(next[0])).toEqual(['example.com', 'Work bank'])
+      expect(next[0].uses).toEqual([
+        expect.objectContaining({
+          contextLabel: 'example.com',
+          contextKind: 'site'
+        }),
+        expect.objectContaining({
+          contextLabel: 'Work bank',
+          contextKind: 'entry'
+        })
+      ])
+
+      mockGet.mockResolvedValueOnce({ entries: [] })
+      mockAdd.mockClear()
+      const skipped = await markHistoryUsed('typed-not-generated', {
+        contextLabel: 'Work bank',
+        contextKind: 'entry',
+        onlyExisting: true
+      })
+      expect(skipped).toEqual([])
+      expect(mockAdd).not.toHaveBeenCalled()
     })
 
     it('does not persist when label or kind is invalid', async () => {

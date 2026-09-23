@@ -44,7 +44,10 @@ import { useGetMultipleFiles } from '../../../../hooks/useGetMultipleFiles'
 import { formatPasskeyDate } from '../../../../utils/formatPasskeyDate'
 import { getFilteredAttachmentsById } from '../../../../utils/getFilteredAttachmentsById'
 import { handleFileSelect } from '../../../../utils/handleFileSelect'
-import { resolveHistoryContext } from '../../../../utils/passwordGeneratorHistoryContext'
+import {
+  historyUses,
+  markHistoryUsed
+} from '../../../../utils/passwordGeneratorHistory'
 import { UploadFilesModalContent } from '../../UploadFilesModalContent'
 import { FolderDropdown } from '../../../../components/FolderDropdown/FolderDropdown'
 import {
@@ -234,6 +237,16 @@ export const CreateOrEditLoginModalContent = ({
       }
     }
 
+    const password =
+      typeof formValues.password === 'string' ? formValues.password : ''
+    const uses = historyUses({
+      title: formValues.title,
+      websiteUrl: websiteRows[0]?.website
+    })
+    if (password && uses.length) {
+      void markHistoryUsed(password, { uses, onlyExisting: true })
+    }
+
     if (initialRecord) {
       updateRecords([{ ...initialRecord, ...data }], onError)
     } else {
@@ -331,10 +344,6 @@ export const CreateOrEditLoginModalContent = ({
                 const firstWebsite = websitesList[0]
                   ? String(registerWebsiteItem('website', 0).value || '')
                   : ''
-                const historyContext = resolveHistoryContext({
-                  title: titleField.value,
-                  websiteUrl: firstWebsite
-                })
                 handleCreateOrEditRecord({
                   recordType: 'password',
                   setValue: (value: string, type: PassType) => {
@@ -345,8 +354,10 @@ export const CreateOrEditLoginModalContent = ({
                         : PassType.Password
                     )
                   },
-                  contextLabel: historyContext?.contextLabel,
-                  contextKind: historyContext?.contextKind
+                  uses: historyUses({
+                    title: titleField.value,
+                    websiteUrl: firstWebsite
+                  })
                 })
               }}
               data-testid='createoredit-button-generatepassword'

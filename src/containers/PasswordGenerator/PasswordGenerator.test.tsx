@@ -10,6 +10,7 @@ type HistoryEntry = {
   contextLabel?: string
   contextKind?: string
   usedAt?: number
+  uses?: Array<{ contextLabel: string; contextKind?: string }>
 }
 
 const mockAppendHistory = jest.fn(
@@ -39,7 +40,16 @@ jest.mock('../../utils/passwordGeneratorHistory', () => ({
   clearHistory: () => mockClearHistory(),
   loadHistory: () => mockLoadHistory(),
   markHistoryUsed: (value: string, context?: unknown) =>
-    mockMarkHistoryUsed(value, context)
+    mockMarkHistoryUsed(value, context),
+  historyUseLabels: (entry: {
+    uses?: Array<{ contextLabel?: string }>
+    contextLabel?: string
+  }) =>
+    entry?.uses?.length
+      ? entry.uses.map((use) => use.contextLabel).filter(Boolean)
+      : entry?.contextLabel
+        ? [entry.contextLabel]
+        : []
 }))
 
 jest.mock('../../hooks/useTranslation', () => ({
@@ -185,7 +195,11 @@ describe('PasswordGenerator', () => {
         createdAt: 1000,
         contextLabel: 'example.com',
         contextKind: 'site',
-        usedAt: 1500
+        usedAt: 1500,
+        uses: [
+          { contextLabel: 'example.com', contextKind: 'site' },
+          { contextLabel: 'Work bank', contextKind: 'entry' }
+        ]
       },
       { id: 'old-1', value: 'old-unlabeled', createdAt: 500 }
     ])
@@ -209,6 +223,7 @@ describe('PasswordGenerator', () => {
 
     expect(await screen.findByText('old-labeled')).toBeInTheDocument()
     expect(screen.getByText('example.com')).toBeInTheDocument()
+    expect(screen.getByText('Work bank')).toBeInTheDocument()
     expect(screen.getByText('old-unlabeled')).toBeInTheDocument()
   })
 
