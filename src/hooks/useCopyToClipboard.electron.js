@@ -58,8 +58,10 @@ export const useCopyToClipboard = ({ onCopy } = {}) => {
         } else {
           setToast?.({ message: t('Copied to Clipboard'), icon: Check })
         }
-        // Clear clipboard automatically after delay
-        if (window.electronAPI) {
+        const clearDisabled =
+          localStorage.getItem(LOCAL_STORAGE_KEYS.CLIPBOARD_CLEAR_DISABLED) ===
+          'true'
+        if (window.electronAPI && !clearDisabled) {
           window.electronAPI.clearClipboardAfter?.(
             text,
             DEFAULT_CLIPBOARD_CLEAR_TIMEOUT

@@ -108,6 +108,23 @@ describe('useCopyToClipboard.electron', () => {
     )
   })
 
+  it('does not replace the clipboard when replacement is turned off', async () => {
+    localStorage.setItem(LOCAL_STORAGE_KEYS.CLIPBOARD_CLEAR_DISABLED, 'true')
+    const { result } = renderHook(() => useCopyToClipboard())
+
+    await waitFor(() => {
+      expect(result.current.isCopyToClipboardDisabled).toBe(false)
+    })
+
+    await act(async () => {
+      result.current.copyToClipboard('secret')
+      await Promise.resolve()
+    })
+
+    expect(navigator.clipboard.writeText).toHaveBeenCalledWith('secret')
+    expect(window.electronAPI.clearClipboardAfter).not.toHaveBeenCalled()
+  })
+
   it('resets isCopied to false after 2 seconds', async () => {
     jest.useFakeTimers()
     const { result } = renderHook(() => useCopyToClipboard())

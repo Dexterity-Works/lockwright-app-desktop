@@ -146,6 +146,7 @@ describe('AppPreferencesContent', () => {
     expect(screen.getByText('App Preferences')).toBeInTheDocument()
     expect(screen.getByText('Auto Lock')).toBeInTheDocument()
     expect(screen.getByText('Copy to Clipboard')).toBeInTheDocument()
+    expect(screen.getByText('Replace clipboard')).toBeInTheDocument()
     expect(screen.getByText('Reminders')).toBeInTheDocument()
   })
 
@@ -162,6 +163,21 @@ describe('AppPreferencesContent', () => {
     expect(
       screen.getByTestId('settings-copy-to-clipboard-toggle')
     ).toHaveAttribute('aria-checked', 'false')
+  })
+
+  it('starts with clipboard replacement on', () => {
+    render(<AppPreferencesContent />)
+    expect(
+      screen.getByTestId('settings-clipboard-clear-toggle')
+    ).toHaveAttribute('aria-checked', 'true')
+  })
+
+  it('writes "true" when clipboard replacement is toggled off', () => {
+    render(<AppPreferencesContent />)
+    fireEvent.click(screen.getByTestId('settings-clipboard-clear-toggle'))
+    expect(
+      localStorage.getItem(LOCAL_STORAGE_KEYS.CLIPBOARD_CLEAR_DISABLED)
+    ).toBe('true')
   })
 
   it('writes "true" to localStorage when clipboard is toggled off', () => {
