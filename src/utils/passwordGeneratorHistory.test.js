@@ -10,95 +10,164 @@ import {
   markHistoryUsed
 } from './passwordGeneratorHistory'
 
-const mockGet = jest.fn()
-const mockAdd = jest.fn()
+// One Map stands in for the vault. `mockStale` hides it from reads, like a
+// device whose view has not caught up with the others yet.
+const mockStore = new Map()
+let mockStale = false
 let mockIdCounter = 0
+const mockView = () => (mockStale ? new Map() : mockStore)
+const mockVault = {
+  activeVaultGet: jest.fn(async (key) => mockView().get(key)),
+  activeVaultList: jest.fn(async (prefix) =>
+    [...mockView()]
+      .filter(([key]) => key.startsWith(prefix))
+      .map(([, value]) => value)
+  ),
+  activeVaultAdd: jest.fn(async (key, data) => {
+    mockStore.set(key, data)
+  }),
+  activeVaultRemove: jest.fn(async (key) => {
+    mockStore.delete(key)
+  })
+}
 
 jest.mock('lockwright-lib-vault/src/instances', () => ({
-  pearpassVaultClient: {
-    activeVaultGet: (...args) => mockGet(...args),
-    activeVaultAdd: (...args) => mockAdd(...args)
+  get pearpassVaultClient() {
+    return mockVault
   }
 }))
 
 jest.mock('lockwright-utils-generate-unique-id', () => ({
   generateUniqueId: () => `id-${++mockIdCounter}`
 }))
+const ENTRY_PREFIX = `${PASSWORD_GENERATOR_HISTORY_KEY}/`
+const entryKey = (id) => `${ENTRY_PREFIX}${id}`
+const seed = (...entries) => {
+  for (const entry of entries) mockStore.set(entryKey(entry.id), entry)
+}
+const historyKeys = () =>
+  [...mockStore.keys()]
+    .filter((key) => key.startsWith(PASSWORD_GENERATOR_HISTORY_KEY))
+    .sort()
+// Newest first: e-0 is the newest, the last one is the oldest.
+const filled = () =>
+  Array.from({ length: PASSWORD_GENERATOR_HISTORY_MAX }, (_, i) => ({
+    id: `e-${i}`,
+    value: `v-${i}`,
+    createdAt: PASSWORD_GENERATOR_HISTORY_MAX - i
+  }))
 
 describe('passwordGeneratorHistory', () => {
   beforeEach(() => {
     mockIdCounter = 0
-    mockGet.mockReset()
-    mockAdd.mockReset()
-    mockAdd.mockResolvedValue(undefined)
+    mockStore.clear()
+    mockStale = false
+    jest.clearAllMocks()
   })
 
   describe('loadHistory', () => {
-    it('returns entries from vault document', async () => {
-      mockGet.mockResolvedValue({
+    it('returns per-entry keys newest first', async () => {
+      seed(
+        { id: 'a', value: 'old', createdAt: 1 },
+        { id: 'b', value: 'new', createdAt: 2 }
+      )
+
+      await expect(loadHistory()).resolves.toEqual([
+        { id: 'b', value: 'new', createdAt: 2 },
+        { id: 'a', value: 'old', createdAt: 1 }
+      ])
+      expect(mockVault.activeVaultList).toHaveBeenCalledWith(ENTRY_PREFIX)
+    })
+
+    it('returns empty array when the vault read fails', async () => {
+      mockVault.activeVaultList.mockRejectedValueOnce(new Error('vault closed'))
+      await expect(loadHistory()).resolves.toEqual([])
+    })
+
+    it('returns empty array when nothing is stored', async () => {
+      await expect(loadHistory()).resolves.toEqual([])
+    })
+
+    it('moves the legacy array into per-entry keys, idempotently', async () => {
+      mockStore.set(PASSWORD_GENERATOR_HISTORY_KEY, {
+        entries: [
+          { id: 'a', value: 'pw', createdAt: 2 },
+          { id: 'b', value: 'other', createdAt: 1 }
+        ]
+      })
+      seed({ id: 'a', value: 'pw', createdAt: 2, usedAt: 5 })
+
+      const first = await loadHistory()
+
+      expect(first).toEqual([
+        { id: 'a', value: 'pw', createdAt: 2, usedAt: 5 },
+        { id: 'b', value: 'other', createdAt: 1 }
+      ])
+      expect(historyKeys()).toEqual([entryKey('a'), entryKey('b')])
+      await expect(loadHistory()).resolves.toEqual(first)
+      expect(historyKeys()).toEqual([entryKey('a'), entryKey('b')])
+    })
+
+    it('accepts a bare array legacy document', async () => {
+      mockStore.set(PASSWORD_GENERATOR_HISTORY_KEY, [
+        { id: 'a', value: 'pw', createdAt: 1 }
+      ])
+      await expect(loadHistory()).resolves.toEqual([
+        { id: 'a', value: 'pw', createdAt: 1 }
+      ])
+      expect(historyKeys()).toEqual([entryKey('a')])
+    })
+
+    it('keeps the legacy array when migration fails', async () => {
+      mockStore.set(PASSWORD_GENERATOR_HISTORY_KEY, {
         entries: [{ id: 'a', value: 'pw', createdAt: 1 }]
       })
+      mockVault.activeVaultAdd.mockRejectedValueOnce(new Error('write failed'))
 
-      await expect(loadHistory()).resolves.toEqual([
-        { id: 'a', value: 'pw', createdAt: 1 }
-      ])
-      expect(mockGet).toHaveBeenCalledWith(PASSWORD_GENERATOR_HISTORY_KEY)
-    })
-
-    it('returns empty array when vault get fails', async () => {
-      mockGet.mockRejectedValue(new Error('vault closed'))
       await expect(loadHistory()).resolves.toEqual([])
-    })
-
-    it('returns empty array when document is missing', async () => {
-      mockGet.mockResolvedValue(null)
-      await expect(loadHistory()).resolves.toEqual([])
-    })
-
-    it('accepts a bare array document (legacy shape)', async () => {
-      mockGet.mockResolvedValue([{ id: 'a', value: 'pw', createdAt: 1 }])
-      await expect(loadHistory()).resolves.toEqual([
-        { id: 'a', value: 'pw', createdAt: 1 }
-      ])
+      expect(mockStore.has(PASSWORD_GENERATOR_HISTORY_KEY)).toBe(true)
     })
   })
 
   describe('appendHistory', () => {
-    it('prepends a new unlabeled entry and persists', async () => {
-      mockGet.mockResolvedValue({
-        entries: [{ id: 'old', value: 'a', createdAt: 1 }]
-      })
+    it('writes only the new entry key', async () => {
+      seed({ id: 'old', value: 'a', createdAt: 1 })
 
       const next = await appendHistory('b')
 
       expect(next[0]).toMatchObject({ id: 'id-1', value: 'b' })
       expect(next[0].contextLabel).toBeUndefined()
       expect(next[1]).toEqual({ id: 'old', value: 'a', createdAt: 1 })
-      expect(mockAdd).toHaveBeenCalledWith(PASSWORD_GENERATOR_HISTORY_KEY, {
-        entries: next
-      })
+      expect(mockVault.activeVaultAdd).toHaveBeenCalledTimes(1)
+      expect(mockVault.activeVaultAdd).toHaveBeenCalledWith(
+        entryKey('id-1'),
+        next[0]
+      )
+    })
+
+    it("keeps another device's entry when this view has not synced it", async () => {
+      await appendHistory('from-a')
+      mockStale = true
+      await appendHistory('from-b')
+      mockStale = false
+
+      const values = (await loadHistory()).map((entry) => entry.value)
+      expect(values.sort()).toEqual(['from-a', 'from-b'])
+      expect(historyKeys()).toEqual([entryKey('id-1'), entryKey('id-2')])
     })
 
     it('skips when newest value is identical (dedupe)', async () => {
-      const existing = [{ id: 'a', value: 'same', createdAt: 1 }]
-      mockGet.mockResolvedValue({ entries: existing })
+      const existing = { id: 'a', value: 'same', createdAt: 1 }
+      seed(existing)
 
       const next = await appendHistory('same')
 
-      expect(next).toEqual(existing)
-      expect(mockAdd).not.toHaveBeenCalled()
+      expect(next).toEqual([existing])
+      expect(mockVault.activeVaultAdd).not.toHaveBeenCalled()
     })
 
-    it('caps history at MAX (500)', async () => {
-      const filled = Array.from(
-        { length: PASSWORD_GENERATOR_HISTORY_MAX },
-        (_, i) => ({
-          id: `e-${i}`,
-          value: `v-${i}`,
-          createdAt: i
-        })
-      )
-      mockGet.mockResolvedValue({ entries: filled })
+    it('prunes only the keys past the cap', async () => {
+      seed(...filled())
 
       const next = await appendHistory('brand-new')
 
@@ -107,23 +176,25 @@ describe('passwordGeneratorHistory', () => {
       expect(next[next.length - 1].value).toBe(
         `v-${PASSWORD_GENERATOR_HISTORY_MAX - 2}`
       )
+      expect(mockVault.activeVaultRemove).toHaveBeenCalledTimes(1)
+      expect(mockVault.activeVaultRemove).toHaveBeenCalledWith(
+        entryKey(`e-${PASSWORD_GENERATOR_HISTORY_MAX - 1}`)
+      )
+      expect(historyKeys()).toHaveLength(PASSWORD_GENERATOR_HISTORY_MAX)
     })
 
     it('does not persist empty values', async () => {
-      mockGet.mockResolvedValue({ entries: [] })
       await appendHistory('')
-      expect(mockAdd).not.toHaveBeenCalled()
+      expect(mockVault.activeVaultAdd).not.toHaveBeenCalled()
     })
   })
 
   describe('markHistoryUsed', () => {
-    it('updates the newest matching value with context', async () => {
-      mockGet.mockResolvedValue({
-        entries: [
-          { id: 'newer', value: 'same', createdAt: 2 },
-          { id: 'older', value: 'same', createdAt: 1 }
-        ]
-      })
+    it('updates the newest matching value, rewriting only its key', async () => {
+      seed(
+        { id: 'newer', value: 'same', createdAt: 2 },
+        { id: 'older', value: 'same', createdAt: 1 }
+      )
 
       const next = await markHistoryUsed('same', {
         contextLabel: 'example.com',
@@ -138,15 +209,15 @@ describe('passwordGeneratorHistory', () => {
       })
       expect(next[0].usedAt).toEqual(expect.any(Number))
       expect(next[1]).toEqual({ id: 'older', value: 'same', createdAt: 1 })
-      expect(mockAdd).toHaveBeenCalledWith(PASSWORD_GENERATOR_HISTORY_KEY, {
-        entries: next
-      })
+      expect(mockVault.activeVaultAdd).toHaveBeenCalledTimes(1)
+      expect(mockVault.activeVaultAdd).toHaveBeenCalledWith(
+        entryKey('newer'),
+        next[0]
+      )
     })
 
     it('creates an entry when value is absent', async () => {
-      mockGet.mockResolvedValue({
-        entries: [{ id: 'a', value: 'other', createdAt: 1 }]
-      })
+      seed({ id: 'a', value: 'other', createdAt: 1 })
 
       const next = await markHistoryUsed('brand-new', {
         contextLabel: 'My Login',
@@ -162,39 +233,14 @@ describe('passwordGeneratorHistory', () => {
       expect(next[0].createdAt).toEqual(expect.any(Number))
       expect(next[0].usedAt).toEqual(expect.any(Number))
       expect(next[1]).toEqual({ id: 'a', value: 'other', createdAt: 1 })
-    })
-
-    it('preserves unlabeled older entries when updating a match', async () => {
-      mockGet.mockResolvedValue({
-        entries: [
-          { id: 'match', value: 'pw', createdAt: 2 },
-          { id: 'unlabeled', value: 'other', createdAt: 1 }
-        ]
-      })
-
-      const next = await markHistoryUsed('pw', {
-        contextLabel: 'Wi-Fi Home',
-        contextKind: 'entry'
-      })
-
-      expect(next[0]).toMatchObject({
-        id: 'match',
-        contextLabel: 'Wi-Fi Home',
-        contextKind: 'entry'
-      })
-      expect(next[1]).toEqual({ id: 'unlabeled', value: 'other', createdAt: 1 })
+      expect(mockVault.activeVaultAdd).toHaveBeenCalledWith(
+        entryKey('id-1'),
+        next[0]
+      )
     })
 
     it('caps history at MAX when creating a missing value', async () => {
-      const filled = Array.from(
-        { length: PASSWORD_GENERATOR_HISTORY_MAX },
-        (_, i) => ({
-          id: `e-${i}`,
-          value: `v-${i}`,
-          createdAt: i
-        })
-      )
-      mockGet.mockResolvedValue({ entries: filled })
+      seed(...filled())
 
       const next = await markHistoryUsed('brand-new', {
         contextLabel: 'site.example',
@@ -206,6 +252,7 @@ describe('passwordGeneratorHistory', () => {
       expect(next[next.length - 1].value).toBe(
         `v-${PASSWORD_GENERATOR_HISTORY_MAX - 2}`
       )
+      expect(historyKeys()).toHaveLength(PASSWORD_GENERATOR_HISTORY_MAX)
     })
 
     it('keeps the site and the entry on the same generated password', async () => {
@@ -219,17 +266,13 @@ describe('passwordGeneratorHistory', () => {
         { contextLabel: 'Work bank', contextKind: 'entry' }
       ])
 
-      mockGet.mockResolvedValueOnce({
-        entries: [
-          {
-            id: 'pw',
-            value: 'same',
-            createdAt: 1,
-            contextLabel: 'example.com',
-            contextKind: 'site',
-            usedAt: 10
-          }
-        ]
+      seed({
+        id: 'pw',
+        value: 'same',
+        createdAt: 1,
+        contextLabel: 'example.com',
+        contextKind: 'site',
+        usedAt: 10
       })
 
       const next = await markHistoryUsed('same', {
@@ -249,20 +292,18 @@ describe('passwordGeneratorHistory', () => {
         })
       ])
 
-      mockGet.mockResolvedValueOnce({ entries: [] })
-      mockAdd.mockClear()
+      mockStore.clear()
+      mockVault.activeVaultAdd.mockClear()
       const skipped = await markHistoryUsed('typed-not-generated', {
         contextLabel: 'Work bank',
         contextKind: 'entry',
         onlyExisting: true
       })
       expect(skipped).toEqual([])
-      expect(mockAdd).not.toHaveBeenCalled()
+      expect(mockVault.activeVaultAdd).not.toHaveBeenCalled()
     })
 
     it('does not persist when label or kind is invalid', async () => {
-      mockGet.mockResolvedValue({ entries: [] })
-
       await markHistoryUsed('pw', {
         contextLabel: '   ',
         contextKind: 'site'
@@ -276,7 +317,7 @@ describe('passwordGeneratorHistory', () => {
         contextKind: 'site'
       })
 
-      expect(mockAdd).not.toHaveBeenCalled()
+      expect(mockVault.activeVaultAdd).not.toHaveBeenCalled()
     })
   })
 
@@ -318,11 +359,18 @@ describe('passwordGeneratorHistory', () => {
   })
 
   describe('clearHistory', () => {
-    it('writes empty entries document', async () => {
-      await expect(clearHistory()).resolves.toEqual([])
-      expect(mockAdd).toHaveBeenCalledWith(PASSWORD_GENERATOR_HISTORY_KEY, {
-        entries: []
+    it('removes every entry key and the legacy key', async () => {
+      seed(
+        { id: 'a', value: 'x', createdAt: 1 },
+        { id: 'b', value: 'y', createdAt: 2 }
+      )
+      mockStore.set(PASSWORD_GENERATOR_HISTORY_KEY, {
+        entries: [{ id: 'c', value: 'z', createdAt: 3 }]
       })
+      mockStore.set('app/other', { keep: true })
+
+      await expect(clearHistory()).resolves.toEqual([])
+      expect([...mockStore.keys()]).toEqual(['app/other'])
     })
   })
 })

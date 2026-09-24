@@ -7,8 +7,12 @@ import { generateUniqueId } from 'lockwright-utils-generate-unique-id'
  * Keep this contract in sync with
  * pearpass-app-browser-extension/src/shared/utils/passwordGeneratorHistory.js
  *
- * Key: `app/password-generator-history`
- * Document: `{ entries: HistoryEntry[] }` (newest first)
+ * Key per entry: `app/password-generator-history/<id>` → one HistoryEntry.
+ * Autopass is last write wins per key, so each write touches only the entries
+ * it changes. A device that is behind or writing at the same time can no
+ * longer overwrite another device's history.
+ * Legacy key: `app/password-generator-history` → `{ entries: HistoryEntry[] }`.
+ * loadHistory moves it into per-entry keys and removes it.
  *
  * Entry shape (additive optional fields for labeled use):
  * `{ id, value, createdAt, contextLabel?, contextKind?: 'site'|'entry', usedAt?, uses? }`
@@ -20,13 +24,16 @@ import { generateUniqueId } from 'lockwright-utils-generate-unique-id'
  *   — stamp on USE (fill/insert) or on save of a record that already contains
  *   this generated value. Not bare Copy from the sidebar Generator page.
  *   Finds the newest entry with the same value (creates one if missing, unless
- *   `onlyExisting`), appends each distinct label, persists via activeVaultAdd,
- *   caps entries at 500.
+ *   `onlyExisting`), appends each distinct label, rewrites only that
+ *   entry's key, caps entries at 500.
  */
 export const PASSWORD_GENERATOR_HISTORY_KEY = 'app/password-generator-history'
 export const PASSWORD_GENERATOR_HISTORY_MAX = 500
 
-const emptyDoc = () => ({ entries: [] })
+// Trailing slash keeps the legacy key out of the listing.
+const ENTRY_PREFIX = `${PASSWORD_GENERATOR_HISTORY_KEY}/`
+
+const entryKey = (id) => `${ENTRY_PREFIX}${id}`
 
 const normalizeEntries = (raw) => {
   if (Array.isArray(raw?.entries)) return raw.entries
@@ -34,22 +41,77 @@ const normalizeEntries = (raw) => {
   return []
 }
 
+const isEntry = (entry) =>
+  typeof entry?.id === 'string' && !!entry.id && typeof entry.value === 'string'
+
+// Id breaks ties so every device prunes the same keys.
+const newestFirst = (a, b) =>
+  (b.createdAt ?? 0) - (a.createdAt ?? 0) ||
+  (a.id < b.id ? -1 : a.id > b.id ? 1 : 0)
+
+const listEntries = async () => {
+  // ponytail: activeVaultList scans the whole view and loads all history. Upgrade when history load gets slow on large vaults: range scan API.
+  const listed = await pearpassVaultClient.activeVaultList(ENTRY_PREFIX)
+  return Array.isArray(listed) ? listed.filter(isEntry) : []
+}
+
 /**
- * @returns {Promise<Array<{ id: string, value: string, createdAt: number, contextLabel?: string, contextKind?: 'site'|'entry', usedAt?: number }>>}
+ * Every entry, newest first, uncapped. Moves the legacy array into per-entry
+ * keys, then removes it. Ids are stable, so repeat or concurrent runs converge.
  */
-export const loadHistory = async () => {
-  try {
-    const raw = await pearpassVaultClient.activeVaultGet(
-      PASSWORD_GENERATOR_HISTORY_KEY
+const readEntries = async () => {
+  const byId = new Map()
+  for (const entry of await listEntries()) byId.set(entry.id, entry)
+
+  const legacy = normalizeEntries(
+    await pearpassVaultClient.activeVaultGet(PASSWORD_GENERATOR_HISTORY_KEY)
+  ).filter(isEntry)
+  if (legacy.length) {
+    const missing = legacy.filter((entry) => !byId.has(entry.id))
+    await Promise.all(
+      missing.map((entry) =>
+        pearpassVaultClient.activeVaultAdd(entryKey(entry.id), entry)
+      )
     )
-    return normalizeEntries(raw)
+    for (const entry of missing) byId.set(entry.id, entry)
+    await pearpassVaultClient.activeVaultRemove(PASSWORD_GENERATOR_HISTORY_KEY)
+  }
+
+  return [...byId.values()].sort(newestFirst)
+}
+
+const readEntriesOrEmpty = async () => {
+  try {
+    return await readEntries()
   } catch {
     return []
   }
 }
 
 /**
- * Prepend a generated password. Skips when newest entry has the same value.
+ * Writes one new entry key, then removes only the keys past the cap.
+ *
+ * @returns {Promise<Array>} newest first, capped
+ */
+const addEntry = async (entry, current) => {
+  await pearpassVaultClient.activeVaultAdd(entryKey(entry.id), entry)
+  const next = [entry, ...current].sort(newestFirst)
+  await Promise.all(
+    next
+      .slice(PASSWORD_GENERATOR_HISTORY_MAX)
+      .map((old) => pearpassVaultClient.activeVaultRemove(entryKey(old.id)))
+  )
+  return next.slice(0, PASSWORD_GENERATOR_HISTORY_MAX)
+}
+
+/**
+ * @returns {Promise<Array<{ id: string, value: string, createdAt: number, contextLabel?: string, contextKind?: 'site'|'entry', usedAt?: number }>>}
+ */
+export const loadHistory = async () =>
+  (await readEntriesOrEmpty()).slice(0, PASSWORD_GENERATOR_HISTORY_MAX)
+
+/**
+ * Add a generated password. Skips when newest entry has the same value.
  * Caps at PASSWORD_GENERATOR_HISTORY_MAX.
  *
  * @param {string} value
@@ -60,20 +122,15 @@ export const appendHistory = async (value) => {
     return loadHistory()
   }
 
-  const current = await loadHistory()
+  const current = await readEntriesOrEmpty()
   if (current[0]?.value === value) {
-    return current
+    return current.slice(0, PASSWORD_GENERATOR_HISTORY_MAX)
   }
 
-  const next = [
+  return addEntry(
     { id: generateUniqueId(), value, createdAt: Date.now() },
-    ...current
-  ].slice(0, PASSWORD_GENERATOR_HISTORY_MAX)
-
-  await pearpassVaultClient.activeVaultAdd(PASSWORD_GENERATOR_HISTORY_KEY, {
-    entries: next
-  })
-  return next
+    current
+  )
 }
 
 const asUse = (use) => {
@@ -228,16 +285,15 @@ export const markHistoryUsed = async (value, context = {}) => {
     return loadHistory()
   }
 
-  const current = await loadHistory()
+  const current = await readEntriesOrEmpty()
   const usedAt = Date.now()
-  const matchIndex = current.findIndex((entry) => entry.value === value)
+  const match = current.find((entry) => entry.value === value)
 
-  let next
-  if (matchIndex === -1) {
+  if (!match) {
     if (context.onlyExisting) {
-      return current
+      return current.slice(0, PASSWORD_GENERATOR_HISTORY_MAX)
     }
-    next = [
+    return addEntry(
       stampEntry(
         {
           id: generateUniqueId(),
@@ -247,29 +303,33 @@ export const markHistoryUsed = async (value, context = {}) => {
         mergeUses([], uses, usedAt),
         usedAt
       ),
-      ...current
-    ].slice(0, PASSWORD_GENERATOR_HISTORY_MAX)
-  } else {
-    next = current.map((entry, index) =>
-      index === matchIndex
-        ? stampEntry(entry, mergeUses(priorUses(entry), uses, usedAt), usedAt)
-        : entry
+      current
     )
   }
 
-  await pearpassVaultClient.activeVaultAdd(PASSWORD_GENERATOR_HISTORY_KEY, {
-    entries: next
-  })
-  return next
+  const stamped = stampEntry(
+    match,
+    mergeUses(priorUses(match), uses, usedAt),
+    usedAt
+  )
+  await pearpassVaultClient.activeVaultAdd(entryKey(stamped.id), stamped)
+  return current
+    .map((entry) => (entry === match ? stamped : entry))
+    .slice(0, PASSWORD_GENERATOR_HISTORY_MAX)
 }
 
 /**
+ * Removes every listed entry key and the legacy key.
+ *
  * @returns {Promise<Array>}
  */
 export const clearHistory = async () => {
-  await pearpassVaultClient.activeVaultAdd(
-    PASSWORD_GENERATOR_HISTORY_KEY,
-    emptyDoc()
+  const entries = await listEntries()
+  await Promise.all(
+    entries.map((entry) =>
+      pearpassVaultClient.activeVaultRemove(entryKey(entry.id))
+    )
   )
+  await pearpassVaultClient.activeVaultRemove(PASSWORD_GENERATOR_HISTORY_KEY)
   return []
 }
