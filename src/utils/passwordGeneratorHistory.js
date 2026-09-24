@@ -154,6 +154,32 @@ export const historyUseLabels = (entry) => {
     : []
 }
 
+/**
+ * Stamped labels plus the site and title of every vault record whose password
+ * is this value. Covers passwords saved before stamping existed. Display only,
+ * never written back.
+ *
+ * @param {{ value?: string, uses?: Array<{ contextLabel?: string }>, contextLabel?: string }} [entry]
+ * @param {Array<{ data?: { title?: unknown, password?: unknown, websites?: unknown[] } }>} [records]
+ * @returns {string[]}
+ */
+export const historyEntryLabels = (entry, records) => {
+  const labels = historyUseLabels(entry)
+  if (entry?.value && Array.isArray(records)) {
+    for (const record of records) {
+      if (record?.data?.password !== entry.value) continue
+      const websites = record.data.websites
+      for (const use of historyUses({
+        title: record.data.title,
+        websiteUrl: Array.isArray(websites) ? websites[0] : undefined
+      })) {
+        labels.push(use.contextLabel)
+      }
+    }
+  }
+  return [...new Set(labels)]
+}
+
 // ponytail: distinct labels only, cap 20. Drop oldest when a reused password is tagged past that.
 const USES_MAX = 20
 

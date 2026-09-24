@@ -22,6 +22,8 @@ import {
 import type { PasswordIndicatorVariant } from 'lockwright-lib-ui-react-native-components'
 import { ContentCopy } from 'lockwright-lib-ui-react-native-components/icons'
 
+import { useRecords } from 'lockwright-lib-vault'
+
 import { formatDate } from '../../utils/date'
 
 import { createStyles } from './PasswordGenerator.styles'
@@ -32,7 +34,7 @@ import { PassType } from '../../shared/types'
 import {
   appendHistory,
   clearHistory,
-  historyUseLabels,
+  historyEntryLabels,
   loadHistory
 } from '../../utils/passwordGeneratorHistory'
 import {
@@ -164,6 +166,7 @@ export const PasswordGenerator = ({
   })
   const [history, setHistory] = useState<HistoryEntry[]>([])
   const [generationNonce, setGenerationNonce] = useState(0)
+  const { data: records } = useRecords({ shouldSkip: true })
 
   const lengthValue =
     selectedOption === PASSWORD_OPTIONS.passphrase
@@ -665,7 +668,7 @@ export const PasswordGenerator = ({
                   >
                     {formatHistoryCreatedAt(entry.createdAt)}
                   </Text>
-                  {historyUseLabels(entry).map((label, labelIndex) => (
+                  {historyEntryLabels(entry, records).map((label, labelIndex) => (
                     <div
                       key={`${entry.id}-${labelIndex}`}
                       style={styles.historyContext}

@@ -3,6 +3,7 @@ import {
   PASSWORD_GENERATOR_HISTORY_MAX,
   appendHistory,
   clearHistory,
+  historyEntryLabels,
   historyUseLabels,
   historyUses,
   loadHistory,
@@ -276,6 +277,43 @@ describe('passwordGeneratorHistory', () => {
       })
 
       expect(mockAdd).not.toHaveBeenCalled()
+    })
+  })
+
+  describe('historyEntryLabels', () => {
+    const records = [
+      {
+        id: 'r1',
+        data: {
+          title: 'Mail',
+          password: 'shared-pw',
+          websites: ['https://mail.example.org/login']
+        }
+      },
+      { id: 'r2', data: { title: 'Work bank', password: 'shared-pw' } },
+      { id: 'r3', data: { title: 'Other', password: 'different' } }
+    ]
+
+    it('adds the title and site of every record using the password, deduped with stamped uses', () => {
+      expect(
+        historyEntryLabels(
+          {
+            value: 'shared-pw',
+            uses: [{ contextLabel: 'Work bank', contextKind: 'entry' }]
+          },
+          records
+        )
+      ).toEqual(['Work bank', 'mail.example.org', 'Mail'])
+    })
+
+    it('keeps stamped labels when no record uses the password', () => {
+      expect(
+        historyEntryLabels(
+          { value: 'unused', contextLabel: 'example.com' },
+          records
+        )
+      ).toEqual(['example.com'])
+      expect(historyEntryLabels({ value: 'unused' }, records)).toEqual([])
     })
   })
 
