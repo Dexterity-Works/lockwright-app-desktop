@@ -166,6 +166,8 @@ export const PasswordGenerator = ({
   })
   const [history, setHistory] = useState<HistoryEntry[]>([])
   const [generationNonce, setGenerationNonce] = useState(0)
+  // Set once a write path lands, so a slow mount load cannot clobber it.
+  const historyWrittenRef = useRef(false)
   const { data: records } = useRecords({ shouldSkip: true })
 
   const lengthValue =
@@ -221,22 +223,39 @@ export const PasswordGenerator = ({
   generatedValueRef.current = generatedValue
   const slidingRef = useRef(false)
 
+  const writeHistory = useCallback((entries: HistoryEntry[]) => {
+    historyWrittenRef.current = true
+    setHistory(entries)
+  }, [])
+
+  useEffect(() => {
+    let cancelled = false
+    void loadHistory().then((entries) => {
+      if (!cancelled && !historyWrittenRef.current) {
+        setHistory(entries as HistoryEntry[])
+      }
+    })
+    return () => {
+      cancelled = true
+    }
+  }, [])
+
   const persistGeneratedHistory = useCallback((value: string) => {
     if (!value) return
     void appendHistory(value)
       .then((entries) => {
-        setHistory(entries as HistoryEntry[])
+        writeHistory(entries as HistoryEntry[])
       })
       .catch(() => {
         void loadHistory()
           .then((entries) => {
-            setHistory(entries as HistoryEntry[])
+            writeHistory(entries as HistoryEntry[])
           })
           .catch(() => {
-            setHistory([])
+            writeHistory([])
           })
       })
-  }, [])
+  }, [writeHistory])
 
   useEffect(() => {
     onGeneratedChangeRef.current?.(generatedValue, passType)
@@ -247,23 +266,23 @@ export const PasswordGenerator = ({
     let cancelled = false
     void appendHistory(generatedValue)
       .then((entries) => {
-        if (!cancelled) setHistory(entries as HistoryEntry[])
+        if (!cancelled) writeHistory(entries as HistoryEntry[])
       })
       .catch(() => {
         if (!cancelled) {
           void loadHistory()
             .then((entries) => {
-              if (!cancelled) setHistory(entries as HistoryEntry[])
+              if (!cancelled) writeHistory(entries as HistoryEntry[])
             })
             .catch(() => {
-              if (!cancelled) setHistory([])
+              if (!cancelled) writeHistory([])
             })
         }
       })
     return () => {
       cancelled = true
     }
-  }, [generatedValue])
+  }, [generatedValue, writeHistory])
 
   useEffect(() => {
     const endSlide = () => {
@@ -419,8 +438,8 @@ export const PasswordGenerator = ({
 
   const handleClearHistory = () => {
     void clearHistory()
-      .then((entries) => setHistory(entries as HistoryEntry[]))
-      .catch(() => setHistory([]))
+      .then((entries) => writeHistory(entries as HistoryEntry[]))
+      .catch(() => writeHistory([]))
   }
 
   return (
