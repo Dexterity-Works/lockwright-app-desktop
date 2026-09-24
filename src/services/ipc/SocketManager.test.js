@@ -27,17 +27,21 @@ const { logger } = require('../../utils/logger')
 describe('SocketManager', () => {
   const socketName = 'testSocket'
   const unixPath = '/home/testuser/.lockwright/testSocket.sock'
-  const winPath = '\\\\?\\pipe\\testSocket'
+  const winPipe = /^\\\\\?\\pipe\\testSocket-[0-9a-f]{32}$/
 
   beforeEach(() => {
     jest.clearAllMocks()
   })
 
   describe('getSocketPath', () => {
-    it('returns Windows pipe path on win32', () => {
+    it('returns an unguessable, per-call Windows pipe path on win32', () => {
       require('os').platform.mockReturnValue('win32')
       const manager = new SocketManager(socketName)
-      expect(manager.getSocketPath(socketName)).toBe(winPath)
+      const first = manager.getSocketPath(socketName)
+      const second = manager.getSocketPath(socketName)
+      expect(first).toMatch(winPipe)
+      expect(second).toMatch(winPipe)
+      expect(first).not.toBe(second)
     })
 
     it('returns Unix socket path on non-win32', () => {

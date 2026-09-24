@@ -1,3 +1,4 @@
+import { promises as fsp } from 'fs'
 import { platform } from 'os'
 import { join } from 'path'
 
@@ -31,7 +32,9 @@ jest.mock('fs', () => ({
   promises: {
     ...jest.requireActual('fs').promises,
     mkdir: jest.fn().mockResolvedValue(undefined),
-    unlink: jest.fn().mockResolvedValue(undefined)
+    unlink: jest.fn().mockResolvedValue(undefined),
+    writeFile: jest.fn().mockResolvedValue(undefined),
+    rename: jest.fn().mockResolvedValue(undefined)
   }
 }))
 
@@ -240,10 +243,9 @@ describe('nativeMessagingIPCServer', () => {
   })
 
   describe('getIpcPath', () => {
-    it('should return a windows named pipe path on win32', () => {
+    it('should have no fixed pipe path on win32', () => {
       platform.mockReturnValue('win32')
-      const socketName = 'test-socket'
-      expect(getIpcPath(socketName)).toBe(`\\\\?\\pipe\\${socketName}`)
+      expect(getIpcPath('test-socket')).toBeNull()
     })
 
     it('should return a unix domain socket path on non-win32 platforms', () => {
@@ -514,6 +516,64 @@ describe('nativeMessagingIPCServer', () => {
           handler
         )
       })
+    })
+  })
+
+  describe('NativeMessagingIPCServer on win32', () => {
+    const pipePattern =
+      /^\\\\\?\\pipe\\lockwright-native-messaging-[0-9a-f]{32}$/
+    const pointerFile = join(
+      '/home/testuser',
+      '.lockwright',
+      'lockwright-native-messaging.pipe'
+    )
+    let serverInstance
+
+    beforeEach(() => {
+      platform.mockReturnValue('win32')
+      serverInstance = new NativeMessagingIPCServer(mockPearpassClient)
+    })
+
+    const published = () => {
+      const [[tmp, contents, options]] = fsp.writeFile.mock.calls
+      expect(options).toEqual({ mode: 0o600 })
+      expect(fsp.rename).toHaveBeenCalledWith(tmp, pointerFile)
+      return contents
+    }
+
+    it('listens on a random pipe and publishes it only after listening', async () => {
+      await serverInstance.start()
+      const server = serverInstance.server
+
+      expect(server.options.socketPath).toMatch(pipePattern)
+      expect(published()).toBe(server.options.socketPath)
+      expect(server.ready.mock.invocationCallOrder[0]).toBeLessThan(
+        fsp.rename.mock.invocationCallOrder[0]
+      )
+    })
+
+    it('uses a fresh pipe on every start', async () => {
+      await serverInstance.start()
+      const firstPipe = serverInstance.server.options.socketPath
+      await serverInstance.stop()
+      jest.clearAllMocks()
+
+      await serverInstance.start()
+
+      expect(serverInstance.server.options.socketPath).toMatch(pipePattern)
+      expect(serverInstance.server.options.socketPath).not.toBe(firstPipe)
+      expect(published()).toBe(serverInstance.server.options.socketPath)
+    })
+
+    it('withdraws the published pipe before closing it', async () => {
+      await serverInstance.start()
+      const server = serverInstance.server
+
+      await serverInstance.stop()
+
+      expect(fsp.unlink).toHaveBeenCalledWith(pointerFile)
+      const unlinkOrder = fsp.unlink.mock.invocationCallOrder.at(-1)
+      expect(unlinkOrder).toBeLessThan(server.close.mock.invocationCallOrder[0])
     })
   })
 

@@ -372,7 +372,9 @@ export class NativeMessagingIPCServer {
     try {
       logger.info('IPC-SERVER', 'Starting native messaging IPC server...')
 
+      this.socketPath = this.socketManager.renewPath()
       await this.socketManager.ensureSocketDir()
+      await this.socketManager.unpublishPath()
       await this.socketManager.cleanupSocket()
 
       // Build handlers from registry
@@ -423,6 +425,7 @@ export class NativeMessagingIPCServer {
 
       // Start listening
       await this.server.ready()
+      await this.socketManager.publishPath()
 
       this.attachEventForwarders()
 
@@ -478,6 +481,8 @@ export class NativeMessagingIPCServer {
     logger.info('IPC-SERVER', 'Stopping native messaging IPC server...')
 
     this.detachEventForwarders()
+
+    await this.socketManager.unpublishPath()
 
     if (this.server) {
       await this.server.close()
@@ -545,7 +550,7 @@ export const isNativeMessagingIPCRunning = () =>
   ipcServerInstance?.isRunning || false
 
 /**
- * @returns {string}
+ * @returns {string|null} null on Windows when no server is running
  */
 export const getIPCSocketPath = () =>
   ipcServerInstance?.socketPath ?? getIpcPath('lockwright-native-messaging')
