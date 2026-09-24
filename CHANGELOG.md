@@ -12,6 +12,7 @@ Starts at 0.0.17, after the Lockwright package rename. Earlier history is git.
 ### Fixed
 
 - Generator history shows vault entries whose password matches, including ones saved before labels were stamped.
+- Generator history shows as soon as the Generator opens.
 
 ## [0.0.24] - 2026-09-24
 

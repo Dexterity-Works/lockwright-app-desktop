@@ -1,7 +1,7 @@
 import React from 'react'
 
 import '@testing-library/jest-dom'
-import { fireEvent, render, screen, waitFor } from '@testing-library/react'
+import { act, fireEvent, render, screen, waitFor } from '@testing-library/react'
 
 type HistoryEntry = {
   id: string
@@ -228,6 +228,35 @@ describe('PasswordGenerator', () => {
     expect(screen.getByText('example.com')).toBeInTheDocument()
     expect(screen.getByText('Work bank')).toBeInTheDocument()
     expect(screen.getByText('old-unlabeled')).toBeInTheDocument()
+  })
+
+  it('shows history from the vault before the new password is appended', async () => {
+    mockAppendHistory.mockReturnValue(new Promise(() => {}))
+    mockLoadHistory.mockResolvedValue([
+      { id: 'stored-1', value: 'stored-pw', createdAt: 1000 }
+    ])
+
+    render(<PasswordGenerator />)
+
+    expect(await screen.findByText('stored-pw')).toBeInTheDocument()
+  })
+
+  it('ignores a mount load that resolves after the append', async () => {
+    let resolveLoad: (entries: HistoryEntry[]) => void = () => {}
+    mockLoadHistory.mockReturnValue(
+      new Promise((resolve) => {
+        resolveLoad = resolve
+      })
+    )
+
+    render(<PasswordGenerator />)
+
+    expect(await screen.findByText('old-labeled')).toBeInTheDocument()
+    await act(async () => {
+      resolveLoad([{ id: 'stale-1', value: 'stale-pw', createdAt: 1 }])
+    })
+    expect(screen.queryByText('stale-pw')).not.toBeInTheDocument()
+    expect(screen.getByText('old-labeled')).toBeInTheDocument()
   })
 
   it('shows the title and site of vault entries that use a history password', async () => {
