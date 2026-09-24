@@ -9,6 +9,10 @@ Starts at 0.0.17, after the Lockwright package rename. Earlier history is git.
 
 ## [Unreleased]
 
+### Added
+
+- Generator has a Generate button for a fresh password with the same settings.
+
 ### Fixed
 
 - Generator history shows vault entries whose password matches, including ones saved before labels were stamped.

@@ -164,6 +164,7 @@ export const PasswordGenerator = ({
     }
   })
   const [history, setHistory] = useState<HistoryEntry[]>([])
+  const [generationNonce, setGenerationNonce] = useState(0)
   // Set once a write path lands, so a slow mount load cannot clobber it.
   const historyWrittenRef = useRef(false)
   const { data: records } = useRecords({ shouldSkip: true })
@@ -208,7 +209,8 @@ export const PasswordGenerator = ({
       upperCase: selectedRules.password.capitalLetters,
       numbers: selectedRules.password.numbers
     }) as string
-  }, [selectedOption, selectedRules])
+    // generationNonce: Generate re-runs with the same rules.
+  }, [selectedOption, selectedRules, generationNonce])
 
   const passType =
     selectedOption === PASSWORD_OPTIONS.passphrase
@@ -443,9 +445,20 @@ export const PasswordGenerator = ({
   return (
     <div style={styles.body} data-testid="password-generator">
       <div style={styles.section}>
-        <Text variant="caption" color={theme.colors.colorTextSecondary}>
-          {t('Generated Password')}
-        </Text>
+        <div style={styles.sectionHeader}>
+          <Text variant="caption" color={theme.colors.colorTextSecondary}>
+            {t('Generated Password')}
+          </Text>
+          <Button
+            variant="secondary"
+            size="small"
+            type="button"
+            onClick={() => setGenerationNonce((n) => n + 1)}
+            data-testid="password-generator-generate"
+          >
+            {t('Generate')}
+          </Button>
+        </div>
 
         <div style={styles.groupedCard}>
           <div style={styles.generatedPasswordBlock}>
@@ -616,7 +629,7 @@ export const PasswordGenerator = ({
       </div>
 
       <div style={styles.section}>
-        <div style={styles.historyHeader}>
+        <div style={styles.sectionHeader}>
           <Text variant="caption" color={theme.colors.colorTextSecondary}>
             {t('History')}
           </Text>
