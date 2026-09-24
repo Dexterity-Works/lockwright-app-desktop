@@ -29,45 +29,60 @@ function removeClipboardCleanupTokenIfCurrent(statePath, token) {
   }
 }
 
-function spawnDetachedClipboardHelper(secretPath, token, statePath, delayMs) {
+// The secret goes to the helper over its stdin pipe. A temp file or argv
+// would expose it to other processes watching the temp dir or /proc.
+function pipeSecretToDetachedChild(command, args, options, text, logger) {
+  const child = spawn(command, args, {
+    ...options,
+    detached: true,
+    stdio: ['pipe', 'inherit', 'inherit'],
+    windowsHide: true
+  })
+
+  const warn = (err) =>
+    logger.warn(
+      'MAIN',
+      'Clipboard cleanup helper failed:',
+      err && err.message ? err.message : err
+    )
+  child.on('error', warn)
+  child.stdin.on('error', warn)
+  child.stdin.end(text, 'utf8')
+  child.unref()
+}
+
+function spawnDetachedClipboardHelper(text, token, statePath, delayMs, logger) {
   const helperPath = path.join(__dirname, 'clipboardCleanupHelper.cjs')
   if (!fs.existsSync(helperPath)) {
     throw new Error(`Clipboard cleanup helper not found: ${helperPath}`)
   }
 
-  const child = spawn(
+  pipeSecretToDetachedChild(
     process.execPath,
-    [helperPath, secretPath, token, statePath, String(delayMs)],
-    {
-      detached: true,
-      env: { ...process.env, ELECTRON_RUN_AS_NODE: '1' },
-      stdio: 'inherit',
-      windowsHide: true
-    }
+    [helperPath, token, statePath, String(delayMs)],
+    { env: { ...process.env, ELECTRON_RUN_AS_NODE: '1' } },
+    text,
+    logger
   )
-
-  child.unref()
 }
 
 function spawnDetachedWindowsClipboardHelper(
-  secretPath,
+  text,
   token,
   statePath,
-  delayMs
+  delayMs,
+  logger
 ) {
   const scriptPath = path.join(__dirname, 'clipboardCleanup.windows.ps1')
   if (!fs.existsSync(scriptPath)) {
     throw new Error(`Windows clipboard cleanup script not found: ${scriptPath}`)
   }
 
-  const child = spawn(
-    'cmd.exe',
+  // Spawned directly, not via `cmd /c start`: start gives the child a fresh
+  // console and drops the stdin pipe.
+  pipeSecretToDetachedChild(
+    'powershell.exe',
     [
-      '/c',
-      'start',
-      '""',
-      '/min',
-      'powershell.exe',
       '-NoProfile',
       '-WindowStyle',
       'Hidden',
@@ -75,8 +90,6 @@ function spawnDetachedWindowsClipboardHelper(
       'Bypass',
       '-File',
       scriptPath,
-      '-SecretPath',
-      secretPath,
       '-StatePath',
       statePath,
       '-Token',
@@ -84,14 +97,10 @@ function spawnDetachedWindowsClipboardHelper(
       '-DelayMs',
       String(delayMs)
     ],
-    {
-      detached: true,
-      stdio: 'inherit',
-      windowsHide: true
-    }
+    {},
+    text,
+    logger
   )
-
-  child.unref()
 }
 
 function scheduleClipboardCleanup({
@@ -114,30 +123,31 @@ function scheduleClipboardCleanup({
 
   const token = crypto.randomUUID()
   const statePath = getClipboardCleanupStatePath(app)
-  const secretPath = path.join(
-    app.getPath('temp'),
-    `pearpass-clipboard-secret-${token}.txt`
-  )
 
   try {
-    fs.writeFileSync(secretPath, textToMatch, { encoding: 'utf8', mode: 0o600 })
     fs.writeFileSync(statePath, token, { encoding: 'utf8', mode: 0o600 })
 
     if (isWindows) {
       spawnDetachedWindowsClipboardHelper(
-        secretPath,
+        textToMatch,
         token,
         statePath,
-        finalDelayMs
+        finalDelayMs,
+        logger
       )
     } else {
-      spawnDetachedClipboardHelper(secretPath, token, statePath, finalDelayMs)
+      spawnDetachedClipboardHelper(
+        textToMatch,
+        token,
+        statePath,
+        finalDelayMs,
+        logger
+      )
     }
 
     return true
   } catch (err) {
     try {
-      removeFileIfExists(secretPath)
       removeClipboardCleanupTokenIfCurrent(statePath, token)
     } catch (_) {}
 

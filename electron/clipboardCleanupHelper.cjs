@@ -12,12 +12,11 @@ function removeFileIfExists(filePath) {
   }
 }
 
-function readSecretFromFile(secretPath) {
-  try {
-    return fs.readFileSync(secretPath, 'utf8')
-  } finally {
-    removeFileIfExists(secretPath)
-  }
+// Main pipes the secret over stdin so it never touches disk.
+async function readSecretFromStdin(stdin) {
+  const chunks = []
+  for await (const chunk of stdin) chunks.push(chunk)
+  return Buffer.concat(chunks).toString('utf8')
 }
 
 function readCurrentToken(statePath) {
@@ -108,13 +107,11 @@ function clearClipboard() {
 }
 
 async function runClipboardCleanup({
-  secretPath,
+  expectedText,
   token,
   statePath,
   delayMs = 30000
 }) {
-  const expectedText = readSecretFromFile(secretPath)
-
   await sleep(delayMs)
 
   if (readCurrentToken(statePath) !== token) {
@@ -138,18 +135,18 @@ async function runClipboardCleanup({
   }
 }
 
-async function main(argv = process.argv) {
-  const [, , secretPath, token, statePath, delayMsArg] = argv
+async function main(argv = process.argv, stdin = process.stdin) {
+  const [, , token, statePath, delayMsArg] = argv
   const delayMs = Number.parseInt(delayMsArg, 10)
 
-  if (!secretPath || !token || !statePath) {
+  if (!token || !statePath) {
     process.exitCode = 1
     return
   }
 
   try {
     await runClipboardCleanup({
-      secretPath,
+      expectedText: await readSecretFromStdin(stdin),
       token,
       statePath,
       delayMs: Number.isFinite(delayMs) && delayMs > 0 ? delayMs : 30000
@@ -173,7 +170,7 @@ module.exports = {
   main,
   readClipboard,
   readCurrentToken,
-  readSecretFromFile,
+  readSecretFromStdin,
   runClipboardCleanup,
   sleep
 }

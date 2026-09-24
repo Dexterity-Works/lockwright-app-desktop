@@ -1,21 +1,18 @@
 param(
-  [string]$SecretPath,
   [string]$StatePath,
   [string]$Token,
   [int]$DelayMs
 )
 
 try {
-  $expected = ''
+  # Main pipes the secret over stdin so it never touches disk. Read raw
+  # bytes: [Console]::In would decode with the OEM code page.
+  $buffer = New-Object System.IO.MemoryStream
+  [Console]::OpenStandardInput().CopyTo($buffer)
+  $expected = [System.Text.Encoding]::UTF8.GetString($buffer.ToArray())
 
-  try {
-    if (-not (Test-Path -LiteralPath $SecretPath)) {
-      exit 0
-    }
-
-    $expected = [System.IO.File]::ReadAllText($SecretPath, [System.Text.Encoding]::UTF8)
-  } finally {
-    Remove-Item -LiteralPath $SecretPath -Force -ErrorAction SilentlyContinue
+  if ([string]::IsNullOrEmpty($expected)) {
+    exit 0
   }
 
   Start-Sleep -Milliseconds $DelayMs

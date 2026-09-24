@@ -59,7 +59,6 @@ describe('clipboardCleanupHelper', () => {
     const spawnSync = getSpawnSync()
 
     fs.readFileSync
-      .mockReturnValueOnce('secret')
       .mockReturnValueOnce('token-1')
       .mockReturnValueOnce('token-1')
 
@@ -68,7 +67,7 @@ describe('clipboardCleanupHelper', () => {
       .mockReturnValueOnce({ status: 0, stdout: '' })
 
     const cleanupPromise = helper.runClipboardCleanup({
-      secretPath: '/tmp/secret.txt',
+      expectedText: 'secret',
       token: 'token-1',
       statePath: '/tmp/state.token',
       delayMs: 30000
@@ -89,7 +88,6 @@ describe('clipboardCleanupHelper', () => {
       [],
       expect.objectContaining({ input: '' })
     )
-    expect(fs.unlinkSync).toHaveBeenCalledWith('/tmp/secret.txt')
     expect(fs.unlinkSync).toHaveBeenCalledWith('/tmp/state.token')
   })
 
@@ -99,10 +97,10 @@ describe('clipboardCleanupHelper', () => {
     const fs = getFs()
     const spawnSync = getSpawnSync()
 
-    fs.readFileSync.mockReturnValueOnce('secret').mockReturnValueOnce('token-2')
+    fs.readFileSync.mockReturnValueOnce('token-2')
 
     const cleanupPromise = helper.runClipboardCleanup({
-      secretPath: '/tmp/secret.txt',
+      expectedText: 'secret',
       token: 'token-1',
       statePath: '/tmp/state.token',
       delayMs: 30000
@@ -112,7 +110,6 @@ describe('clipboardCleanupHelper', () => {
     await expect(cleanupPromise).resolves.toBe(false)
 
     expect(spawnSync).not.toHaveBeenCalled()
-    expect(fs.unlinkSync).toHaveBeenCalledWith('/tmp/secret.txt')
     expect(fs.unlinkSync).not.toHaveBeenCalledWith('/tmp/state.token')
   })
 
@@ -126,12 +123,11 @@ describe('clipboardCleanupHelper', () => {
       .mockImplementation(() => true)
 
     fs.readFileSync
-      .mockReturnValueOnce('secret')
       .mockReturnValueOnce('token-1')
       .mockReturnValueOnce('token-1')
 
     const cleanupPromise = helper.runClipboardCleanup({
-      secretPath: '/tmp/secret.txt',
+      expectedText: 'secret',
       token: 'token-1',
       statePath: '/tmp/state.token',
       delayMs: 30000
@@ -144,9 +140,37 @@ describe('clipboardCleanupHelper', () => {
     expect(stderrSpy).toHaveBeenCalledWith(
       expect.stringContaining('Lockwright clipboard cleanup skipped:')
     )
-    expect(fs.unlinkSync).toHaveBeenCalledWith('/tmp/secret.txt')
     expect(fs.unlinkSync).toHaveBeenCalledWith('/tmp/state.token')
 
     stderrSpy.mockRestore()
+  })
+
+  it('main reads the secret from stdin', async () => {
+    const { Readable } = require('stream')
+    setPlatform('darwin')
+    const helper = loadHelper()
+    const fs = getFs()
+    const spawnSync = getSpawnSync()
+
+    fs.readFileSync
+      .mockReturnValueOnce('token-1')
+      .mockReturnValueOnce('token-1')
+    spawnSync
+      .mockReturnValueOnce({ status: 0, stdout: 'sécret' })
+      .mockReturnValueOnce({ status: 0, stdout: '' })
+
+    const mainPromise = helper.main(
+      ['node', 'helper', 'token-1', '/tmp/state.token', '30000'],
+      Readable.from([Buffer.from('sécret', 'utf8')])
+    )
+
+    await jest.advanceTimersByTimeAsync(30000)
+    await mainPromise
+
+    expect(spawnSync).toHaveBeenLastCalledWith(
+      '/usr/bin/pbcopy',
+      [],
+      expect.objectContaining({ input: '' })
+    )
   })
 })
