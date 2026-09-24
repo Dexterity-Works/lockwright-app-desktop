@@ -277,6 +277,35 @@ describe('PasswordGenerator', () => {
     expect(screen.getByText('mail.example.org')).toBeInTheDocument()
   })
 
+  it('Generate re-runs generation with the current settings and appends it', async () => {
+    render(<PasswordGenerator />)
+
+    const lengthInput = screen.getByTestId('password-generator-length-input')
+    fireEvent.change(lengthInput, { target: { value: '48' } })
+    fireEvent.blur(lengthInput)
+
+    mockGeneratePassword.mockClear()
+    mockGeneratePassword.mockReturnValue('Len48Again')
+    mockAppendHistory.mockClear()
+
+    fireEvent.click(screen.getByTestId('password-generator-generate'))
+
+    expect(mockGeneratePassword).toHaveBeenCalledTimes(1)
+    expect(mockGeneratePassword).toHaveBeenCalledWith(
+      48,
+      expect.objectContaining({
+        upperCase: true,
+        lowerCase: true,
+        numbers: true,
+        includeSpecialChars: true
+      })
+    )
+    expect(screen.getByRole('heading').textContent).toBe('Len48Again')
+    await waitFor(() => {
+      expect(mockAppendHistory).toHaveBeenCalledWith('Len48Again')
+    })
+  })
+
   it('formats history timestamps as yyyy.mm.dd 24h time', async () => {
     const createdAt = new Date(2026, 7, 14, 14, 53, 3).getTime()
     mockAppendHistory.mockResolvedValue([
