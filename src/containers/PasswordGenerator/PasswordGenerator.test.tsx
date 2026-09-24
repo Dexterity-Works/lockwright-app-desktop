@@ -35,21 +35,23 @@ jest.mock('lockwright-utils-password-check', () => ({
   checkPassphraseStrength: () => ({ type: 'safe' })
 }))
 
+let mockRecords: unknown[] = []
+
+jest.mock('lockwright-lib-vault', () => ({
+  useRecords: () => ({ data: mockRecords })
+}))
+
+jest.mock('lockwright-lib-vault/src/instances', () => ({
+  pearpassVaultClient: {}
+}))
+
 jest.mock('../../utils/passwordGeneratorHistory', () => ({
+  ...(jest.requireActual('../../utils/passwordGeneratorHistory') as object),
   appendHistory: (value: string) => mockAppendHistory(value),
   clearHistory: () => mockClearHistory(),
   loadHistory: () => mockLoadHistory(),
   markHistoryUsed: (value: string, context?: unknown) =>
-    mockMarkHistoryUsed(value, context),
-  historyUseLabels: (entry: {
-    uses?: Array<{ contextLabel?: string }>
-    contextLabel?: string
-  }) =>
-    entry?.uses?.length
-      ? entry.uses.map((use) => use.contextLabel).filter(Boolean)
-      : entry?.contextLabel
-        ? [entry.contextLabel]
-        : []
+    mockMarkHistoryUsed(value, context)
 }))
 
 jest.mock('../../hooks/useTranslation', () => ({
@@ -205,6 +207,7 @@ describe('PasswordGenerator', () => {
     ])
     mockClearHistory.mockResolvedValue([])
     mockLoadHistory.mockResolvedValue([])
+    mockRecords = []
     mockGeneratePassword.mockClear()
     mockGeneratePassword.mockReturnValue('Abcdef1!')
   })
@@ -225,6 +228,24 @@ describe('PasswordGenerator', () => {
     expect(screen.getByText('example.com')).toBeInTheDocument()
     expect(screen.getByText('Work bank')).toBeInTheDocument()
     expect(screen.getByText('old-unlabeled')).toBeInTheDocument()
+  })
+
+  it('shows the title and site of vault entries that use a history password', async () => {
+    mockRecords = [
+      {
+        id: 'rec-1',
+        data: {
+          title: 'Mail',
+          password: 'old-unlabeled',
+          websites: ['https://mail.example.org']
+        }
+      }
+    ]
+
+    render(<PasswordGenerator />)
+
+    expect(await screen.findByText('Mail')).toBeInTheDocument()
+    expect(screen.getByText('mail.example.org')).toBeInTheDocument()
   })
 
   it('formats history timestamps as yyyy.mm.dd 24h time', async () => {

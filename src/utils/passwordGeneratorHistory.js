@@ -16,8 +16,7 @@ import { generateUniqueId } from 'lockwright-utils-generate-unique-id'
  * `contextLabel` stays the latest use so older readers still show one label.
  *
  * Contract:
- * - `appendHistory(value)` — unlabeled generate events (no context).
- * - `markHistoryUsed(value, { contextLabel, contextKind } | { uses, onlyExisting? })`
+ * - `appendHistory(value)` — unlabeled generate events (no context). * - `markHistoryUsed(value, { contextLabel, contextKind } | { uses, onlyExisting? })`
  *   — stamp on USE (fill/insert) or on save of a record that already contains
  *   this generated value. Not bare Copy from the sidebar Generator page.
  *   Finds the newest entry with the same value (creates one if missing, unless
@@ -152,6 +151,32 @@ export const historyUseLabels = (entry) => {
   return typeof entry?.contextLabel === 'string' && entry.contextLabel
     ? [entry.contextLabel]
     : []
+}
+
+/**
+ * Stamped labels plus the site and title of every vault record whose password
+ * is this value. Covers passwords saved before stamping existed. Display only,
+ * never written back.
+ *
+ * @param {{ value?: string, uses?: Array<{ contextLabel?: string }>, contextLabel?: string }} [entry]
+ * @param {Array<{ data?: { title?: unknown, password?: unknown, websites?: unknown[] } }>} [records]
+ * @returns {string[]}
+ */
+export const historyEntryLabels = (entry, records) => {
+  const labels = historyUseLabels(entry)
+  if (entry?.value && Array.isArray(records)) {
+    for (const record of records) {
+      if (record?.data?.password !== entry.value) continue
+      const websites = record.data.websites
+      for (const use of historyUses({
+        title: record.data.title,
+        websiteUrl: Array.isArray(websites) ? websites[0] : undefined
+      })) {
+        labels.push(use.contextLabel)
+      }
+    }
+  }
+  return [...new Set(labels)]
 }
 
 // ponytail: distinct labels only, cap 20. Drop oldest when a reused password is tagged past that.

@@ -9,6 +9,10 @@ Starts at 0.0.17, after the Lockwright package rename. Earlier history is git.
 
 ## [Unreleased]
 
+### Fixed
+
+- Generator history shows vault entries whose password matches, including ones saved before labels were stamped.
+
 ## [0.0.24] - 2026-09-24
 
 `812fba79e2e17c7939426ccad01f840e5e72ef64`
