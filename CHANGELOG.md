@@ -9,6 +9,22 @@ Starts at 0.0.17, after the Lockwright package rename. Earlier history is git.
 
 ## [Unreleased]
 
+## [0.0.25] - 2026-09-26
+
+`BUMP_SHA`
+
+### Security
+
+- The Windows native-messaging pipe is private to the user and gets a new random name on every start. Update the extension too.
+- Copied secrets reach the clipboard helper over stdin, never a temp file.
+- Five wrong extension pairing codes rotate the code. The compare is constant-time.
+- Secure requests are checked for replay after decrypting, and a reused nonce is rejected.
+
+### Changed
+
+- The revoke dialog says the device keeps reading until the vault is moved.
+- Pin native-messaging-bridge `db6158a` and lib-data-import `5178ac2` (KDBX size cap, linear CSV split).
+
 ## [0.0.24] - 2026-09-24
 
 `812fba79e2e17c7939426ccad01f840e5e72ef64`
@@ -88,7 +104,8 @@ Starts at 0.0.17, after the Lockwright package rename. Earlier history is git.
 
 - A PearPass vault copied onto disk is treated as a vault, not empty.
 
-[unreleased]: https://github.com/Dexterity-Works/lockwright-app-desktop/compare/812fba79e2e17c7939426ccad01f840e5e72ef64...HEAD
+[unreleased]: https://github.com/Dexterity-Works/lockwright-app-desktop/compare/BUMP_SHA...HEAD
+[0.0.25]: https://github.com/Dexterity-Works/lockwright-app-desktop/compare/812fba79e2e17c7939426ccad01f840e5e72ef64...BUMP_SHA
 [0.0.24]: https://github.com/Dexterity-Works/lockwright-app-desktop/compare/69c6e3c8c45f18beebfd59f0940da53876320166...812fba79e2e17c7939426ccad01f840e5e72ef64
 [0.0.23]: https://github.com/Dexterity-Works/lockwright-app-desktop/compare/7e308a0605a3b1a708fc700d82b01901211a545d...69c6e3c8c45f18beebfd59f0940da53876320166
 [0.0.22]: https://github.com/Dexterity-Works/lockwright-app-desktop/compare/1959b3878630a34cad609a88e4a27568895c4acb...7e308a0605a3b1a708fc700d82b01901211a545d
