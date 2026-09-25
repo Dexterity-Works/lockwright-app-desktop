@@ -51,11 +51,9 @@ export const RevokeAccessModalContentV2 = ({
     setToast({
       message: failures?.length
         ? t(
-            "Couldn't reach the device. It will lose access next time it comes online."
+            "Couldn't reach the device. It will stop editing next time it comes online."
           )
-        : t('"{deviceName}" no longer has access to this vault', {
-            deviceName
-          })
+        : t('Device can no longer edit this vault')
     })
   }
 
@@ -97,7 +95,9 @@ export const RevokeAccessModalContentV2 = ({
             variant="caption"
             color={theme.colors.colorTextSecondary}
           >
-            {t('This will disconnect the device from future syncing.')}
+            {t(
+              'Revoking stops this device from making changes. It can still read what has already synced, and anything synced later, until you move your items to a new vault.'
+            )}
           </Text>
           <Text
             as="p"
@@ -118,7 +118,7 @@ export const RevokeAccessModalContentV2 = ({
           <li style={styles.bulletItem}>
             <Text as="span" variant="caption">
               {t(
-                'Offline Data: Revoking access prevents future syncing, but it cannot remotely delete data that was already exported.'
+                'Offline Data: Revoking access cannot remotely delete data that is already on the device or was exported.'
               )}
             </Text>
           </li>
