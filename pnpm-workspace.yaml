@@ -17,7 +17,7 @@ allowBuilds:
   "lockwright-utils-pattern-search@https://codeload.github.com/Dexterity-Works/lockwright-utils-pattern-search/tar.gz/37021914926a45d3f1ed1fd9c817db3ade370f25": true
   "lockwright-utils-qr@https://codeload.github.com/Dexterity-Works/lockwright-utils-qr/tar.gz/1d824382bc5ed15c966e4cea824ad44517944e1b": true
   "lockwright-utils-validator@https://codeload.github.com/Dexterity-Works/lockwright-utils-validator/tar.gz/c9fc16de463fbc78df9bb1f3aa3f588a8ae06bf9": true
-  "lockwright-lib-data-import@https://codeload.github.com/Dexterity-Works/lockwright-lib-data-import/tar.gz/82cbfdde64c2f16e71748b4a4c44a82a91a5b0d5": true
+  "lockwright-lib-data-import@https://codeload.github.com/Dexterity-Works/lockwright-lib-data-import/tar.gz/5178ac264bade22523c5175c0af916d30cf5ca82": true
   "lockwright-lib-data-export@https://codeload.github.com/Dexterity-Works/lockwright-lib-data-export/tar.gz/e2f2f642e32ee590b10be206454d1b98f30ee515": true
   "lockwright-lib-ui-react-native-components@https://codeload.github.com/Dexterity-Works/lockwright-lib-ui-react-native-components/tar.gz/82167746355a4d1b931dae2c3d4abe10a7e10b7e": true
   "lockwright-utils-password-generator@https://codeload.github.com/Dexterity-Works/lockwright-utils-password-generator/tar.gz/382806f37823902b41087200c6d96bd83f3d3358": true
@@ -28,7 +28,7 @@ allowBuilds:
   "lockwright-lib-constants@https://codeload.github.com/Dexterity-Works/lockwright-lib-constants/tar.gz/701bf1988d16458c634db85269b436eb9c07cacc": true
   "lockwright-lib-vault-core@file:../pearpass-lib-vault-core": true
   "lockwright-lib-vault@file:../pearpass-lib-vault": true
-  "@tetherto/pearpass-lib-native-messaging-bridge@https://codeload.github.com/Dexterity-Works/pearpass-lib-native-messaging-bridge/tar.gz/74407289f3877dfd08719eb18627c744d3216d02": true
+  "@tetherto/pearpass-lib-native-messaging-bridge@https://codeload.github.com/Dexterity-Works/pearpass-lib-native-messaging-bridge/tar.gz/db6158a07367f25766b79dd246646a1d6bbe81f5": true
   electron: set this to true or false
   electron-winstaller: set this to true or false
   esbuild: set this to true or false
@@ -36,3 +36,5 @@ allowBuilds:
   "electron@33.4.11": true
   "esbuild@0.21.5": true
   "esbuild@0.24.2": true
+  '@tetherto/pearpass-lib-native-messaging-bridge@https://codeload.github.com/Dexterity-Works/pearpass-lib-native-messaging-bridge/tar.gz/74407289f3877dfd08719eb18627c744d3216d02': set this to true or false
+  lockwright-lib-data-import@https://codeload.github.com/Dexterity-Works/lockwright-lib-data-import/tar.gz/82cbfdde64c2f16e71748b4a4c44a82a91a5b0d5: set this to true or false
