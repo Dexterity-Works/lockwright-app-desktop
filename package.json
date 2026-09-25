@@ -206,7 +206,7 @@
     "lockwright-lib-ui-react-native-components": "git+https://github.com/Dexterity-Works/lockwright-lib-ui-react-native-components.git#design-system-v2",
     "lockwright-lib-vault": "file:../pearpass-lib-vault",
     "lockwright-lib-vault-core": "file:../pearpass-lib-vault-core",
-    "lockwright-utils-password-check": "git+https://github.com/Dexterity-Works/lockwright-utils-password-check.git",
+    "lockwright-utils-password-check": "git+https://github.com/Dexterity-Works/lockwright-utils-password-check.git#3fb28bee9328290a12119feaaf912d1018fcf6f8",
     "lockwright-utils-password-generator": "git+https://github.com/Dexterity-Works/lockwright-utils-password-generator.git",
     "autopass": "~3.3.0",
     "bare-os": "3.6.2",

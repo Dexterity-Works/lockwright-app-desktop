@@ -296,7 +296,7 @@ importers:
         specifier: git+https://github.com/Dexterity-Works/lockwright-utils-generate-unique-id.git
         version: https://codeload.github.com/Dexterity-Works/lockwright-utils-generate-unique-id/tar.gz/99a1450ca075c570fa08855280c8f73789cea07a
       lockwright-utils-password-check:
-        specifier: git+https://github.com/Dexterity-Works/lockwright-utils-password-check.git
+        specifier: git+https://github.com/Dexterity-Works/lockwright-utils-password-check.git#3fb28bee9328290a12119feaaf912d1018fcf6f8
         version: https://codeload.github.com/Dexterity-Works/lockwright-utils-password-check/tar.gz/3fb28bee9328290a12119feaaf912d1018fcf6f8
       lockwright-utils-password-generator:
         specifier: git+https://github.com/Dexterity-Works/lockwright-utils-password-generator.git
