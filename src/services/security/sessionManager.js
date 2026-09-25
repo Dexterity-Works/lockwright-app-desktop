@@ -17,6 +17,9 @@ import {
 import { SecurityErrorCodes } from '../../constants/securityErrors.js'
 import { createErrorWithCode } from '../../utils/createErrorWithCode.js'
 
+// Nonces remembered per session; older ones drop off to bound memory
+const SEEN_NONCE_LIMIT = 1024
+
 /**
  * Encrypt payload with session key using secretbox (XSalsa20-Poly1305)
  * @param {string} sessionId
@@ -61,6 +64,18 @@ export const decryptWithSession = (sessionId, nonce, ciphertext) => {
         'Session not found or expired'
       )
     )
+  // A reused nonce is a replayed message; seq is plaintext and cannot
+  // be trusted for this on its own
+  const nonceB64 = Buffer.from(nonce).toString('base64')
+  session.seenNonces ??= new Set()
+  if (session.seenNonces.has(nonceB64)) {
+    throw new Error(
+      createErrorWithCode(
+        SecurityErrorCodes.REPLAY_DETECTED,
+        'Replay attack detected'
+      )
+    )
+  }
   const plaintext = new Uint8Array(
     ciphertext.length - sodium.crypto_secretbox_MACBYTES
   )
@@ -78,6 +93,10 @@ export const decryptWithSession = (sessionId, nonce, ciphertext) => {
         'Failed to decrypt message'
       )
     )
+  }
+  session.seenNonces.add(nonceB64)
+  if (session.seenNonces.size > SEEN_NONCE_LIMIT) {
+    session.seenNonces.delete(session.seenNonces.values().next().value)
   }
   return plaintext
 }

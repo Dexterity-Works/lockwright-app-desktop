@@ -87,6 +87,28 @@ describe('SecureRequestHandler.handle', () => {
     )
   })
 
+  it('does not advance the sequence when the ciphertext fails to decrypt', async () => {
+    sessionStore.getSession.mockReturnValue({
+      id: 'session123',
+      clientVerified: true
+    })
+    sessionManager.decryptWithSession.mockImplementation(() => {
+      throw new Error(SecurityErrorCodes.DECRYPT_FAILED)
+    })
+
+    await expect(
+      handler.handle({
+        sessionId: 'session123',
+        nonceB64: Buffer.from('nonce').toString('base64'),
+        ciphertextB64: Buffer.from('garbage').toString('base64'),
+        seq: 2 ** 52
+      })
+    ).rejects.toThrow(SecurityErrorCodes.DECRYPT_FAILED)
+
+    expect(sessionManager.recordIncomingSeq).not.toHaveBeenCalled()
+    expect(mockMethodRegistry.execute).not.toHaveBeenCalled()
+  })
+
   it('should throw INVALID_SECURE_PAYLOAD if payload is missing fields', async () => {
     await expect(handler.handle({})).rejects.toThrow(
       SecurityErrorCodes.INVALID_SECURE_PAYLOAD

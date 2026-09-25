@@ -348,6 +348,21 @@ describe('sessionManager', () => {
       expect(sodium.crypto_secretbox_open_easy).toHaveBeenCalled()
     })
 
+    it('rejects a replayed nonce even with a fresh sequence number', () => {
+      const nonce = new Uint8Array(24).fill(1)
+      const ciphertext = new Uint8Array(24).fill(9)
+
+      expect(() =>
+        decryptWithSession(sessionId, nonce, ciphertext)
+      ).not.toThrow()
+      recordIncomingSeq(sessionId, 1)
+
+      expect(() => decryptWithSession(sessionId, nonce, ciphertext)).toThrow(
+        SecurityErrorCodes.REPLAY_DETECTED
+      )
+      expect(getSession(sessionId).lastRecvSeq).toBe(1)
+    })
+
     it('should throw error for invalid session on encrypt', () => {
       const plaintext = new Uint8Array([1, 2, 3])
 

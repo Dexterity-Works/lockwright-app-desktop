@@ -26,8 +26,7 @@ export class SecureRequestHandler {
     // Validate request
     this.validateSecurePayload(sessionId, nonceB64, ciphertextB64)
 
-    // Check session and replay protection
-    await this.validateSession(sessionId, seq)
+    await this.validateSession(sessionId)
 
     // Decrypt request
     const request = await this.decryptRequest(
@@ -35,6 +34,10 @@ export class SecureRequestHandler {
       nonceB64,
       ciphertextB64
     )
+
+    // seq is plaintext: only a request that decrypted may advance it,
+    // else a forged seq locks the real client out of the session
+    recordIncomingSeq(sessionId, seq)
 
     logger.debug('SECURE-REQUEST', `Received method: ${request.method}`)
 
@@ -60,7 +63,7 @@ export class SecureRequestHandler {
     }
   }
 
-  async validateSession(sessionId, seq) {
+  async validateSession(sessionId) {
     const session = getSession(sessionId)
     if (!session) {
       throw new Error(
@@ -78,7 +81,6 @@ export class SecureRequestHandler {
         )
       )
     }
-    recordIncomingSeq(sessionId, seq)
     return session
   }
 
