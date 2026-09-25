@@ -452,29 +452,6 @@ describe('SecurityHandlers', () => {
     })
   })
 
-  describe('nmResetPairing', () => {
-    it('clears sessions and resets identity', async () => {
-      sessionStore.clearAllSessions.mockReturnValue(['sid1', 'sid2'])
-      appIdentity.resetIdentity.mockResolvedValue({
-        ed25519PublicKey: 'newPub',
-        x25519PublicKey: 'newXPub',
-        creationDate: '2024-01-01'
-      })
-      const result = await handlers.nmResetPairing()
-      expect(sessionStore.clearAllSessions).toHaveBeenCalled()
-      expect(appIdentity.resetIdentity).toHaveBeenCalledWith(client)
-      expect(result).toEqual({
-        ok: true,
-        clearedSessions: ['sid1', 'sid2'],
-        newIdentity: {
-          ed25519PublicKey: 'newPub',
-          x25519PublicKey: 'newXPub',
-          creationDate: '2024-01-01'
-        }
-      })
-    })
-  })
-
   describe('auto-lock handlers', () => {
     beforeEach(() => {
       getNativeMessagingEnabled.mockReturnValue(true)

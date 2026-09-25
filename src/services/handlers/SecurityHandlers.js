@@ -18,7 +18,6 @@ import {
   getFingerprint,
   verifyPairingToken,
   rotatePairingSecret,
-  resetIdentity,
   setClientIdentityPublicKey,
   getClientIdentityPublicKey,
   getCachedClientIdentityPublicKeys,
@@ -30,7 +29,6 @@ import { beginHandshake } from '../security/sessionManager.js'
 import {
   getSession,
   closeSession,
-  clearAllSessions,
   concatBytes
 } from '../security/sessionStore.js'
 
@@ -445,25 +443,5 @@ export class SecurityHandlers {
 
     window.dispatchEvent(new Event('reset-timer'))
     return { ok: true }
-  }
-
-  /**
-   * Reset pairing by generating new identity keys and clearing all sessions
-   * This will unpair the connected extension
-   */
-  async nmResetPairing() {
-    const clearedSessions = clearAllSessions()
-
-    const newIdentity = await resetIdentity(this.client)
-
-    return {
-      ok: true,
-      clearedSessions,
-      newIdentity: {
-        ed25519PublicKey: newIdentity.ed25519PublicKey,
-        x25519PublicKey: newIdentity.x25519PublicKey,
-        creationDate: newIdentity.creationDate
-      }
-    }
   }
 }
