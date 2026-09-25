@@ -121,6 +121,61 @@ describe('SecurityHandlers', () => {
       })
     })
 
+    it('rotates the pairing secret after 5 failed tokens', async () => {
+      appIdentity.getOrCreateIdentity.mockResolvedValue({
+        ed25519PublicKey: 'pubKey',
+        x25519PublicKey: 'xPubKey'
+      })
+      appIdentity.verifyPairingToken.mockResolvedValue(false)
+      const dispatchSpy = jest.spyOn(window, 'dispatchEvent')
+      const attempt = () =>
+        handlers.nmGetAppIdentity({
+          pairingToken: 'wrong',
+          clientEd25519PublicKeyB64: 'clientPub'
+        })
+
+      for (let i = 0; i < 4; i += 1) {
+        await expect(attempt()).rejects.toThrow(
+          SecurityErrorCodes.INVALID_PAIRING_TOKEN
+        )
+      }
+      expect(appIdentity.rotatePairingSecret).not.toHaveBeenCalled()
+
+      await expect(attempt()).rejects.toThrow(
+        SecurityErrorCodes.INVALID_PAIRING_TOKEN
+      )
+      expect(appIdentity.rotatePairingSecret).toHaveBeenCalledWith(client)
+      expect(dispatchSpy).toHaveBeenCalledWith(
+        expect.objectContaining({ type: 'pairing-secret-rotated' })
+      )
+    })
+
+    it('clears the failure count on a valid token', async () => {
+      appIdentity.getOrCreateIdentity.mockResolvedValue({
+        ed25519PublicKey: 'pubKey',
+        x25519PublicKey: 'xPubKey'
+      })
+      appIdentity.getFingerprint.mockReturnValue('fingerprint')
+      appIdentity.getPairedClients.mockResolvedValue([])
+      const params = {
+        pairingToken: 'token',
+        clientEd25519PublicKeyB64: 'clientPub'
+      }
+
+      appIdentity.verifyPairingToken.mockResolvedValue(false)
+      for (let i = 0; i < 4; i += 1) {
+        await expect(handlers.nmGetAppIdentity(params)).rejects.toThrow()
+      }
+      appIdentity.verifyPairingToken.mockResolvedValue(true)
+      await handlers.nmGetAppIdentity(params)
+      appIdentity.verifyPairingToken.mockResolvedValue(false)
+      for (let i = 0; i < 4; i += 1) {
+        await expect(handlers.nmGetAppIdentity(params)).rejects.toThrow()
+      }
+
+      expect(appIdentity.rotatePairingSecret).not.toHaveBeenCalled()
+    })
+
     it('pairs a second client while another is already confirmed', async () => {
       appIdentity.getOrCreateIdentity.mockResolvedValue({
         ed25519PublicKey: 'pubKey',

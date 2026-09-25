@@ -11,11 +11,13 @@ import {
   applyAutoLockTimeout
 } from '../../utils/autoLock.js'
 import { createErrorWithCode } from '../../utils/createErrorWithCode.js'
+import { logger } from '../../utils/logger.js'
 import { getNativeMessagingEnabled } from '../nativeMessagingPreferences.js'
 import {
   getOrCreateIdentity,
   getFingerprint,
   verifyPairingToken,
+  rotatePairingSecret,
   resetIdentity,
   setClientIdentityPublicKey,
   getClientIdentityPublicKey,
@@ -31,12 +33,37 @@ import {
   clearAllSessions,
   concatBytes
 } from '../security/sessionStore.js'
+
+// Wrong pairing tokens allowed per identity before the pairing secret rotates
+const MAX_PAIRING_TOKEN_FAILURES = 5
+
 /**
  * Handles security-related IPC operations for native messaging
  */
 export class SecurityHandlers {
   constructor(client) {
     this.client = client
+    /** @type {Map<string, number>} failed pairing tokens per identity key */
+    this.pairingTokenFailures = new Map()
+  }
+
+  /**
+   * Count a wrong pairing token; after MAX_PAIRING_TOKEN_FAILURES the
+   * pairing secret rotates so the guessed-at code stops being valid.
+   * @param {string} identityKey
+   */
+  async recordPairingTokenFailure(identityKey) {
+    const failures = (this.pairingTokenFailures.get(identityKey) || 0) + 1
+    this.pairingTokenFailures.set(identityKey, failures)
+    if (failures < MAX_PAIRING_TOKEN_FAILURES) return
+
+    await rotatePairingSecret(this.client)
+    this.pairingTokenFailures.delete(identityKey)
+    logger.warn(
+      'SECURITY',
+      `Pairing secret rotated after ${failures} wrong pairing tokens`
+    )
+    window.dispatchEvent(new Event('pairing-secret-rotated'))
   }
 
   /**
@@ -75,6 +102,7 @@ export class SecurityHandlers {
       pairingToken
     )
     if (!isValidToken) {
+      await this.recordPairingTokenFailure(id.ed25519PublicKey)
       throw new Error(
         createErrorWithCode(
           SecurityErrorCodes.INVALID_PAIRING_TOKEN,
@@ -82,6 +110,7 @@ export class SecurityHandlers {
         )
       )
     }
+    this.pairingTokenFailures.delete(id.ed25519PublicKey)
 
     // Register this extension as pending. Other confirmed clients stay paired.
     const clients = await getPairedClients(this.client)

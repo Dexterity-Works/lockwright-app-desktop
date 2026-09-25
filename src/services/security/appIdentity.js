@@ -64,40 +64,54 @@ const fromBase64 = (base64String) =>
   new Uint8Array(Buffer.from(base64String, 'base64'))
 
 /**
+ * Generate and persist a fresh pairing secret, replacing any stored one.
+ * @param {import('lockwright-lib-vault-core').PearpassVaultClient} client
+ * @returns {Promise<string>} base64-encoded secret
+ */
+const createPairingSecret = async (client) => {
+  const secretBytes = new Uint8Array(32)
+  sodium.randombytes_buf(secretBytes)
+  const pairingSecretB64 = Buffer.from(secretBytes).toString('base64')
+  try {
+    await client.encryptionAdd(ENC_KEY_PAIRING_SECRET, pairingSecretB64)
+  } catch (err) {
+    throw new Error(
+      `PairingSecretPersistenceFailed: ${err?.message || 'Unknown error'}`
+    )
+  }
+  return pairingSecretB64
+}
+
+/**
  * Load or create the pairing secret used for pairing token derivation.
  * @param {import('lockwright-lib-vault-core').PearpassVaultClient} client
  * @returns {Promise<string>} base64-encoded secret
  */
 const getOrCreatePairingSecret = async (client) => {
-  let pairingSecretB64 = normalizeEncryptionGet(
+  const pairingSecretB64 = normalizeEncryptionGet(
     await client.encryptionGet(ENC_KEY_PAIRING_SECRET).catch(() => null)
   )
-  if (pairingSecretB64) {
-    const bytes = Buffer.from(pairingSecretB64, 'base64')
-    if (bytes.length !== 32) {
-      throw new Error(
-        createErrorWithCode(
-          SecurityErrorCodes.INVALID_PAIRING_SECRET,
-          'Invalid pairing secret'
-        )
-      )
-    }
-  }
+  if (!pairingSecretB64) return createPairingSecret(client)
 
-  if (!pairingSecretB64) {
-    const secretBytes = new Uint8Array(32)
-    sodium.randombytes_buf(secretBytes)
-    pairingSecretB64 = Buffer.from(secretBytes).toString('base64')
-    try {
-      await client.encryptionAdd(ENC_KEY_PAIRING_SECRET, pairingSecretB64)
-    } catch (err) {
-      throw new Error(
-        `PairingSecretPersistenceFailed: ${err?.message || 'Unknown error'}`
+  const bytes = Buffer.from(pairingSecretB64, 'base64')
+  if (bytes.length !== 32) {
+    throw new Error(
+      createErrorWithCode(
+        SecurityErrorCodes.INVALID_PAIRING_SECRET,
+        'Invalid pairing secret'
       )
-    }
+    )
   }
-
   return pairingSecretB64
+}
+
+/**
+ * Replace the pairing secret so the displayed pairing code changes.
+ * Paired clients are unaffected; only a new pairing needs the new code.
+ * @param {import('lockwright-lib-vault-core').PearpassVaultClient} client
+ */
+export const rotatePairingSecret = async (client) => {
+  await createPairingSecret(client)
 }
 
 /**
@@ -303,7 +317,6 @@ export const getPairingCode = (ed25519PublicKeyB64, pairingSecretB64) => {
   input.set(PAIRING_CODE_TAG, 0)
   input.set(secret, PAIRING_CODE_TAG.length)
   input.set(publicKey, PAIRING_CODE_TAG.length + secret.length)
-  input.set(publicKey, secret.length)
 
   const out = new Uint8Array(32)
   sodium.crypto_hash_sha256(out, input)
@@ -358,8 +371,11 @@ export const verifyPairingToken = async (
 
   const expectedToken = await getPairingToken(client, ed25519PublicKeyB64)
 
-  // Case-insensitive comparison
-  return userProvidedToken.toUpperCase() === expectedToken.toUpperCase()
+  // Case-insensitive, constant-time comparison
+  const provided = Buffer.from(userProvidedToken.toUpperCase(), 'utf8')
+  const expected = Buffer.from(expectedToken.toUpperCase(), 'utf8')
+  if (provided.length !== expected.length) return false
+  return sodium.sodium_memcmp(provided, expected)
 }
 
 /**

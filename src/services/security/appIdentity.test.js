@@ -4,6 +4,8 @@ import {
   getOrCreateIdentity,
   getPairingCode,
   getFingerprint,
+  verifyPairingToken,
+  rotatePairingSecret,
   __getMemIdentity,
   setClientIdentityPublicKey,
   confirmClientPairing,
@@ -45,7 +47,10 @@ jest.mock('sodium-native', () => ({
     for (let i = 0; i < out.length; i += 1) {
       out[i] = (acc + i) % 256
     }
-  })
+  }),
+  sodium_memcmp: jest.fn(
+    (a, b) => Buffer.compare(Buffer.from(a), Buffer.from(b)) === 0
+  )
 }))
 
 describe('appIdentity', () => {
@@ -237,6 +242,73 @@ describe('appIdentity', () => {
       const token2 = getPairingCode(key2, pairingSecretB64)
 
       expect(token1).not.toBe(token2)
+    })
+
+    it('hashes tag || secret || publicKey without overwriting the secret', () => {
+      const secret = Buffer.alloc(32, 7)
+      const publicKey = Buffer.alloc(32, 42)
+
+      getPairingCode(publicKey.toString('base64'), secret.toString('base64'))
+
+      const [, input] = sodium.crypto_hash_sha256.mock.calls[0]
+      expect(Buffer.from(input)).toEqual(
+        Buffer.concat([
+          Buffer.from('pearpass/pairingcode/v1'),
+          secret,
+          publicKey
+        ])
+      )
+    })
+  })
+
+  describe('verifyPairingToken', () => {
+    const publicKeyB64 = Buffer.alloc(32, 42).toString('base64')
+    const secretB64 = Buffer.alloc(32, 7).toString('base64')
+
+    beforeEach(() => {
+      mockClient.encryptionGet.mockResolvedValue(secretB64)
+    })
+
+    it('compares the token in constant time, case-insensitively', async () => {
+      const expected = getPairingCode(publicKeyB64, secretB64)
+
+      await expect(
+        verifyPairingToken(mockClient, publicKeyB64, expected.toLowerCase())
+      ).resolves.toBe(true)
+
+      expect(sodium.sodium_memcmp).toHaveBeenCalledTimes(1)
+      const [provided, stored] = sodium.sodium_memcmp.mock.calls[0]
+      expect(provided.length).toBe(stored.length)
+    })
+
+    it('rejects a token of the wrong length without comparing', async () => {
+      await expect(
+        verifyPairingToken(mockClient, publicKeyB64, '123')
+      ).resolves.toBe(false)
+
+      expect(sodium.sodium_memcmp).not.toHaveBeenCalled()
+    })
+  })
+
+  describe('rotatePairingSecret', () => {
+    beforeEach(() => {
+      sodium.randombytes_buf = jest.fn((buf) => buf.fill(5))
+    })
+
+    afterEach(() => {
+      delete sodium.randombytes_buf
+    })
+
+    it('stores a fresh secret without reading the old one', async () => {
+      mockClient.encryptionAdd.mockResolvedValue()
+
+      await rotatePairingSecret(mockClient)
+
+      expect(mockClient.encryptionGet).not.toHaveBeenCalled()
+      expect(mockClient.encryptionAdd).toHaveBeenCalledWith(
+        'nm.identity.pairingSecret',
+        Buffer.alloc(32, 5).toString('base64')
+      )
     })
   })
 
