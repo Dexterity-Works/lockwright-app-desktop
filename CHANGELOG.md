@@ -9,6 +9,28 @@ Starts at 0.0.17, after the Lockwright package rename. Earlier history is git.
 
 ## [Unreleased]
 
+## [0.0.26] - 2026-09-26
+
+`BUMP_SHA`
+
+### Security
+
+- Auto-lock controls need a paired session, and only a verified request resets the inactivity timer.
+- Vault calls from the renderer are checked against an allowlist in the main process.
+- The desktop proves it owns the Windows pipe, with an HMAC over a per-start secret, before the extension host sends anything. Update the extension with it.
+- Command ids match the bridge again, so a kick from the extension reaches the vault.
+
+### Changed
+
+- 28 unused dependencies removed. The disabled 2FA import/export feature, modules nothing imported, and unreferenced assets are deleted.
+- The renderer ships minified without its source map (11 MB to 1.6 MB). The fixed three-second loader is gone.
+- Renderer errors reach the Diagnostics log.
+- Pin native-messaging-bridge `8ad5022`, lib-data-import `6a872f3`, and the utils libraries to commits without install hooks.
+
+### Fixed
+
+- The test suite runs green.
+
 ## [0.0.25] - 2026-09-26
 
 `9f57e1d733e098e6c2ab5061574735a62b000a4e`
@@ -104,7 +126,8 @@ Starts at 0.0.17, after the Lockwright package rename. Earlier history is git.
 
 - A PearPass vault copied onto disk is treated as a vault, not empty.
 
-[unreleased]: https://github.com/Dexterity-Works/lockwright-app-desktop/compare/9f57e1d733e098e6c2ab5061574735a62b000a4e...HEAD
+[unreleased]: https://github.com/Dexterity-Works/lockwright-app-desktop/compare/BUMP_SHA...HEAD
+[0.0.26]: https://github.com/Dexterity-Works/lockwright-app-desktop/compare/9f57e1d733e098e6c2ab5061574735a62b000a4e...BUMP_SHA
 [0.0.25]: https://github.com/Dexterity-Works/lockwright-app-desktop/compare/812fba79e2e17c7939426ccad01f840e5e72ef64...9f57e1d733e098e6c2ab5061574735a62b000a4e
 [0.0.24]: https://github.com/Dexterity-Works/lockwright-app-desktop/compare/69c6e3c8c45f18beebfd59f0940da53876320166...812fba79e2e17c7939426ccad01f840e5e72ef64
 [0.0.23]: https://github.com/Dexterity-Works/lockwright-app-desktop/compare/7e308a0605a3b1a708fc700d82b01901211a545d...69c6e3c8c45f18beebfd59f0940da53876320166
