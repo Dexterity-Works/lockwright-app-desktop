@@ -10,13 +10,13 @@ This is the design system for the pearpass desktop app. All UI primitives come f
 
 ## File naming
 
-Files use their natural names — no version suffixes. A few small components (`InputField`, `NoticeText`, `PearPassPasswordField`, `TextArea`) still live under `src/lib-react-components/components/` as a legacy holdover, but that tree is frozen — don't add to it.
+Files use their natural names — no version suffixes.
 
 ## Golden rules
 
 1. **Check the catalog below before creating any component.** If it exists in the kit, use it — never wrap or reimplement.
-2. **All new UI goes through the kit.** Any new `.tsx`/`.jsx` file — suffixed or not — must import from `@tetherto/pearpass-lib-ui-kit`, not from `src/lib-react-components/`.
-3. **Never add variants under `src/lib-react-components/components/`** (`ButtonThin`, `ButtonPrimary`, `ButtonRoundIcon`, `PearPassInputField`, etc.). That tree is legacy; the kit's `Button` takes variants.
+2. **All new UI goes through the kit.** Any new `.tsx`/`.jsx` file — suffixed or not — must import from `@tetherto/pearpass-lib-ui-kit`.
+3. **Never add local variants** (`ButtonThin`, `ButtonPrimary`, `ButtonRoundIcon`, `PearPassInputField`, etc.). The kit's `Button` takes variants.
 4. **Style with tokens.** Use `useTheme()` + `rawTokens`. No hardcoded hex colors or px spacing.
 5. **Icons come from the kit.** `@tetherto/pearpass-lib-ui-kit/icons` has 530 icons. Do not add new SVGs under `src/`.
 6. **If the kit lacks something you need, stop and ask the user.** Don't silently roll a custom component.
@@ -191,8 +191,7 @@ import { Add, Download, Folder, OpenInNew } from '@tetherto/pearpass-lib-ui-kit/
 
 When creating new UI or editing existing files, do **not**:
 
-- Add a new file under `src/lib-react-components/components/` for a Button/Input/Modal variant.
-- Import `PearPassPasswordField` or anything else from `src/lib-react-components/` into a new file — swap to the kit equivalents.
+- Add a local file for a Button/Input/Modal variant.
 - Add a `V2` (or any version) suffix to a new file. Use natural names.
 - Use native `<button>`, `<input>`, or `<dialog>` in production code (tests are fine).
 - Hardcode hex colors, brand radii, or design-system spacing — use `rawTokens` and `theme.colors`. (Feature-specific layout literals like `maxWidth: '500px'` are fine.)

@@ -1,6 +1,6 @@
 /**
  * Electron entry helpers: config and vault client when running inside Electron.
- * Use these when window.electronAPI is defined (Electron); otherwise use Pear + createOrGetPipe.
+ * Use these when window.electronAPI is defined (Electron).
  */
 
 import { createElectronVaultClientProxy } from './vaultClientProxy'

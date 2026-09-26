@@ -102,7 +102,6 @@ export const App = () => {
         $borderColor=${theme.colors.colorBorderPrimary}
       >
         <${Routes}
-          isSplashScreenShown=${false}
           isDataLoading=${showLoadingPage}
           onLoadingComplete=${handleLoadingComplete}
           migrationProgress=${migrationProgress}

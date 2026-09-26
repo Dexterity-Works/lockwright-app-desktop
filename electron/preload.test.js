@@ -58,6 +58,7 @@ describe('preload.cjs', () => {
     expect(typeof window.electronAPI.applyUpdate).toBe('function')
     expect(typeof window.electronAPI.restart).toBe('function')
     expect(typeof window.electronAPI.checkUpdated).toBe('function')
+    expect(typeof window.electronAPI.logError).toBe('function')
     expect(typeof window.electronAPI.clearClipboardAfter).toBe('function')
     expect(typeof window.electronAPI.vaultInvoke).toBe('function')
     expect(typeof window.electronAPI.vaultOnUpdate).toBe('function')

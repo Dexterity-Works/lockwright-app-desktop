@@ -63,5 +63,7 @@ window.electronAPI = {
   openLogsFolder: () => ipcRenderer.invoke('vault:openLogsFolder'),
   isLoggingEnabled: () => ipcRenderer.invoke('vault:isLoggingEnabled'),
   setLogging: (enabled) =>
-    ipcRenderer.invoke('vault:setLogging', { enabled: !!enabled })
+    ipcRenderer.invoke('vault:setLogging', { enabled: !!enabled }),
+  logError: (component, args) =>
+    ipcRenderer.send('renderer:logError', { component, args })
 }

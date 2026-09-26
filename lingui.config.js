@@ -7,11 +7,7 @@ export default defineConfig({
   catalogs: [
     {
       path: './src/locales/{locale}/messages',
-      include: ['./src'],
-      exclude: [
-        './src/native-messaging-bridge/node_modules/**',
-        './src/PearPass/**'
-      ]
+      include: ['./src']
     }
   ],
   format: formatter({ style: 'minimal' }),

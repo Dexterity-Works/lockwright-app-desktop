@@ -29,16 +29,7 @@ const { adoptInheritedVault, hasVault } = require('./pickRuntimeStorage.cjs')
 // eslint-disable-next-line import/order
 const { scheduleClipboardCleanup } = require('./clipboardCleanup.cjs')
 
-let debugMode = false
-
-;(async () => {
-  try {
-    const { DEBUG_MODE } = await import('../src/constants/appConstants.js')
-    debugMode = DEBUG_MODE
-  } catch {
-    // fall back to default debugMode = false
-  }
-})()
+const debugMode = false
 
 const pkg = require('../package.json')
 
@@ -109,7 +100,7 @@ let loggingActive = false
 /**
  * Emit a structured startup marker to stderr.
  *
- * The main-process logger is a no-op when DEBUG_MODE=false (i.e. in every
+ * The main-process logger is a no-op when debugMode is false (i.e. in every
  * packaged build), which means the CI smoke test has no way to observe
  * runtime progress and local failures can't be diagnosed from `journalctl`.
  * This helper writes directly to process.stderr so markers survive regardless
@@ -845,6 +836,13 @@ function registerIPC() {
     } else {
       await shell.openPath(logsDir)
     }
+  })
+
+  ipcMain.on('renderer:logError', (_event, payload) => {
+    const component =
+      typeof payload?.component === 'string' ? payload.component : 'unknown'
+    const args = Array.isArray(payload?.args) ? payload.args : []
+    logger.error('RENDERER', `[${component}]`, ...args)
   })
 
   ipcMain.handle('vault:isLoggingEnabled', () => ({

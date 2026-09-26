@@ -15,7 +15,6 @@ import { WelcomePage } from '../../pages/WelcomePage'
 
 /**
  * @param {Object} props
- * @param {boolean} props.isSplashScreenShown - Shows LoadingPage at progress 0 (unused, kept for API compat)
  * @param {boolean} props.isDataLoading - Shows LoadingPage with progress bar
  * @param {() => void} [props.onLoadingComplete] - Callback when LoadingPage finishes
  * @param {{ done: number, total: number }|null} [props.migrationProgress]

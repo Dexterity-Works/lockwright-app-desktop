@@ -1,15 +1,19 @@
+/**
+ * Renderer logger. Console output stays off (debugMode is false in every
+ * build); error() also forwards to the main process so renderer errors land
+ * in the Diagnostics log when the user has logging on.
+ */
 class Logger {
   constructor({ debugMode = false } = {}) {
     this.debugMode = debugMode
   }
 
   /**
-   * Log a message with component and level
-   * @param {'INFO'|'ERROR'|'DEBUG'|'WARN'} level - Log level
-   * @param {string} component - Component name
-   * @param {any[]} message - Log message
+   * @param {'LOG'|'INFO'|'ERROR'|'DEBUG'|'WARN'} level
+   * @param {string} component
+   * @param {...any} args
    */
-  _print(level, component, message) {
+  _print(level, component, ...args) {
     if (!this.debugMode) return
 
     const timestamp = new Date().toISOString()
@@ -17,66 +21,47 @@ class Logger {
 
     if (level === 'ERROR') {
       // eslint-disable-next-line no-console
-      console.error(formatted, message)
+      console.error(formatted, ...args)
       return
     }
 
     // eslint-disable-next-line no-console
-    console.log(formatted, message)
+    console.log(formatted, ...args)
   }
 
-  /**
-   * Log a message with component and level
-   * @param {string} component - Component name
-   * @param {any[]} message - Log message
-   */
   log(component, ...args) {
     this._print('LOG', component, ...args)
   }
 
-  /**
-   * Log a message with component and level
-   * @param {string} component - Component name
-   * @param {any[]} message - Log message
-   */
   debug(component, ...args) {
     this._print('DEBUG', component, ...args)
   }
 
-  /**
-   * Log a message with component and level
-   * @param {string} component - Component name
-   * @param {any[]} message - Log message
-   */
   info(component, ...args) {
     this._print('INFO', component, ...args)
   }
 
-  /**
-   * Log a message with component and level
-   * @param {string} component - Component name
-   * @param {any[]} message - Log message
-   */
   warn(component, ...args) {
     this._print('WARN', component, ...args)
   }
 
-  /**
-   * Log a message with component and level
-   * @param {string} component - Component name
-   * @param {any[]} message - Log message
-   */
   error(component, ...args) {
     this._print('ERROR', component, ...args)
+    forwardErrorToMain(component, args)
   }
 }
 
-// const isProduction =
-//   (typeof Pear !== 'undefined' && !!Pear.config?.key) ||
-//   (typeof process !== 'undefined' &&
-//     process.env &&
-//     process.env.NODE_ENV === 'production')
+function forwardErrorToMain(component, args) {
+  const api = typeof window !== 'undefined' ? window.electronAPI : undefined
+  if (!api || typeof api.logError !== 'function') return
+  try {
+    api.logError(
+      component,
+      args.map((arg) => (arg instanceof Error ? arg.stack || String(arg) : arg))
+    )
+  } catch {
+    // Logging must never throw into the caller.
+  }
+}
 
-export const logger = new Logger({
-  debugMode: false
-})
+export const logger = new Logger({ debugMode: false })

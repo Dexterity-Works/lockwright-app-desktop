@@ -286,9 +286,6 @@ importers:
       pear-ipc:
         specifier: 6.4.0
         version: 6.4.0(bare-buffer@3.6.2)(bare-url@2.4.7)
-      pear-run:
-        specifier: 1.0.5
-        version: 1.0.5(bare-buffer@3.6.2)
       pear-runtime:
         specifier: ^1.1.1
         version: 1.3.1(bare-buffer@3.6.2)(bare-events@2.9.1)(bare-url@2.4.7)
@@ -2731,15 +2728,6 @@ packages:
   bare-structured-clone@1.6.0:
     resolution: {integrity: sha512-AZjEERyqF7kAuudlmgrweT2KwwWM0LsGG4Gx/bWyFwJrKU7E3wNG8c09z2DIrdw93p3vDtfOX8fyHOcXfy5m+g==}
     engines: {bare: '>=1.2.0'}
-
-  bare-subprocess@5.2.1:
-    resolution: {integrity: sha512-uz/QxI4/hzoENrAzg8OFmpZHMHsyvrlETVV3Umewg0D/Vhk63TQE/5DRC1PQk3VzlpZoIeLhssSrBLyUo2QqAg==}
-    engines: {bare: '>=1.7.0'}
-    peerDependencies:
-      bare-buffer: '*'
-    peerDependenciesMeta:
-      bare-buffer:
-        optional: true
 
   bare-subprocess@6.1.0:
     resolution: {integrity: sha512-8L6KtbmreDy4Fc1BdDqaDo9fg0nbedUmTSFQxYPV0uHIM2BBAX8+E0LyMDKgkk0I+mlKto80WYzOnIhT8VDdOg==}
@@ -5523,9 +5511,6 @@ packages:
     resolution: {integrity: sha512-BCD1PzTUAHZU88yDg78dVKQJEGFdixvjcdwqgxKa18nCnGRv8sVm81QfkUQDyFeL6N8m2kxkF/uGfzC57WGDFQ==}
     hasBin: true
 
-  pear-cmd@1.0.2:
-    resolution: {integrity: sha512-vecXkSAFUS0ODh9I2zgsDcC4cW6sTQ1ZZTq5Fj/6G20HprvPNARbvraGJrkv5dRZ8Epezdgjws0vqB4W4VVd6w==}
-
   pear-errors@1.0.1:
     resolution: {integrity: sha512-KQyhym09QpLT4H/z3uLW0bqixgIZic2Eip2Q8Z72QmIpFzPtp6QmnzOUwB3kuHB4dqKNa+FQWHWH0NSK5lJjlw==}
 
@@ -5540,12 +5525,6 @@ packages:
 
   pear-link@5.0.1:
     resolution: {integrity: sha512-h7BZAPTJWy3oqKOw/REEgAVB+wd4JR6kZEla32U2DoePlC75yorYtDIzbqAN4VsWzmr21AZcO/XLRDaOqORFMw==}
-
-  pear-ref@1.0.2:
-    resolution: {integrity: sha512-IUGGSULYVF6jfdtsHY0XOokMp1v1KI89q8yPhsnqrLFf+Wq8EEOD0capny8gqXyu0eGkIh753X1cFUVL36n7FA==}
-
-  pear-run@1.0.5:
-    resolution: {integrity: sha512-RPCUFvepAxf04n6878j252I60ulmN8o0pC6OXmQ3GvLGoqVxO7wkGIdB6qmE9SqhGAZUdiHNoFI3tDvCcUNykQ==}
 
   pear-runtime-legacy-storage@1.3.1:
     resolution: {integrity: sha512-LoOQ4rluKFbrqpQv9SEF51rz4Bcxa/vRXaAZ/C4xCTbCyXw4kkgB6LtLuRuIrlL5tI/PvUoyAOV3smqW0x0WaA==}
@@ -6706,9 +6685,6 @@ packages:
 
   uri-js@4.4.1:
     resolution: {integrity: sha512-7rKUyy33Q1yc98pQ1DAmLtwX109F7TIfWlW1Ydo8Wl1ii1SeHieeh0HHfPeL2fMXK6z0s8ecKs9frCuLJvndBg==}
-
-  url-file-url@1.0.5:
-    resolution: {integrity: sha512-RkUWAFWSmCDpyFn2qf2QO8Gnwf0y5RadgJuDpBeFD6gEzDuh6hTNpd/jox4znFFqZ79ghAS0gGM7F3ZU4nrMWw==}
 
   url-parse@1.5.10:
     resolution: {integrity: sha512-WypcfiRhfeUP9vvF0j6rw0J3hrWrw6iZv3+22h6iRMJ/8z1Tj6XfLP4DsUix5MhMPnXpiHDoKyoZ/bdCkwBCiQ==}
@@ -10138,19 +10114,6 @@ snapshots:
       bare-url: 2.4.7
       compact-encoding: 3.3.0
     transitivePeerDependencies:
-      - react-native-b4a
-
-  bare-subprocess@5.2.1(bare-buffer@3.6.2):
-    dependencies:
-      bare-env: 3.0.1
-      bare-events: 2.9.1
-      bare-os: 3.6.2
-      bare-pipe: 4.2.3(bare-buffer@3.6.2)
-      bare-url: 2.4.7
-    optionalDependencies:
-      bare-buffer: 3.6.2
-    transitivePeerDependencies:
-      - bare-abort-controller
       - react-native-b4a
 
   bare-subprocess@6.1.0(bare-buffer@3.6.2):
@@ -13997,10 +13960,6 @@ snapshots:
       - bare-url
       - react-native-b4a
 
-  pear-cmd@1.0.2:
-    dependencies:
-      paparam: 1.11.0
-
   pear-errors@1.0.1: {}
 
   pear-hyperdb@1.2.0(bare-buffer@3.6.2)(bare-url@2.4.7):
@@ -14054,30 +14013,6 @@ snapshots:
       hypercore-id-encoding: 1.3.0
       pear-errors: 1.0.1
     transitivePeerDependencies:
-      - react-native-b4a
-
-  pear-ref@1.0.2:
-    dependencies:
-      bare-events: 2.9.1
-    transitivePeerDependencies:
-      - bare-abort-controller
-
-  pear-run@1.0.5(bare-buffer@3.6.2):
-    dependencies:
-      b4a: 1.8.1
-      bare-path: 3.1.1
-      bare-subprocess: 5.2.1(bare-buffer@3.6.2)
-      hypercore-id-encoding: 1.3.0
-      paparam: 1.11.0
-      pear-cmd: 1.0.2
-      pear-link: 4.2.1
-      pear-ref: 1.0.2
-      unix-path-resolve: 1.0.2
-      url-file-url: 1.0.5
-      which-runtime: 1.4.0
-    transitivePeerDependencies:
-      - bare-abort-controller
-      - bare-buffer
       - react-native-b4a
 
   pear-runtime-legacy-storage@1.3.1(bare-buffer@3.6.2)(bare-url@2.4.7):
@@ -15492,11 +15427,6 @@ snapshots:
   uri-js@4.4.1:
     dependencies:
       punycode: 2.3.1
-
-  url-file-url@1.0.5:
-    dependencies:
-      bare-path: 3.1.1
-      which-runtime: 1.4.0
 
   url-parse@1.5.10:
     dependencies:

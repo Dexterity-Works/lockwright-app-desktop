@@ -167,7 +167,6 @@
     "htm": "3.1.1",
     "jszip": "3.10.1",
     "pear-ipc": "6.4.0",
-    "pear-run": "1.0.5",
     "pear-runtime": "^1.1.1",
     "pear-runtime-legacy-storage": "^1.1.0",
     "react": "19.1.0",

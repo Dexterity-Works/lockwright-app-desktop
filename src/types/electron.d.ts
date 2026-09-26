@@ -29,6 +29,7 @@ declare global {
       setLogging: (
         enabled: boolean
       ) => Promise<{ enabled: boolean; forced: boolean }>
+      logError: (component: string, args: unknown[]) => void
     }
   }
 }
