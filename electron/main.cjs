@@ -23,6 +23,7 @@ const isWindows = process.platform === 'win32'
 const isMac = process.platform === 'darwin'
 
 const { clearStaleVaultsDir } = require('./clearStaleVaultsDir.cjs')
+const { getDeviceName } = require('./getDeviceName.cjs')
 const {
   legacyUserDataDirs,
   migratePearPassUserData
@@ -150,7 +151,18 @@ let workletSidecar = null
 /** @type {import('lockwright-lib-vault-core').PearpassVaultClient | null} */
 let vaultClient = null
 
-const nativeMessaging = createNativeMessaging()
+const nativeMessaging = createNativeMessaging({
+  logger,
+  getVaultClient: () => vaultClient,
+  getStorageDir: () => getStorageDir(),
+  getExecPath: () => getRuntimeExecPath(),
+  getBridgePath: () => getNativeBridgePath(),
+  send: (channel, data) => {
+    if (mainWindow && !mainWindow.isDestroyed()) {
+      mainWindow.webContents.send(channel, data)
+    }
+  }
+})
 
 function getExecPath() {
   if (!app.isPackaged) return null
@@ -781,7 +793,9 @@ function registerIPC() {
       applink: runtimeConfig.upgrade || '',
       userDataPath: getStorageDir(),
       execPath: getRuntimeExecPath(),
-      bridgePath: getNativeBridgePath()
+      bridgePath: getNativeBridgePath(),
+      platform: process.platform,
+      deviceName: getDeviceName()
     }
   })
 
@@ -966,6 +980,9 @@ app.whenReady().then(async () => {
 })
 
 async function cleanup() {
+  try {
+    await nativeMessaging.stop()
+  } catch (_) {}
   if (workletSidecar) {
     try {
       workletSidecar.destroy()

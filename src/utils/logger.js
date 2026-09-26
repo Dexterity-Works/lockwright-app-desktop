@@ -2,10 +2,22 @@
  * Renderer logger. Console output stays off (debugMode is false in every
  * build); error() also forwards to the main process so renderer errors land
  * in the Diagnostics log when the user has logging on.
+ *
+ * In the main-process bundle a target logger is bound instead (setTarget),
+ * and every level goes straight to it.
  */
 class Logger {
   constructor({ debugMode = false } = {}) {
     this.debugMode = debugMode
+    /** @type {{ log: Function, info: Function, debug: Function, warn: Function, error: Function } | null} */
+    this.target = null
+  }
+
+  /**
+   * @param {{ log: Function, info: Function, debug: Function, warn: Function, error: Function } | null} target
+   */
+  setTarget(target) {
+    this.target = target
   }
 
   /**
@@ -14,6 +26,10 @@ class Logger {
    * @param {...any} args
    */
   _print(level, component, ...args) {
+    if (this.target) {
+      this.target[level.toLowerCase()](`[${component}]`, ...args)
+      return
+    }
     if (!this.debugMode) return
 
     const timestamp = new Date().toISOString()

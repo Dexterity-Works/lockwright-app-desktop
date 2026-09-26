@@ -59,6 +59,20 @@ describe('preload.cjs', () => {
     expect(typeof window.electronAPI.restart).toBe('function')
     expect(typeof window.electronAPI.checkUpdated).toBe('function')
     expect(typeof window.electronAPI.setNativeMessagingPrefs).toBe('function')
+    expect(typeof window.electronAPI.onNativeMessagingEvent).toBe('function')
+    expect(Object.keys(window.electronAPI.nativeMessaging).sort()).toEqual([
+      'cleanup',
+      'clearSessions',
+      'closeSessionsForClient',
+      'identity',
+      'isRunning',
+      'markPairingApproved',
+      'pairedClients',
+      'removeClient',
+      'setup',
+      'start',
+      'stop'
+    ])
     expect(typeof window.electronAPI.logError).toBe('function')
     expect(typeof window.electronAPI.clearClipboardAfter).toBe('function')
     expect(typeof window.electronAPI.vaultInvoke).toBe('function')

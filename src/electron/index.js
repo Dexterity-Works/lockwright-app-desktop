@@ -9,7 +9,7 @@ let configPromise = null
 let vaultClientPromise = null
 
 /**
- * @returns {Promise<{ storage: string, key: string | null, upgrade: string | null, version: string | number, applink: string }>}
+ * @returns {Promise<{ storage: string, key: string | null, upgrade: string | null, version: string | number, applink: string, platform: string, deviceName: string }>}
  */
 export function getElectronConfig() {
   if (!configPromise && typeof window !== 'undefined' && window.electronAPI) {

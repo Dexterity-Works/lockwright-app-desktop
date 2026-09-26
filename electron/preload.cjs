@@ -72,5 +72,25 @@ window.electronAPI = {
     ipcRenderer.invoke('vault:setLogging', { enabled: !!enabled }),
   logError: (component, args) =>
     ipcRenderer.send('renderer:logError', { component, args }),
-  setNativeMessagingPrefs: (prefs) => ipcRenderer.invoke('nm:prefs', prefs)
+  setNativeMessagingPrefs: (prefs) => ipcRenderer.invoke('nm:prefs', prefs),
+  onNativeMessagingEvent: (cb) => {
+    const sub = (_event, msg) => cb(msg)
+    ipcRenderer.on('nm:event', sub)
+    return () => ipcRenderer.removeListener('nm:event', sub)
+  },
+  nativeMessaging: {
+    setup: () => ipcRenderer.invoke('nm:setup'),
+    start: () => ipcRenderer.invoke('nm:start'),
+    stop: () => ipcRenderer.invoke('nm:stop'),
+    isRunning: () => ipcRenderer.invoke('nm:isRunning'),
+    cleanup: () => ipcRenderer.invoke('nm:cleanup'),
+    identity: (reset) => ipcRenderer.invoke('nm:identity', { reset: !!reset }),
+    pairedClients: () => ipcRenderer.invoke('nm:pairedClients'),
+    removeClient: (publicKey) =>
+      ipcRenderer.invoke('nm:removeClient', { publicKey }),
+    closeSessionsForClient: (publicKey) =>
+      ipcRenderer.invoke('nm:closeSessionsForClient', { publicKey }),
+    clearSessions: () => ipcRenderer.invoke('nm:clearSessions'),
+    markPairingApproved: () => ipcRenderer.invoke('nm:markPairingApproved')
+  }
 }

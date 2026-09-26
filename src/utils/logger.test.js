@@ -74,3 +74,25 @@ describe('Logger.error', () => {
     expect(() => logger.error('Comp', 'x')).not.toThrow()
   })
 })
+
+describe('Logger.setTarget', () => {
+  afterEach(() => logger.setTarget(null))
+
+  it('routes every level to the bound target regardless of debugMode', () => {
+    const target = {
+      log: jest.fn(),
+      info: jest.fn(),
+      debug: jest.fn(),
+      warn: jest.fn(),
+      error: jest.fn()
+    }
+    logger.debugMode = false
+    logger.setTarget(target)
+
+    logger.info('IPC', 'started', 1)
+    logger.error('IPC', 'boom')
+
+    expect(target.info).toHaveBeenCalledWith('[IPC]', 'started', 1)
+    expect(target.error).toHaveBeenCalledWith('[IPC]', 'boom')
+  })
+})

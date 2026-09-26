@@ -10,6 +10,8 @@ declare global {
         upgrade: string | null
         version: string | number
         applink: string
+        platform: string
+        deviceName: string
       }>
       onRuntimeUpdating: (cb: () => void) => () => void
       onRuntimeUpdated: (cb: () => void) => () => void
@@ -33,7 +35,33 @@ declare global {
       setNativeMessagingPrefs: (prefs: NativeMessagingPrefs) => Promise<{
         running: boolean
       }>
+      onNativeMessagingEvent: (
+        cb: (msg: { type: string; payload?: unknown }) => void
+      ) => () => void
+      nativeMessaging: {
+        setup: () => Promise<{ success: boolean; message?: string }>
+        start: () => Promise<void>
+        stop: () => Promise<void>
+        isRunning: () => Promise<boolean>
+        cleanup: () => Promise<void>
+        identity: (reset?: boolean) => Promise<{
+          pairingToken: string
+          fingerprint: string
+          creationDate: string
+        }>
+        pairedClients: () => Promise<PairedExtensionClient[]>
+        removeClient: (publicKey: string) => Promise<PairedExtensionClient[]>
+        closeSessionsForClient: (publicKey: string) => Promise<number>
+        clearSessions: () => Promise<number>
+        markPairingApproved: () => Promise<void>
+      }
     }
+  }
+
+  interface PairedExtensionClient {
+    publicKey: string
+    pairingState?: string
+    browserName?: string
   }
 
   interface NativeMessagingPrefs {
