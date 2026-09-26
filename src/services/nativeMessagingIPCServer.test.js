@@ -12,14 +12,8 @@ jest.mock('lockwright-lib-constants', () => ({
 
 import { SecureRequestHandler } from './handlers/SecureRequestHandler'
 import { SecurityHandlers } from './handlers/SecurityHandlers'
-import {
-  getIpcPath,
-  getIPCSocketPath,
-  isNativeMessagingIPCRunning,
-  NativeMessagingIPCServer,
-  startNativeMessagingIPC,
-  stopNativeMessagingIPC
-} from './nativeMessagingIPCServer.js'
+import { getIpcPath } from './ipc/SocketManager'
+import { NativeMessagingIPCServer } from './nativeMessagingIPCServer.js'
 import { SecurityErrorCodes } from '../constants/securityErrors.js'
 import { logger } from '../utils/logger.js'
 
@@ -242,15 +236,8 @@ const deps = {
 }
 
 describe('nativeMessagingIPCServer', () => {
-  beforeEach(async () => {
+  beforeEach(() => {
     jest.clearAllMocks()
-
-    // Reset singleton instance state before each test
-    try {
-      await stopNativeMessagingIPC()
-    } catch {
-      // ignore
-    }
   })
 
   describe('getIpcPath', () => {
@@ -645,61 +632,6 @@ describe('nativeMessagingIPCServer', () => {
       expect(fsp.unlink).toHaveBeenCalledWith(pointerFile)
       const unlinkOrder = fsp.unlink.mock.invocationCallOrder.at(-1)
       expect(unlinkOrder).toBeLessThan(server.close.mock.invocationCallOrder[0])
-    })
-  })
-
-  describe('Singleton Functions', () => {
-    beforeEach(() => {
-      platform.mockReturnValue('linux')
-    })
-
-    it('startNativeMessagingIPC should start and return an instance', async () => {
-      const instance = await startNativeMessagingIPC(mockPearpassClient)
-      expect(instance).toBeInstanceOf(NativeMessagingIPCServer)
-      expect(instance.isRunning).toBe(true)
-      expect(isNativeMessagingIPCRunning()).toBe(true)
-    })
-
-    it('startNativeMessagingIPC should return the existing instance if already running', async () => {
-      const instance1 = await startNativeMessagingIPC(mockPearpassClient)
-      const instance2 = await startNativeMessagingIPC(mockPearpassClient)
-      expect(instance1).toBe(instance2)
-      expect(logger.info).toHaveBeenCalledWith(
-        'IPC-SERVER',
-        'Native messaging IPC server is already running'
-      )
-    })
-
-    it('stopNativeMessagingIPC should stop the running instance', async () => {
-      await startNativeMessagingIPC(mockPearpassClient)
-      expect(isNativeMessagingIPCRunning()).toBe(true)
-
-      await stopNativeMessagingIPC()
-      expect(isNativeMessagingIPCRunning()).toBe(false)
-    })
-
-    it('stopNativeMessagingIPC should do nothing if not running', async () => {
-      await stopNativeMessagingIPC()
-      expect(logger.info).toHaveBeenCalledWith(
-        'IPC-SERVER',
-        'Native messaging IPC server is not running'
-      )
-    })
-
-    it('getIPCSocketPath should return the correct path when running', async () => {
-      const instance = await startNativeMessagingIPC(mockPearpassClient)
-      expect(getIPCSocketPath()).toBe(instance.socketPath)
-    })
-
-    it('getIPCSocketPath should return a default path when not running', () => {
-      platform.mockReturnValue('linux')
-      expect(getIPCSocketPath()).toBe(
-        join(
-          '/home/testuser',
-          '.lockwright',
-          'lockwright-native-messaging.sock'
-        )
-      )
     })
   })
 })

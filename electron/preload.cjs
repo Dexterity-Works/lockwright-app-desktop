@@ -91,6 +91,8 @@ window.electronAPI = {
     closeSessionsForClient: (publicKey) =>
       ipcRenderer.invoke('nm:closeSessionsForClient', { publicKey }),
     clearSessions: () => ipcRenderer.invoke('nm:clearSessions'),
-    markPairingApproved: () => ipcRenderer.invoke('nm:markPairingApproved')
+    markPairingApproved: () => ipcRenderer.invoke('nm:markPairingApproved'),
+    importClientKeys: (keys) =>
+      ipcRenderer.invoke('nm:importClientKeys', { keys })
   }
 }

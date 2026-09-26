@@ -43,3 +43,31 @@ export const pushNativeMessagingPrefs = async () => {
     logger.error('NM-PREFS', 'Failed to push preferences to main:', err)
   }
 }
+
+/**
+ * Before the server moved to the main process, confirmed extension keys were
+ * cached in localStorage. Hand them to main once so paired extensions stay
+ * paired across the upgrade, then drop the entry.
+ * @returns {Promise<void>}
+ */
+export const migrateLegacyClientKeyCache = async () => {
+  const api = typeof window !== 'undefined' ? window.electronAPI : undefined
+  const raw = localStorage.getItem(LOCAL_STORAGE_KEYS.NM_CLIENT_PUBLIC_KEY)
+  if (!raw || !api?.nativeMessaging?.importClientKeys) return
+  let keys = [raw]
+  try {
+    const parsed = JSON.parse(raw)
+    if (Array.isArray(parsed)) keys = parsed
+    else if (typeof parsed === 'string') keys = [parsed]
+  } catch {
+    // Legacy: a single base64 public key, not JSON
+  }
+  try {
+    await api.nativeMessaging.importClientKeys(
+      keys.filter((key) => typeof key === 'string' && key.length > 0)
+    )
+    localStorage.removeItem(LOCAL_STORAGE_KEYS.NM_CLIENT_PUBLIC_KEY)
+  } catch (err) {
+    logger.error('NM-PREFS', 'Failed to migrate client key cache:', err)
+  }
+}

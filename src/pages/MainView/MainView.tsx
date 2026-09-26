@@ -22,7 +22,6 @@ import { useGlobalLoading } from '../../context/LoadingContext'
 import { useModal } from '../../context/ModalContext'
 import { useRouter } from '../../context/RouterContext'
 import { LOCAL_STORAGE_KEYS } from '../../constants/localStorage'
-import { isNativeMessagingIPCRunning } from '../../services/nativeMessagingIPCServer'
 import { getNativeMessagingEnabled } from '../../services/nativeMessagingPreferences'
 import {
   groupRecordsByTimePeriod,
@@ -52,11 +51,21 @@ export const MainView = () => {
       localStorage.getItem(LOCAL_STORAGE_KEYS.EXTENSION_DIALOG_DISMISSED) === 'true'
     if (dismissed) return
 
-    const enabled = getNativeMessagingEnabled()
-    const isRunning = isNativeMessagingIPCRunning()
-
-    if (!enabled || !isRunning) {
+    if (!getNativeMessagingEnabled()) {
       setModal(<BrowserExtensionDialog />)
+      return
+    }
+
+    // The server lives in main; ask it whether it actually came up.
+    let cancelled = false
+    window.electronAPI?.nativeMessaging
+      .isRunning()
+      .then((isRunning) => {
+        if (!cancelled && !isRunning) setModal(<BrowserExtensionDialog />)
+      })
+      .catch(() => {})
+    return () => {
+      cancelled = true
     }
     // Run once per mount; modal setter is stable per context instance.
   }, [setModal])

@@ -1,6 +1,5 @@
 import IPC from 'pear-ipc'
 
-import { LOCAL_STORAGE_KEYS } from '../constants/localStorage.js'
 import { SecurityErrorCodes } from '../constants/securityErrors.js'
 import { COMMAND_DEFINITIONS } from '../shared/commandDefinitions'
 import { createErrorWithCode } from '../utils/createErrorWithCode.js'
@@ -10,13 +9,8 @@ import { SecureRequestHandler } from './handlers/SecureRequestHandler'
 import { SecurityHandlers } from './handlers/SecurityHandlers'
 import { VaultHandlers } from './handlers/VaultHandlers'
 import { MethodRegistry } from './ipc/MethodRegistry'
-import { SocketManager, getIpcPath } from './ipc/SocketManager'
-import { applyNativeMessagingEvent } from './nativeMessagingEvents'
-import { readNativeMessagingPrefs } from './nativeMessagingPreferences'
+import { SocketManager } from './ipc/SocketManager'
 import { setClientKeyStore } from './security/appIdentity'
-
-// Re-export for backward compatibility
-export { getIpcPath }
 
 /**
  * @typedef {{ nativeMessagingEnabled: boolean, autoLockEnabled: boolean, autoLockTimeoutMs: number | null }} NativeMessagingPrefs
@@ -541,88 +535,3 @@ export class NativeMessagingIPCServer {
     logger.info('IPC-SERVER', 'Native messaging IPC server stopped')
   }
 }
-
-/** @type {import('./security/appIdentity').ClientKeyStore} */
-const localStorageClientKeyStore = {
-  read: () => {
-    const raw = localStorage.getItem(LOCAL_STORAGE_KEYS.NM_CLIENT_PUBLIC_KEY)
-    if (!raw) return []
-    try {
-      const parsed = JSON.parse(raw)
-      if (Array.isArray(parsed)) return parsed
-      if (typeof parsed === 'string' && parsed.length > 0) return [parsed]
-    } catch {
-      // Legacy: a single base64 public key, not JSON
-    }
-    return [raw]
-  },
-  write: (keys) =>
-    localStorage.setItem(
-      LOCAL_STORAGE_KEYS.NM_CLIENT_PUBLIC_KEY,
-      JSON.stringify(keys)
-    )
-}
-
-/** @type {NativeMessagingIPCServer|null} */
-let ipcServerInstance = null
-/** @type {Promise<NativeMessagingIPCServer>|null} */
-let startPromise = null
-
-/**
- * @param {import('lockwright-lib-vault-core').PearpassVaultClient} pearpassClient
- * @returns {Promise<NativeMessagingIPCServer>}
- */
-export const startNativeMessagingIPC = async (pearpassClient) => {
-  if (ipcServerInstance?.isRunning) {
-    logger.info('IPC-SERVER', 'Native messaging IPC server is already running')
-    return ipcServerInstance
-  }
-
-  if (startPromise) {
-    logger.info('IPC-SERVER', 'IPC server is already starting, waiting...')
-    return startPromise
-  }
-
-  startPromise = (async () => {
-    ipcServerInstance = new NativeMessagingIPCServer(pearpassClient, {
-      emit: applyNativeMessagingEvent,
-      // The renderer applies auto-lock changes through the emit above, so
-      // localStorage is already current by the time anyone reads it again.
-      preferences: { get: readNativeMessagingPrefs, set: () => {} },
-      clientKeyStore: localStorageClientKeyStore
-    })
-    await ipcServerInstance.start()
-    return ipcServerInstance
-  })()
-
-  try {
-    return await startPromise
-  } finally {
-    startPromise = null
-  }
-}
-
-/**
- * @returns {Promise<void>}
- */
-export const stopNativeMessagingIPC = async () => {
-  if (!ipcServerInstance?.isRunning) {
-    logger.info('IPC-SERVER', 'Native messaging IPC server is not running')
-    return
-  }
-
-  await ipcServerInstance.stop()
-  ipcServerInstance = null
-}
-
-/**
- * @returns {boolean}
- */
-export const isNativeMessagingIPCRunning = () =>
-  ipcServerInstance?.isRunning || false
-
-/**
- * @returns {string|null} null on Windows when no server is running
- */
-export const getIPCSocketPath = () =>
-  ipcServerInstance?.socketPath ?? getIpcPath('lockwright-native-messaging')

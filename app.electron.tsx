@@ -20,13 +20,13 @@ import { AppHeaderContextProvider } from './src/context/AppHeaderContext'
 import { ToastProvider } from './src/context/ToastContext'
 import { messages } from './src/locales/en/messages.mjs'
 import { getElectronConfig, getElectronVaultClient } from './src/electron'
-import { createOrGetPearpassClient } from './src/services/createOrGetPearpassClient'
-import { getNativeMessagingEnabled } from './src/services/nativeMessagingPreferences'
-import { startNativeMessagingIPC } from './src/services/nativeMessagingIPCServer'
-import { logger } from './src/utils/logger'
+import { installNativeMessagingEvents } from './src/services/nativeMessagingEvents'
+import {
+  migrateLegacyClientKeyCache,
+  pushNativeMessagingPrefs
+} from './src/services/nativeMessagingPreferences'
 import { setFontsAndResetCSS } from './styles'
 import { AutoLockProvider } from './src/hooks/useAutoLockPreferences'
-import { DEBUG_MODE } from './src/constants/appConstants'
 
 setFontsAndResetCSS()
 i18n.setMessagesCompiler(compileMessage)
@@ -87,19 +87,14 @@ async function init() {
     teardown: () => {}
   }
 
-  // Seed shared Lockwright client singleton so code that calls
-  // createOrGetPearpassClient() without arguments (e.g. extension pairing)
-  // can reuse this Electron vault client instance and storage path.
-  createOrGetPearpassClient(client as any, config.storage, {
-    debugMode: DEBUG_MODE
-  })
-
   setPearpassVaultClient(client, { currentDeviceName: config.deviceName })
-  if (getNativeMessagingEnabled()) {
-    startNativeMessagingIPC(client as any).catch((err: unknown) => {
-      logger.error('INDEX', 'Failed to start IPC server:', err)
-    })
-  }
+
+  // The native messaging server runs in main. Hand it the UI's preferences
+  // (which starts it when the extension setting is on) and any pairing keys
+  // cached before it moved there, and listen for what it wants the UI to see.
+  installNativeMessagingEvents()
+  await migrateLegacyClientKeyCache()
+  await pushNativeMessagingPrefs()
 
   renderApp()
 }

@@ -183,6 +183,20 @@ describe('createNativeMessaging', () => {
     expect(clientKeyStore.read()).toEqual(['ext-pub'])
   })
 
+  it('merges imported legacy keys into device preferences', async () => {
+    devicePreferences.write(tmpDir, { nmClientPublicKeys: ['a'] })
+    await ipcMain.invoke('nm:importClientKeys', { keys: ['b', 'a', 3, ''] })
+    expect(devicePreferences.read(tmpDir).nmClientPublicKeys).toEqual([
+      'a',
+      'b'
+    ])
+    await ipcMain.invoke('nm:importClientKeys', { keys: 'nope' })
+    expect(devicePreferences.read(tmpDir).nmClientPublicKeys).toEqual([
+      'a',
+      'b'
+    ])
+  })
+
   it('sets up the native host and kills stale hosts only on success', async () => {
     await expect(ipcMain.invoke('nm:setup')).resolves.toEqual({
       success: true

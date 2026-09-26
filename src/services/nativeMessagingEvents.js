@@ -19,3 +19,18 @@ export const applyNativeMessagingEvent = (type, payload) => {
   }
   window.dispatchEvent(new CustomEvent(type, { detail: payload }))
 }
+
+/**
+ * Subscribe to the main process's `nm:event` stream for the life of the
+ * window. No-op outside Electron.
+ * @returns {() => void} unsubscribe
+ */
+export const installNativeMessagingEvents = () => {
+  const api = typeof window !== 'undefined' ? window.electronAPI : undefined
+  if (!api || typeof api.onNativeMessagingEvent !== 'function') {
+    return () => {}
+  }
+  return api.onNativeMessagingEvent(({ type, payload }) =>
+    applyNativeMessagingEvent(type, payload)
+  )
+}

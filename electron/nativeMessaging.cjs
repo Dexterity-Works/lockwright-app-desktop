@@ -222,6 +222,15 @@ function createNativeMessaging({
       ipcMain.handle('nm:markPairingApproved', async () => {
         await vaultClient().encryptionAdd(PAIRING_APPROVED_KEY, 'true')
       })
+      // One-time hand-over of the confirmed keys the renderer cached in
+      // localStorage before the server moved here.
+      ipcMain.handle('nm:importClientKeys', async (_event, payload) => {
+        const keys = Array.isArray(payload && payload.keys)
+          ? payload.keys.filter((key) => typeof key === 'string' && key)
+          : []
+        const merged = new Set([...clientKeyStore.read(), ...keys])
+        clientKeyStore.write([...merged])
+      })
     }
   }
   return api

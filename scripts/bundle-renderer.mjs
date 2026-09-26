@@ -1,7 +1,8 @@
 #!/usr/bin/env node
 /**
  * Bundle the renderer (app.electron.tsx + deps) into a single file for Electron.
- * Node built-ins are external: they resolve at runtime in the renderer (nodeIntegration: true).
+ * Only `crypto` stays external: kdbxweb requires it behind a try/catch and
+ * resolves it at runtime in the renderer (nodeIntegration: true).
  */
 import * as esbuild from 'esbuild'
 import { readFile } from 'fs/promises'
@@ -136,19 +137,7 @@ const ctx = await esbuild.context({
     react: path.join(root, 'node_modules', 'react'),
     'react-dom': path.join(root, 'node_modules', 'react-dom')
   },
-  external: [
-    'fs',
-    'path',
-    'os',
-    'net',
-    'crypto',
-    'child_process',
-    'fs/promises',
-    'require-addon',
-    'fs-native-extensions',
-    'sodium-native',
-    'crypto'
-  ],
+  external: ['crypto'],
   logLevel: 'info'
 })
 

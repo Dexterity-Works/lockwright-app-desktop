@@ -65,6 +65,7 @@ describe('preload.cjs', () => {
       'clearSessions',
       'closeSessionsForClient',
       'identity',
+      'importClientKeys',
       'isRunning',
       'markPairingApproved',
       'pairedClients',

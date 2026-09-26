@@ -54,6 +54,7 @@ declare global {
         closeSessionsForClient: (publicKey: string) => Promise<number>
         clearSessions: () => Promise<number>
         markPairingApproved: () => Promise<void>
+        importClientKeys: (keys: string[]) => Promise<void>
       }
     }
   }

@@ -9,34 +9,13 @@ import { ExtensionPairingModalContent } from '../containers/Modal/ExtensionPairi
 import { useGlobalLoading } from '../context/LoadingContext.js'
 import { useModal } from '../context/ModalContext'
 import { useToast } from '../context/ToastContext'
-import { getElectronConfig } from '../electron'
-import { createOrGetPearpassClient } from '../services/createOrGetPearpassClient'
-import {
-  isNativeMessagingIPCRunning,
-  startNativeMessagingIPC,
-  stopNativeMessagingIPC
-} from '../services/nativeMessagingIPCServer'
 import {
   getNativeMessagingEnabled,
   setNativeMessagingEnabled
 } from '../services/nativeMessagingPreferences'
-import {
-  getFingerprint,
-  getOrCreateIdentity,
-  getPairingToken,
-  getPairedClients,
-  removeClientIdentity,
-  resetIdentity
-} from '../services/security/appIdentity'
-import {
-  clearAllSessions,
-  closeSessionsForClient
-} from '../services/security/sessionStore.js'
-import {
-  setupNativeMessaging,
-  killNativeMessagingHostProcesses,
-  cleanupNativeMessaging
-} from '../utils/nativeMessagingSetup'
+
+// The native messaging server lives in the main process; this is its handle.
+const nativeMessaging = () => window.electronAPI.nativeMessaging
 
 export const useConnectExtension = () => {
   const { setModal } = useModal()
@@ -48,16 +27,31 @@ export const useConnectExtension = () => {
   })
 
   const [isBrowserExtensionEnabled, setIsBrowserExtensionEnabled] = useState(
-    getNativeMessagingEnabled() && isNativeMessagingIPCRunning()
+    getNativeMessagingEnabled()
   )
   const [pairedBrowsers, setPairedBrowsers] = useState(
     /** @type {{ publicKey: string, pairingState?: string, browserName?: string }[]} */ ([])
   )
 
+  // The flag says what the user wants; only main knows whether the server
+  // actually came up.
+  useEffect(() => {
+    if (!getNativeMessagingEnabled()) return
+    let cancelled = false
+    nativeMessaging()
+      .isRunning()
+      .then((running) => {
+        if (!cancelled && !running) setIsBrowserExtensionEnabled(false)
+      })
+      .catch(() => {})
+    return () => {
+      cancelled = true
+    }
+  }, [])
+
   const refreshPairedBrowsers = useCallback(async () => {
     try {
-      const client = createOrGetPearpassClient()
-      const clients = await getPairedClients(client)
+      const clients = await nativeMessaging().pairedClients()
       setPairedBrowsers(
         clients.filter(
           (entry) => entry.pairingState === PAIRING_STATES.CONFIRMED
@@ -82,20 +76,11 @@ export const useConnectExtension = () => {
   }, [isBrowserExtensionEnabled, refreshPairedBrowsers])
 
   const handleSetupExtension = async () => {
-    // Setup native messaging for the extension
-    const config = await getElectronConfig()
-    const result = await setupNativeMessaging({
-      userDataPath: config.userDataPath,
-      execPath: config.execPath,
-      bridgePath: config.bridgePath
-    })
+    // Install the native host manifest and wrapper, then start the server
+    const result = await nativeMessaging().setup()
 
     if (result.success) {
-      // Kill any existing native host so Chrome respawns it and re-reads the manifest
-      await killNativeMessagingHostProcesses()
-      // Start native messaging IPC server
-      const client = createOrGetPearpassClient()
-      await startNativeMessagingIPC(client)
+      await nativeMessaging().start()
       setNativeMessagingEnabled(true)
       setIsBrowserExtensionEnabled(true)
       setToast({
@@ -108,14 +93,13 @@ export const useConnectExtension = () => {
   }
 
   const handleStopNativeMessaging = async () => {
-    clearAllSessions()
-    await stopNativeMessagingIPC()
-
-    // Ensure any running native host is terminated so it cannot continue talking
-    await killNativeMessagingHostProcesses()
+    await nativeMessaging().clearSessions()
+    await nativeMessaging().stop()
 
     // Clean unused manifest file and make sure browser cannot respawn the host while off
-    await cleanupNativeMessaging().catch(() => {})
+    await nativeMessaging()
+      .cleanup()
+      .catch(() => {})
 
     resetState()
 
@@ -123,8 +107,7 @@ export const useConnectExtension = () => {
 
     // Reset identity to force re-pairing
     // This prevents extensions from reconnecting without a new pairing token
-    const client = createOrGetPearpassClient()
-    await resetIdentity(client)
+    await nativeMessaging().identity(true)
   }
 
   // Pairing info state
@@ -139,28 +122,19 @@ export const useConnectExtension = () => {
   }
 
   const loadPairingInfo = async (reset = false) => {
-    const client = createOrGetPearpassClient()
-
-    const id = reset
-      ? // Reset pairing - generate new identity and clear sessions
-        await resetIdentity(client)
-      : // Just load existing identity
-        await getOrCreateIdentity(client)
+    // reset: generate a new identity and clear sessions; else load existing
+    const id = await nativeMessaging().identity(reset)
 
     // Mark pairing as approved for this identity so that nmBeginHandshake is allowed
-    await client
-      .encryptionAdd('nm.identity.pairingApproved', 'true')
+    await nativeMessaging()
+      .markPairingApproved()
       .catch(() => {})
 
-    const pairingToken = await getPairingToken(client, id.ed25519PublicKey)
-    const fingerprint = getFingerprint(id.ed25519PublicKey)
-    const result = {
-      pairingToken,
-      fingerprint,
+    return {
+      pairingToken: id.pairingToken,
+      fingerprint: id.fingerprint,
       tokenCreationDate: id.creationDate
     }
-
-    return result
   }
 
   const openPairingModal = (pairingToken) => {
@@ -206,9 +180,8 @@ export const useConnectExtension = () => {
   }
 
   const unpairBrowser = async (publicKey) => {
-    const client = createOrGetPearpassClient()
-    const remaining = await removeClientIdentity(client, publicKey)
-    closeSessionsForClient(publicKey)
+    const remaining = await nativeMessaging().removeClient(publicKey)
+    await nativeMessaging().closeSessionsForClient(publicKey)
     const confirmed = remaining.filter(
       (entry) => entry.pairingState === PAIRING_STATES.CONFIRMED
     )

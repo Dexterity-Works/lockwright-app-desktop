@@ -1,5 +1,6 @@
 import {
   getNativeMessagingEnabled,
+  migrateLegacyClientKeyCache,
   pushNativeMessagingPrefs,
   readNativeMessagingPrefs,
   setNativeMessagingEnabled
@@ -94,6 +95,42 @@ describe('nativeMessagingPreferences', () => {
 
       setNativeMessagingPrefs.mockRejectedValueOnce(new Error('no main'))
       await expect(pushNativeMessagingPrefs()).resolves.toBeUndefined()
+    })
+  })
+
+  describe('migrateLegacyClientKeyCache', () => {
+    afterEach(() => {
+      delete window.electronAPI
+    })
+
+    it('hands the cached keys to main once and clears the entry', async () => {
+      const importClientKeys = jest.fn().mockResolvedValue(undefined)
+      window.electronAPI = { nativeMessaging: { importClientKeys } }
+      localStorage.setItem(
+        LOCAL_STORAGE_KEYS.NM_CLIENT_PUBLIC_KEY,
+        JSON.stringify(['chromePub', 7, ''])
+      )
+
+      await migrateLegacyClientKeyCache()
+      expect(importClientKeys).toHaveBeenCalledWith(['chromePub'])
+      expect(
+        localStorage.getItem(LOCAL_STORAGE_KEYS.NM_CLIENT_PUBLIC_KEY)
+      ).toBeNull()
+
+      await migrateLegacyClientKeyCache()
+      expect(importClientKeys).toHaveBeenCalledTimes(1)
+    })
+
+    it('treats a bare legacy key as one entry and keeps it when main fails', async () => {
+      const importClientKeys = jest.fn().mockRejectedValue(new Error('x'))
+      window.electronAPI = { nativeMessaging: { importClientKeys } }
+      localStorage.setItem(LOCAL_STORAGE_KEYS.NM_CLIENT_PUBLIC_KEY, 'bare==')
+
+      await migrateLegacyClientKeyCache()
+      expect(importClientKeys).toHaveBeenCalledWith(['bare=='])
+      expect(
+        localStorage.getItem(LOCAL_STORAGE_KEYS.NM_CLIENT_PUBLIC_KEY)
+      ).toBe('bare==')
     })
   })
 })
