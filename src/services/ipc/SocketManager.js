@@ -1,4 +1,4 @@
-import { randomBytes } from 'crypto'
+import { createHmac, randomBytes } from 'crypto'
 import fs from 'fs'
 import { homedir, platform } from 'os'
 import { join } from 'path'
@@ -35,10 +35,13 @@ export class SocketManager {
   }
 
   /**
-   * Pick the path for the next listen. Fresh pipe name on Windows.
+   * Pick the path for the next listen. Fresh pipe name and secret on
+   * every start, so a pointer left by a crashed run proves nothing.
    */
   renewPath() {
     this.socketPath = this.getSocketPath(this.socketName)
+    /** @type {Buffer} shared with the bridge through the pointer file */
+    this.secret = randomBytes(32)
     return this.socketPath
   }
 
@@ -52,14 +55,31 @@ export class SocketManager {
 
   /**
    * Tell the bridge which pipe to use (Windows only). Call once listening.
-   * Atomic so the bridge never reads a half-written name.
+   * Writes `{ pipe, secret }`; the bridge challenges the pipe owner with
+   * nmProveServer so a squatter on a stale name cannot pass as us.
+   * Atomic so the bridge never reads a half-written file.
    */
   async publishPath() {
     if (platform() !== 'win32') return
     const pipeFile = this.getPipeFilePath()
     const tmpFile = `${pipeFile}.tmp-${process.pid}`
-    await writeFile(tmpFile, this.socketPath, { mode: 0o600 })
+    const pointer = JSON.stringify({
+      pipe: this.socketPath,
+      secret: this.secret.toString('hex')
+    })
+    await writeFile(tmpFile, pointer, { mode: 0o600 })
     await rename(tmpFile, pipeFile)
+  }
+
+  /**
+   * Answer the bridge's challenge: HMAC-SHA256(secret, nonce).
+   * @param {string} nonceHex
+   * @returns {string} proof as hex
+   */
+  proveOwnership(nonceHex) {
+    return createHmac('sha256', this.secret)
+      .update(Buffer.from(nonceHex, 'hex'))
+      .digest('hex')
   }
 
   /**

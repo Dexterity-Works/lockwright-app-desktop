@@ -1,3 +1,4 @@
+import { createHmac } from 'crypto'
 import { promises as fsp } from 'fs'
 import { platform } from 'os'
 import { join } from 'path'
@@ -19,6 +20,7 @@ import {
   startNativeMessagingIPC,
   stopNativeMessagingIPC
 } from './nativeMessagingIPCServer.js'
+import { SecurityErrorCodes } from '../constants/securityErrors.js'
 import { logger } from '../utils/logger.js'
 
 // Mock dependencies
@@ -419,6 +421,36 @@ describe('nativeMessagingIPCServer', () => {
         expect(await secure('resetTimer')).toEqual({ ok: true })
       })
 
+      it('proves it owns the pipe before any session, without resetting the auto-lock timer', async () => {
+        await serverInstance.start()
+        const handlers = IPC.Server.mock.calls[0][0].handlers
+        const dispatchEvent = jest.spyOn(window, 'dispatchEvent')
+        const nonceHex = '00112233445566778899aabbccddeeff'
+
+        const result = await handlers.nmProveServer({ nonceHex })
+
+        expect(result).toEqual({
+          proofHex: createHmac('sha256', serverInstance.socketManager.secret)
+            .update(Buffer.from(nonceHex, 'hex'))
+            .digest('hex')
+        })
+        expect(dispatchEvent).not.toHaveBeenCalledWith(
+          expect.objectContaining({ type: 'ipc-activity' })
+        )
+      })
+
+      it.each([undefined, '', 'zz', '0011223344556677', '0'.repeat(64)])(
+        'refuses nonce %p that is not 32 hex chars',
+        async (nonceHex) => {
+          await serverInstance.start()
+          const handlers = IPC.Server.mock.calls[0][0].handlers
+
+          await expect(handlers.nmProveServer({ nonceHex })).rejects.toThrow(
+            SecurityErrorCodes.INVALID_PROOF_NONCE
+          )
+        }
+      )
+
       it('does not reset the auto-lock timer on a failed plaintext call', async () => {
         await serverInstance.start()
         const handlers = IPC.Server.mock.calls[0][0].handlers
@@ -566,31 +598,37 @@ describe('nativeMessagingIPCServer', () => {
       const [[tmp, contents, options]] = fsp.writeFile.mock.calls
       expect(options).toEqual({ mode: 0o600 })
       expect(fsp.rename).toHaveBeenCalledWith(tmp, pointerFile)
-      return contents
+      return JSON.parse(contents)
     }
 
-    it('listens on a random pipe and publishes it only after listening', async () => {
+    it('listens on a random pipe and publishes it with a secret only after listening', async () => {
       await serverInstance.start()
       const server = serverInstance.server
 
       expect(server.options.socketPath).toMatch(pipePattern)
-      expect(published()).toBe(server.options.socketPath)
+      expect(published()).toEqual({
+        pipe: server.options.socketPath,
+        secret: serverInstance.socketManager.secret.toString('hex')
+      })
+      expect(published().secret).toMatch(/^[0-9a-f]{64}$/)
       expect(server.ready.mock.invocationCallOrder[0]).toBeLessThan(
         fsp.rename.mock.invocationCallOrder[0]
       )
     })
 
-    it('uses a fresh pipe on every start', async () => {
+    it('uses a fresh pipe and secret on every start', async () => {
       await serverInstance.start()
-      const firstPipe = serverInstance.server.options.socketPath
+      const first = published()
       await serverInstance.stop()
       jest.clearAllMocks()
 
       await serverInstance.start()
 
-      expect(serverInstance.server.options.socketPath).toMatch(pipePattern)
-      expect(serverInstance.server.options.socketPath).not.toBe(firstPipe)
-      expect(published()).toBe(serverInstance.server.options.socketPath)
+      const second = published()
+      expect(second.pipe).toMatch(pipePattern)
+      expect(second.pipe).toBe(serverInstance.server.options.socketPath)
+      expect(second.pipe).not.toBe(first.pipe)
+      expect(second.secret).not.toBe(first.secret)
     })
 
     it('withdraws the published pipe before closing it', async () => {

@@ -1,6 +1,8 @@
 import IPC from 'pear-ipc'
 
+import { SecurityErrorCodes } from '../constants/securityErrors.js'
 import { COMMAND_DEFINITIONS } from '../shared/commandDefinitions'
+import { createErrorWithCode } from '../utils/createErrorWithCode.js'
 import { logger } from '../utils/logger'
 import { EncryptionHandlers } from './handlers/EncryptionHandlers'
 import { SecureRequestHandler } from './handlers/SecureRequestHandler'
@@ -80,6 +82,12 @@ export class NativeMessagingIPCServer {
       'checkExtensionPairingStatus',
       securityHandlers.checkExtensionPairingStatus.bind(securityHandlers)
     )
+    // Pipe ownership proof for the bridge; before any session, never activity
+    this.methodRegistry.register(
+      'nmProveServer',
+      this.nmProveServer.bind(this),
+      { logLevel: 'DEBUG' }
+    )
 
     // Register encryption bootstrap methods
     this.methodRegistry.register(
@@ -114,6 +122,25 @@ export class NativeMessagingIPCServer {
       encryptionHandlers,
       vaultHandlers
     )
+  }
+
+  /**
+   * Prove to the bridge that this process owns the published pipe:
+   * HMAC-SHA256 of its nonce under the secret in the pointer file.
+   * @param {{ nonceHex?: string }} params
+   * @returns {Promise<{ proofHex: string }>}
+   */
+  async nmProveServer(params) {
+    const { nonceHex } = params || {}
+    if (typeof nonceHex !== 'string' || !/^[0-9a-f]{32}$/i.test(nonceHex)) {
+      throw new Error(
+        createErrorWithCode(
+          SecurityErrorCodes.INVALID_PROOF_NONCE,
+          'nonceHex must be 32 hex chars'
+        )
+      )
+    }
+    return { proofHex: this.socketManager.proveOwnership(nonceHex) }
   }
 
   /**

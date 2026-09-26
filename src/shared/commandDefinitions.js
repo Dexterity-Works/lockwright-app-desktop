@@ -52,6 +52,7 @@ const COMMAND_DEFINITIONS = [
   { id: 1104, name: 'nmSecureRequest' },
   { id: 1105, name: 'nmCloseSession' },
   { id: 1106, name: 'nmConfirmPairing' },
+  { id: 1107, name: 'nmProveServer' },
 
   // Pairing and misc commands
   { id: 1025, name: 'pairActiveVault' },

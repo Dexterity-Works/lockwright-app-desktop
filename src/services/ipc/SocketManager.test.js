@@ -1,7 +1,9 @@
 jest.mock('fs', () => ({
   promises: {
     unlink: jest.fn(),
-    mkdir: jest.fn()
+    mkdir: jest.fn(),
+    writeFile: jest.fn(),
+    rename: jest.fn()
   }
 }))
 jest.mock('os', () => ({
@@ -48,6 +50,60 @@ describe('SocketManager', () => {
       require('os').platform.mockReturnValue('linux')
       const manager = new SocketManager(socketName)
       expect(manager.getSocketPath(socketName)).toBe(unixPath)
+    })
+  })
+
+  describe('publishPath', () => {
+    const pointerFile = '/home/testuser/.lockwright/testSocket.pipe'
+
+    it('publishes the pipe and a fresh secret as JSON, 0o600, via temp and rename', async () => {
+      require('os').platform.mockReturnValue('win32')
+      const manager = new SocketManager(socketName)
+
+      await manager.publishPath()
+
+      const [[tmpFile, contents, options]] = fs.promises.writeFile.mock.calls
+      expect(tmpFile).toMatch(
+        /^\/home\/testuser\/\.lockwright\/testSocket\.pipe\.tmp-\d+$/
+      )
+      expect(options).toEqual({ mode: 0o600 })
+      expect(fs.promises.rename).toHaveBeenCalledWith(tmpFile, pointerFile)
+      expect(JSON.parse(contents)).toEqual({
+        pipe: manager.getPath(),
+        secret: expect.stringMatching(/^[0-9a-f]{64}$/)
+      })
+    })
+
+    it('rotates the secret with the pipe on every renewPath', () => {
+      require('os').platform.mockReturnValue('win32')
+      const manager = new SocketManager(socketName)
+      const first = manager.secret.toString('hex')
+
+      manager.renewPath()
+
+      expect(manager.secret.toString('hex')).not.toBe(first)
+    })
+
+    it('writes nothing on Unix', async () => {
+      require('os').platform.mockReturnValue('linux')
+      const manager = new SocketManager(socketName)
+
+      await manager.publishPath()
+
+      expect(fs.promises.writeFile).not.toHaveBeenCalled()
+    })
+  })
+
+  describe('proveOwnership', () => {
+    it('answers a nonce with HMAC-SHA256(secret, nonce) as hex', () => {
+      require('os').platform.mockReturnValue('win32')
+      const manager = new SocketManager(socketName)
+      manager.secret = Buffer.from('0b'.repeat(32), 'hex')
+
+      // HMAC-SHA256 over the 16 nonce bytes, computed with node:crypto
+      expect(manager.proveOwnership('48692054686572650000000000000000')).toBe(
+        '4455111aefbe4c84b13c5586cf20d0461f194f9462b2349275d200227f4e6fbe'
+      )
     })
   })
 
