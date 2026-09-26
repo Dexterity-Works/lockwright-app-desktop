@@ -83,7 +83,12 @@ export class MethodRegistry {
       'nmConfirmPairing',
       'checkExtensionPairingStatus'
     ]
-    const autoLockMethods = ['getAutoLockSettings']
+    const autoLockMethods = [
+      'getAutoLockSettings',
+      'setAutoLockTimeout',
+      'setAutoLockEnabled',
+      'resetTimer'
+    ]
     const exemptMethods = [
       ...authMethods,
       ...statusMethods,

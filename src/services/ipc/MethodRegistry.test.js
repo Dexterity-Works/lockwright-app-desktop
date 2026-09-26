@@ -127,6 +127,20 @@ describe('MethodRegistry', () => {
         expect(mockClient.vaultsGetStatus).not.toHaveBeenCalled()
       })
 
+      it('should skip auth check for auto-lock controls', async () => {
+        const handler = jest.fn().mockResolvedValue({ ok: true })
+        registry.register('setAutoLockTimeout', handler)
+
+        const result = await registry.execute(
+          'setAutoLockTimeout',
+          { autoLockTimeoutMs: 1000 },
+          context
+        )
+
+        expect(result).toEqual({ ok: true })
+        expect(mockClient.vaultsGetStatus).not.toHaveBeenCalled()
+      })
+
       it('should handle encryption status check errors', async () => {
         mockClient.vaultsGetStatus.mockRejectedValue(new Error('Network error'))
 

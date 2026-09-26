@@ -31,18 +31,12 @@ export class NativeMessagingIPCServer {
     /** @type {string} */
     this.socketPath = this.socketManager.getPath()
 
-    // Create wrapper function for IPC activity
-    const ipcActivityWrapper =
-      (handler) =>
-      async (...args) => {
-        this.emitIPCActivity()
-        return handler(...args)
-      }
-
+    // Plaintext methods never count as activity: any local process can call
+    // them, so they must not reset the auto-lock timer.
     /** @type {MethodRegistry} */
-    this.methodRegistry = new MethodRegistry(ipcActivityWrapper)
+    this.methodRegistry = new MethodRegistry()
     /** @type {MethodRegistry} */
-    this.secureMethodRegistry = new MethodRegistry(ipcActivityWrapper)
+    this.secureMethodRegistry = new MethodRegistry()
     /** @type {Map<string, number>} */
     this.clientRequestCounts = new Map()
     /** @type {((payload: unknown) => void) | null} */
@@ -83,22 +77,6 @@ export class NativeMessagingIPCServer {
       securityHandlers.nmCloseSession.bind(securityHandlers)
     )
     this.methodRegistry.register(
-      'getAutoLockSettings',
-      securityHandlers.getAutoLockSettings.bind(securityHandlers)
-    )
-    this.methodRegistry.register(
-      'setAutoLockTimeout',
-      securityHandlers.setAutoLockTimeout.bind(securityHandlers)
-    )
-    this.methodRegistry.register(
-      'setAutoLockEnabled',
-      securityHandlers.setAutoLockEnabled.bind(securityHandlers)
-    )
-    this.methodRegistry.register(
-      'resetTimer',
-      securityHandlers.resetTimer.bind(securityHandlers)
-    )
-    this.methodRegistry.register(
       'checkExtensionPairingStatus',
       securityHandlers.checkExtensionPairingStatus.bind(securityHandlers)
     )
@@ -121,7 +99,8 @@ export class NativeMessagingIPCServer {
     // Register secure channel handler
     const secureRequestHandler = new SecureRequestHandler(
       this.client,
-      this.secureMethodRegistry
+      this.secureMethodRegistry,
+      () => this.emitIPCActivity()
     )
     this.methodRegistry.register(
       'nmSecureRequest',
@@ -130,7 +109,11 @@ export class NativeMessagingIPCServer {
     )
 
     // Register methods accessible through secure channel
-    this.registerSecureMethods(encryptionHandlers, vaultHandlers)
+    this.registerSecureMethods(
+      securityHandlers,
+      encryptionHandlers,
+      vaultHandlers
+    )
   }
 
   /**
@@ -146,7 +129,26 @@ export class NativeMessagingIPCServer {
   /**
    * Register methods that are only accessible through the secure channel
    */
-  registerSecureMethods(encryptionHandlers, vaultHandlers) {
+  registerSecureMethods(securityHandlers, encryptionHandlers, vaultHandlers) {
+    // Auto-lock controls: a session, not just a socket, is needed to
+    // disable the lock or keep the timer alive
+    this.secureMethodRegistry.register(
+      'getAutoLockSettings',
+      securityHandlers.getAutoLockSettings.bind(securityHandlers)
+    )
+    this.secureMethodRegistry.register(
+      'setAutoLockTimeout',
+      securityHandlers.setAutoLockTimeout.bind(securityHandlers)
+    )
+    this.secureMethodRegistry.register(
+      'setAutoLockEnabled',
+      securityHandlers.setAutoLockEnabled.bind(securityHandlers)
+    )
+    this.secureMethodRegistry.register(
+      'resetTimer',
+      securityHandlers.resetTimer.bind(securityHandlers)
+    )
+
     // Encryption methods
     this.secureMethodRegistry.register(
       'encryptionInit',

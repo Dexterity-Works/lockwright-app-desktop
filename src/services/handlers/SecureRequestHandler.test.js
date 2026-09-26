@@ -32,13 +32,19 @@ describe('SecureRequestHandler.handle', () => {
   let handler
   let mockClient
   let mockMethodRegistry
+  let onActivity
 
   beforeEach(() => {
     mockClient = {}
     mockMethodRegistry = {
       execute: jest.fn()
     }
-    handler = new SecureRequestHandler(mockClient, mockMethodRegistry)
+    onActivity = jest.fn()
+    handler = new SecureRequestHandler(
+      mockClient,
+      mockMethodRegistry,
+      onActivity
+    )
     jest.clearAllMocks()
   })
 
@@ -85,6 +91,10 @@ describe('SecureRequestHandler.handle', () => {
       'SECURE-REQUEST',
       'Received method: testMethod'
     )
+    expect(onActivity).toHaveBeenCalledTimes(1)
+    expect(onActivity.mock.invocationCallOrder[0]).toBeGreaterThan(
+      sessionManager.decryptWithSession.mock.invocationCallOrder[0]
+    )
   })
 
   it('does not advance the sequence when the ciphertext fails to decrypt', async () => {
@@ -107,6 +117,7 @@ describe('SecureRequestHandler.handle', () => {
 
     expect(sessionManager.recordIncomingSeq).not.toHaveBeenCalled()
     expect(mockMethodRegistry.execute).not.toHaveBeenCalled()
+    expect(onActivity).not.toHaveBeenCalled()
   })
 
   it('should throw INVALID_SECURE_PAYLOAD if payload is missing fields', async () => {

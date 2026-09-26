@@ -9,6 +9,8 @@ jest.mock('lockwright-lib-constants', () => ({
   IPC_SOCKET_DIR_NAME: '.lockwright'
 }))
 
+import { SecureRequestHandler } from './handlers/SecureRequestHandler'
+import { SecurityHandlers } from './handlers/SecurityHandlers'
 import {
   getIpcPath,
   getIPCSocketPath,
@@ -383,35 +385,70 @@ describe('nativeMessagingIPCServer', () => {
         })
       })
 
-      it('should expose auto-lock handlers on the method registry', async () => {
+      it('refuses auto-lock controls without a session', async () => {
         await serverInstance.start()
         const handlers = IPC.Server.mock.calls[0][0].handlers
 
-        expect(handlers.getAutoLockSettings).toBeDefined()
-        expect(handlers.setAutoLockTimeout).toBeDefined()
-        expect(handlers.setAutoLockEnabled).toBeDefined()
-        expect(handlers.resetTimer).toBeDefined()
+        expect(handlers.getAutoLockSettings).toBeUndefined()
+        expect(handlers.setAutoLockTimeout).toBeUndefined()
+        expect(handlers.setAutoLockEnabled).toBeUndefined()
+        expect(handlers.resetTimer).toBeUndefined()
       })
 
-      it('should call auto-lock handlers correctly', async () => {
+      it('runs auto-lock controls through the secure channel', async () => {
         await serverInstance.start()
-        const handlers = IPC.Server.mock.calls[0][0].handlers
+        const secure = (method, params) =>
+          serverInstance.secureMethodRegistry.execute(method, params, {
+            client: mockPearpassClient
+          })
 
-        expect(await handlers.getAutoLockSettings()).toEqual({
+        expect(await secure('getAutoLockSettings')).toEqual({
           autoLockEnabled: true,
           autoLockTimeoutMs: 1234
         })
         expect(
-          await handlers.setAutoLockTimeout({ autoLockTimeoutMs: 5000 })
+          await secure('setAutoLockTimeout', { autoLockTimeoutMs: 5000 })
         ).toEqual({
           ok: true
         })
         expect(
-          await handlers.setAutoLockEnabled({ autoLockEnabled: false })
+          await secure('setAutoLockEnabled', { autoLockEnabled: false })
         ).toEqual({
           ok: true
         })
-        expect(await handlers.resetTimer()).toEqual({ ok: true })
+        expect(await secure('resetTimer')).toEqual({ ok: true })
+      })
+
+      it('does not reset the auto-lock timer on a failed plaintext call', async () => {
+        await serverInstance.start()
+        const handlers = IPC.Server.mock.calls[0][0].handlers
+        const dispatchEvent = jest.spyOn(window, 'dispatchEvent')
+        SecurityHandlers.mock.instances
+          .at(-1)
+          .nmGetAppIdentity.mockRejectedValueOnce(new Error('bad token'))
+
+        await expect(handlers.nmGetAppIdentity({})).rejects.toThrow('bad token')
+
+        expect(dispatchEvent).not.toHaveBeenCalledWith(
+          expect.objectContaining({ type: 'ipc-activity' })
+        )
+      })
+
+      it('resets the auto-lock timer only from the secure request handler', async () => {
+        await serverInstance.start()
+        const handlers = IPC.Server.mock.calls[0][0].handlers
+        const dispatchEvent = jest.spyOn(window, 'dispatchEvent')
+
+        await handlers.nmBeginHandshake({ extEphemeralPubB64: 'test-key' })
+        expect(dispatchEvent).not.toHaveBeenCalledWith(
+          expect.objectContaining({ type: 'ipc-activity' })
+        )
+
+        const [, , onActivity] = SecureRequestHandler.mock.calls.at(-1)
+        onActivity()
+        expect(dispatchEvent).toHaveBeenCalledWith(
+          expect.objectContaining({ type: 'ipc-activity' })
+        )
       })
 
       it('should subscribe to vault-access-revoked on the pearpass client', async () => {

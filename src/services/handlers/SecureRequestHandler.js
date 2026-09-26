@@ -12,9 +12,16 @@ import { getSession } from '../security/sessionStore.js'
  * Handles secure encrypted requests from the extension
  */
 export class SecureRequestHandler {
-  constructor(client, methodRegistry) {
+  /**
+   * @param {object} client
+   * @param {import('../ipc/MethodRegistry').MethodRegistry} methodRegistry
+   * @param {() => void} [onActivity] called once a request has decrypted,
+   *   so only a session holder can reset the auto-lock timer
+   */
+  constructor(client, methodRegistry, onActivity = () => {}) {
     this.client = client
     this.methodRegistry = methodRegistry
+    this.onActivity = onActivity
   }
 
   /**
@@ -38,6 +45,8 @@ export class SecureRequestHandler {
     // seq is plaintext: only a request that decrypted may advance it,
     // else a forged seq locks the real client out of the session
     recordIncomingSeq(sessionId, seq)
+
+    this.onActivity()
 
     logger.debug('SECURE-REQUEST', `Received method: ${request.method}`)
 
