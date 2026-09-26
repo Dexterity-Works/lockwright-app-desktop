@@ -1,6 +1,6 @@
 import { useCallback, useMemo, useState } from 'react'
 
-import { generateAvatarInitials } from 'lockwright-utils-avatar-initials'
+import { generateAvatarInitials } from '../../../utils/generateAvatarInitials'
 import { useRecords, useVault } from 'lockwright-lib-vault'
 import { Button, Dialog, ListItem, Text, useTheme } from 'lockwright-lib-ui-react-native-components'
 import { ExpandMore, LockOutlined } from 'lockwright-lib-ui-react-native-components/icons'

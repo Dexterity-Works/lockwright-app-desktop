@@ -5,37 +5,17 @@ nodeLinker: hoisted
 blockExoticSubdeps: false
 
 overrides:
-  "lockwright-lib-constants": "git+https://github.com/Dexterity-Works/lockwright-lib-constants.git#701bf1988d16458c634db85269b436eb9c07cacc"
+  "lockwright-lib-constants": "git+https://github.com/Dexterity-Works/lockwright-lib-constants.git#f6142c9554e9f972519dd8115b2b73f02b73d5fb"
   "lockwright-lib-ui-react-native-components": "git+https://github.com/Dexterity-Works/lockwright-lib-ui-react-native-components.git#design-system-v2"
 
 allowBuilds:
   "@electron/node-gyp@https://codeload.github.com/electron/node-gyp/tar.gz/06b29aafb7708acef8b3669835c8a7857ebc92d2": true
-  "lockwright-lib-ui-react-hooks@https://codeload.github.com/Dexterity-Works/lockwright-lib-ui-react-hooks/tar.gz/56efd44bfc554e38604b1acce2f3ee904b2b16ce": true
-  "lockwright-utils-avatar-initials@https://codeload.github.com/Dexterity-Works/lockwright-utils-avatar-initials/tar.gz/4b143620f2047f51296f36f34289e39a83e4c6cb": true
-  "lockwright-utils-date@https://codeload.github.com/Dexterity-Works/lockwright-utils-date/tar.gz/f95507d089126b27561a584147ebcb38852cfe58": true
-  "lockwright-utils-generate-unique-id@https://codeload.github.com/Dexterity-Works/lockwright-utils-generate-unique-id/tar.gz/99a1450ca075c570fa08855280c8f73789cea07a": true
-  "lockwright-utils-pattern-search@https://codeload.github.com/Dexterity-Works/lockwright-utils-pattern-search/tar.gz/37021914926a45d3f1ed1fd9c817db3ade370f25": true
-  "lockwright-utils-qr@https://codeload.github.com/Dexterity-Works/lockwright-utils-qr/tar.gz/1d824382bc5ed15c966e4cea824ad44517944e1b": true
-  "lockwright-utils-validator@https://codeload.github.com/Dexterity-Works/lockwright-utils-validator/tar.gz/c9fc16de463fbc78df9bb1f3aa3f588a8ae06bf9": true
-  "lockwright-lib-data-import@https://codeload.github.com/Dexterity-Works/lockwright-lib-data-import/tar.gz/5178ac264bade22523c5175c0af916d30cf5ca82": true
-  "lockwright-lib-data-export@https://codeload.github.com/Dexterity-Works/lockwright-lib-data-export/tar.gz/e2f2f642e32ee590b10be206454d1b98f30ee515": true
   "lockwright-lib-ui-react-native-components@https://codeload.github.com/Dexterity-Works/lockwright-lib-ui-react-native-components/tar.gz/82167746355a4d1b931dae2c3d4abe10a7e10b7e": true
-  "lockwright-utils-password-generator@https://codeload.github.com/Dexterity-Works/lockwright-utils-password-generator/tar.gz/382806f37823902b41087200c6d96bd83f3d3358": true
   "@tetherto/tether-dev-docs@https://codeload.github.com/Dexterity-Works/tether-dev-docs/tar.gz/cb82786f04714a56577df1555db947969ec90aeb": true
-  "lockwright-utils-password-check": true
-  "lockwright-utils-password-check@https://codeload.github.com/Dexterity-Works/lockwright-utils-password-check/tar.gz/3fb28bee9328290a12119feaaf912d1018fcf6f8": true
-  "lockwright-lib-constants": true
-  "lockwright-lib-constants@https://codeload.github.com/Dexterity-Works/lockwright-lib-constants/tar.gz/701bf1988d16458c634db85269b436eb9c07cacc": true
   "lockwright-lib-vault-core@file:../pearpass-lib-vault-core": true
   "lockwright-lib-vault@file:../pearpass-lib-vault": true
   "@tetherto/pearpass-lib-native-messaging-bridge@https://codeload.github.com/Dexterity-Works/pearpass-lib-native-messaging-bridge/tar.gz/8ad5022e06d1be141db20ac20e1fc57549859541": true
-  electron: set this to true or false
-  electron-winstaller: set this to true or false
-  esbuild: set this to true or false
   "electron-winstaller@5.4.0": true
   "electron@33.4.11": true
   "esbuild@0.21.5": true
   "esbuild@0.24.2": true
-  '@tetherto/pearpass-lib-native-messaging-bridge@https://codeload.github.com/Dexterity-Works/pearpass-lib-native-messaging-bridge/tar.gz/74407289f3877dfd08719eb18627c744d3216d02': set this to true or false
-  lockwright-lib-data-import@https://codeload.github.com/Dexterity-Works/lockwright-lib-data-import/tar.gz/82cbfdde64c2f16e71748b4a4c44a82a91a5b0d5: set this to true or false
-  '@tetherto/pearpass-lib-native-messaging-bridge@https://codeload.github.com/Dexterity-Works/pearpass-lib-native-messaging-bridge/tar.gz/db6158a07367f25766b79dd246646a1d6bbe81f5': set this to true or false

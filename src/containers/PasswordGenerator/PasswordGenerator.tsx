@@ -22,7 +22,7 @@ import {
 import type { PasswordIndicatorVariant } from 'lockwright-lib-ui-react-native-components'
 import { ContentCopy } from 'lockwright-lib-ui-react-native-components/icons'
 
-import { formatDate } from 'lockwright-utils-date'
+import { formatDate } from '../../utils/date'
 
 import { createStyles } from './PasswordGenerator.styles'
 import { useTranslation } from '../../hooks/useTranslation'

@@ -18,7 +18,9 @@ const {
 } = require('electron')
 const PearRuntime = require('pear-runtime')
 const getPearRuntimeLegacyStorage = require('pear-runtime-legacy-storage')
-const { isLinux, isWindows, isMac } = require('which-runtime')
+const isLinux = process.platform === 'linux'
+const isWindows = process.platform === 'win32'
+const isMac = process.platform === 'darwin'
 
 const { clearStaleVaultsDir } = require('./clearStaleVaultsDir.cjs')
 const {

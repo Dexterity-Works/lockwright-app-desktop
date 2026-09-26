@@ -204,7 +204,7 @@ settings:
   excludeLinksFromLockfile: false
 
 overrides:
-  lockwright-lib-constants: git+https://github.com/Dexterity-Works/lockwright-lib-constants.git#701bf1988d16458c634db85269b436eb9c07cacc
+  lockwright-lib-constants: git+https://github.com/Dexterity-Works/lockwright-lib-constants.git#f6142c9554e9f972519dd8115b2b73f02b73d5fb
   lockwright-lib-ui-react-native-components: git+https://github.com/Dexterity-Works/lockwright-lib-ui-react-native-components.git#design-system-v2
 
 importers:
@@ -239,17 +239,17 @@ importers:
         specifier: 3.10.1
         version: 3.10.1
       lockwright-lib-constants:
-        specifier: git+https://github.com/Dexterity-Works/lockwright-lib-constants.git#701bf1988d16458c634db85269b436eb9c07cacc
-        version: https://codeload.github.com/Dexterity-Works/lockwright-lib-constants/tar.gz/701bf1988d16458c634db85269b436eb9c07cacc
+        specifier: git+https://github.com/Dexterity-Works/lockwright-lib-constants.git#f6142c9554e9f972519dd8115b2b73f02b73d5fb
+        version: https://codeload.github.com/Dexterity-Works/lockwright-lib-constants/tar.gz/f6142c9554e9f972519dd8115b2b73f02b73d5fb
       lockwright-lib-data-export:
-        specifier: git+https://github.com/Dexterity-Works/lockwright-lib-data-export.git
-        version: https://codeload.github.com/Dexterity-Works/lockwright-lib-data-export/tar.gz/e2f2f642e32ee590b10be206454d1b98f30ee515
+        specifier: git+https://github.com/Dexterity-Works/lockwright-lib-data-export.git#9fe6af5fcf740fe8a52eb05a09bb188d6dcd7de1
+        version: https://codeload.github.com/Dexterity-Works/lockwright-lib-data-export/tar.gz/9fe6af5fcf740fe8a52eb05a09bb188d6dcd7de1
       lockwright-lib-data-import:
-        specifier: git+https://github.com/Dexterity-Works/lockwright-lib-data-import.git#5178ac264bade22523c5175c0af916d30cf5ca82
-        version: https://codeload.github.com/Dexterity-Works/lockwright-lib-data-import/tar.gz/5178ac264bade22523c5175c0af916d30cf5ca82
+        specifier: git+https://github.com/Dexterity-Works/lockwright-lib-data-import.git#6a872f3c2d618a3e2b16e425c2b6c6e2fed693dc
+        version: https://codeload.github.com/Dexterity-Works/lockwright-lib-data-import/tar.gz/6a872f3c2d618a3e2b16e425c2b6c6e2fed693dc
       lockwright-lib-ui-react-hooks:
-        specifier: git+https://github.com/Dexterity-Works/lockwright-lib-ui-react-hooks.git
-        version: https://codeload.github.com/Dexterity-Works/lockwright-lib-ui-react-hooks/tar.gz/56efd44bfc554e38604b1acce2f3ee904b2b16ce(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
+        specifier: git+https://github.com/Dexterity-Works/lockwright-lib-ui-react-hooks.git#8552ca7b1bd06a077c3f97b78634cb1014839ba3
+        version: https://codeload.github.com/Dexterity-Works/lockwright-lib-ui-react-hooks/tar.gz/8552ca7b1bd06a077c3f97b78634cb1014839ba3(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
       lockwright-lib-ui-react-native-components:
         specifier: git+https://github.com/Dexterity-Works/lockwright-lib-ui-react-native-components.git#design-system-v2
         version: https://codeload.github.com/Dexterity-Works/lockwright-lib-ui-react-native-components/tar.gz/82167746355a4d1b931dae2c3d4abe10a7e10b7e(postcss@8.4.49)(react-dom@19.1.0(react@19.1.0))(react-native@0.79.5(@babel/core@7.26.10)(@types/react@19.2.7)(react@19.1.0))(react@19.1.0)
@@ -259,30 +259,24 @@ importers:
       lockwright-lib-vault-core:
         specifier: file:../pearpass-lib-vault-core
         version: file:../pearpass-lib-vault-core(bare-events@2.9.1)(bare-pipe@4.2.3(bare-buffer@3.6.2))(bare-url@2.4.7)
-      lockwright-utils-avatar-initials:
-        specifier: git+https://github.com/Dexterity-Works/lockwright-utils-avatar-initials.git
-        version: https://codeload.github.com/Dexterity-Works/lockwright-utils-avatar-initials/tar.gz/4b143620f2047f51296f36f34289e39a83e4c6cb
-      lockwright-utils-date:
-        specifier: git+https://github.com/Dexterity-Works/lockwright-utils-date.git
-        version: https://codeload.github.com/Dexterity-Works/lockwright-utils-date/tar.gz/f95507d089126b27561a584147ebcb38852cfe58
       lockwright-utils-generate-unique-id:
-        specifier: git+https://github.com/Dexterity-Works/lockwright-utils-generate-unique-id.git
-        version: https://codeload.github.com/Dexterity-Works/lockwright-utils-generate-unique-id/tar.gz/99a1450ca075c570fa08855280c8f73789cea07a
+        specifier: git+https://github.com/Dexterity-Works/lockwright-utils-generate-unique-id.git#b1cec22b12b85bb1186aafa05223be64b7aea2cc
+        version: https://codeload.github.com/Dexterity-Works/lockwright-utils-generate-unique-id/tar.gz/b1cec22b12b85bb1186aafa05223be64b7aea2cc
       lockwright-utils-password-check:
-        specifier: git+https://github.com/Dexterity-Works/lockwright-utils-password-check.git#3fb28bee9328290a12119feaaf912d1018fcf6f8
-        version: https://codeload.github.com/Dexterity-Works/lockwright-utils-password-check/tar.gz/3fb28bee9328290a12119feaaf912d1018fcf6f8
+        specifier: git+https://github.com/Dexterity-Works/lockwright-utils-password-check.git#dc56473c03d574ddb80a98f2560cea69d01b1cca
+        version: https://codeload.github.com/Dexterity-Works/lockwright-utils-password-check/tar.gz/dc56473c03d574ddb80a98f2560cea69d01b1cca
       lockwright-utils-password-generator:
-        specifier: git+https://github.com/Dexterity-Works/lockwright-utils-password-generator.git
-        version: https://codeload.github.com/Dexterity-Works/lockwright-utils-password-generator/tar.gz/382806f37823902b41087200c6d96bd83f3d3358
+        specifier: git+https://github.com/Dexterity-Works/lockwright-utils-password-generator.git#e3f4b7689ff3eef247a64bff0790357d4bee793a
+        version: https://codeload.github.com/Dexterity-Works/lockwright-utils-password-generator/tar.gz/e3f4b7689ff3eef247a64bff0790357d4bee793a
       lockwright-utils-pattern-search:
-        specifier: git+https://github.com/Dexterity-Works/lockwright-utils-pattern-search.git
-        version: https://codeload.github.com/Dexterity-Works/lockwright-utils-pattern-search/tar.gz/37021914926a45d3f1ed1fd9c817db3ade370f25
+        specifier: git+https://github.com/Dexterity-Works/lockwright-utils-pattern-search.git#88169a629daf7b9a95dfe0cfdb0459671b64b428
+        version: https://codeload.github.com/Dexterity-Works/lockwright-utils-pattern-search/tar.gz/88169a629daf7b9a95dfe0cfdb0459671b64b428
       lockwright-utils-qr:
-        specifier: git+https://github.com/Dexterity-Works/lockwright-utils-qr.git
-        version: https://codeload.github.com/Dexterity-Works/lockwright-utils-qr/tar.gz/1d824382bc5ed15c966e4cea824ad44517944e1b
+        specifier: git+https://github.com/Dexterity-Works/lockwright-utils-qr.git#c6ca850b1dec0dd7e8d12d3c380964ed607114cc
+        version: https://codeload.github.com/Dexterity-Works/lockwright-utils-qr/tar.gz/c6ca850b1dec0dd7e8d12d3c380964ed607114cc
       lockwright-utils-validator:
-        specifier: git+https://github.com/Dexterity-Works/lockwright-utils-validator.git
-        version: https://codeload.github.com/Dexterity-Works/lockwright-utils-validator/tar.gz/c9fc16de463fbc78df9bb1f3aa3f588a8ae06bf9
+        specifier: git+https://github.com/Dexterity-Works/lockwright-utils-validator.git#95488f2c385ec7b09619c587417baf454134dd7b
+        version: https://codeload.github.com/Dexterity-Works/lockwright-utils-validator/tar.gz/95488f2c385ec7b09619c587417baf454134dd7b
       pear-ipc:
         specifier: 6.4.0
         version: 6.4.0(bare-buffer@3.6.2)(bare-url@2.4.7)
@@ -404,9 +398,6 @@ importers:
       wait-on:
         specifier: ^8.0.0
         version: 8.0.5
-      which-runtime:
-        specifier: ^1.3.2
-        version: 1.4.0
     optionalDependencies:
       '@esbuild/win32-x64':
         specifier: 0.24.2
@@ -4763,20 +4754,20 @@ packages:
     resolution: {integrity: sha512-iPZK6eYjbxRu3uB4/WZ3EsEIMJFMqAoopl3R+zuq0UjcAm/MO6KCweDgPfP3elTztoKP3KtnVHxTn2NHBSDVUw==}
     engines: {node: '>=10'}
 
-  lockwright-lib-constants@https://codeload.github.com/Dexterity-Works/lockwright-lib-constants/tar.gz/701bf1988d16458c634db85269b436eb9c07cacc:
-    resolution: {gitHosted: true, tarball: https://codeload.github.com/Dexterity-Works/lockwright-lib-constants/tar.gz/701bf1988d16458c634db85269b436eb9c07cacc}
+  lockwright-lib-constants@https://codeload.github.com/Dexterity-Works/lockwright-lib-constants/tar.gz/f6142c9554e9f972519dd8115b2b73f02b73d5fb:
+    resolution: {gitHosted: true, integrity: sha512-0EfPyWS8jhdCDj5Mks/mtJ05zEgDpQX6zp/fTnbV+TdKKeBiBzROMy12UtLGHbCqnLGdmp+g6Rw0j5wurUqk4g==, tarball: https://codeload.github.com/Dexterity-Works/lockwright-lib-constants/tar.gz/f6142c9554e9f972519dd8115b2b73f02b73d5fb}
     version: 0.0.11
 
-  lockwright-lib-data-export@https://codeload.github.com/Dexterity-Works/lockwright-lib-data-export/tar.gz/e2f2f642e32ee590b10be206454d1b98f30ee515:
-    resolution: {gitHosted: true, integrity: sha512-FAVRD29BF77kFp717rDQHT9BHI1DSVjBJLw+ooJ5/BqM9u5gFyPWzdyz1ixPMxXo/MUlJx34IhRwEmxVF6f9hQ==, tarball: https://codeload.github.com/Dexterity-Works/lockwright-lib-data-export/tar.gz/e2f2f642e32ee590b10be206454d1b98f30ee515}
+  lockwright-lib-data-export@https://codeload.github.com/Dexterity-Works/lockwright-lib-data-export/tar.gz/9fe6af5fcf740fe8a52eb05a09bb188d6dcd7de1:
+    resolution: {gitHosted: true, integrity: sha512-MEl9ZFKz2tNyGZ1BpEtaq6AHIzA6AWlySA8s2hesaSa8FkLnyq3AL5Ouo6QNcAIg7j4/xQuwkgZOiAmEyp2+Pw==, tarball: https://codeload.github.com/Dexterity-Works/lockwright-lib-data-export/tar.gz/9fe6af5fcf740fe8a52eb05a09bb188d6dcd7de1}
     version: 0.0.13
 
-  lockwright-lib-data-import@https://codeload.github.com/Dexterity-Works/lockwright-lib-data-import/tar.gz/5178ac264bade22523c5175c0af916d30cf5ca82:
-    resolution: {gitHosted: true, integrity: sha512-26FcRUDs01ojSq5spYciQndNKN4IjKxUzA/8w5BS+HJqNAwh9dkeKAMX2zPFBxLAWFnR7CTIrgmqnpYoiBiH4w==, tarball: https://codeload.github.com/Dexterity-Works/lockwright-lib-data-import/tar.gz/5178ac264bade22523c5175c0af916d30cf5ca82}
+  lockwright-lib-data-import@https://codeload.github.com/Dexterity-Works/lockwright-lib-data-import/tar.gz/6a872f3c2d618a3e2b16e425c2b6c6e2fed693dc:
+    resolution: {gitHosted: true, integrity: sha512-0vTvUL/rUtX+BQEIbbLborVxrt4fn5uNYkRphFolb9x1WRgfoLxbI5vsuisFzc5HTmYMNByJhf+Bo/TolObLeg==, tarball: https://codeload.github.com/Dexterity-Works/lockwright-lib-data-import/tar.gz/6a872f3c2d618a3e2b16e425c2b6c6e2fed693dc}
     version: 0.0.14
 
-  lockwright-lib-ui-react-hooks@https://codeload.github.com/Dexterity-Works/lockwright-lib-ui-react-hooks/tar.gz/56efd44bfc554e38604b1acce2f3ee904b2b16ce:
-    resolution: {gitHosted: true, tarball: https://codeload.github.com/Dexterity-Works/lockwright-lib-ui-react-hooks/tar.gz/56efd44bfc554e38604b1acce2f3ee904b2b16ce}
+  lockwright-lib-ui-react-hooks@https://codeload.github.com/Dexterity-Works/lockwright-lib-ui-react-hooks/tar.gz/8552ca7b1bd06a077c3f97b78634cb1014839ba3:
+    resolution: {gitHosted: true, integrity: sha512-5RizOIwz2JA2xpO1Io3WaKxb8RJ4WSwfdVgF33gWwG8octP3ME6JjcVj8MiLBEBIpRJT25AF9NMFdSVtYnP1uw==, tarball: https://codeload.github.com/Dexterity-Works/lockwright-lib-ui-react-hooks/tar.gz/8552ca7b1bd06a077c3f97b78634cb1014839ba3}
     version: 0.0.11
     peerDependencies:
       react: '>=18.3.1'
@@ -4824,16 +4815,8 @@ packages:
       react: '>=18.3.1'
       react-dom: '>=18.3.1'
 
-  lockwright-utils-avatar-initials@https://codeload.github.com/Dexterity-Works/lockwright-utils-avatar-initials/tar.gz/4b143620f2047f51296f36f34289e39a83e4c6cb:
-    resolution: {gitHosted: true, tarball: https://codeload.github.com/Dexterity-Works/lockwright-utils-avatar-initials/tar.gz/4b143620f2047f51296f36f34289e39a83e4c6cb}
-    version: 0.0.7
-
-  lockwright-utils-date@https://codeload.github.com/Dexterity-Works/lockwright-utils-date/tar.gz/f95507d089126b27561a584147ebcb38852cfe58:
-    resolution: {gitHosted: true, tarball: https://codeload.github.com/Dexterity-Works/lockwright-utils-date/tar.gz/f95507d089126b27561a584147ebcb38852cfe58}
-    version: 0.0.8
-
-  lockwright-utils-generate-unique-id@https://codeload.github.com/Dexterity-Works/lockwright-utils-generate-unique-id/tar.gz/99a1450ca075c570fa08855280c8f73789cea07a:
-    resolution: {gitHosted: true, tarball: https://codeload.github.com/Dexterity-Works/lockwright-utils-generate-unique-id/tar.gz/99a1450ca075c570fa08855280c8f73789cea07a}
+  lockwright-utils-generate-unique-id@https://codeload.github.com/Dexterity-Works/lockwright-utils-generate-unique-id/tar.gz/b1cec22b12b85bb1186aafa05223be64b7aea2cc:
+    resolution: {gitHosted: true, tarball: https://codeload.github.com/Dexterity-Works/lockwright-utils-generate-unique-id/tar.gz/b1cec22b12b85bb1186aafa05223be64b7aea2cc}
     version: 0.0.6
     peerDependencies:
       expo-crypto: ~13.0.0
@@ -4845,20 +4828,24 @@ packages:
     resolution: {gitHosted: true, tarball: https://codeload.github.com/Dexterity-Works/lockwright-utils-password-check/tar.gz/3fb28bee9328290a12119feaaf912d1018fcf6f8}
     version: 0.0.14
 
-  lockwright-utils-password-generator@https://codeload.github.com/Dexterity-Works/lockwright-utils-password-generator/tar.gz/382806f37823902b41087200c6d96bd83f3d3358:
-    resolution: {gitHosted: true, tarball: https://codeload.github.com/Dexterity-Works/lockwright-utils-password-generator/tar.gz/382806f37823902b41087200c6d96bd83f3d3358}
+  lockwright-utils-password-check@https://codeload.github.com/Dexterity-Works/lockwright-utils-password-check/tar.gz/dc56473c03d574ddb80a98f2560cea69d01b1cca:
+    resolution: {gitHosted: true, integrity: sha512-6zWzS4W4A2jDuTRI5KhQ/ge1vuxFFuqjq229WbxZKv0F9oQcK5hc3C9ZgbCQW4AbNg4uvO7fPAz62CjfAUHCqQ==, tarball: https://codeload.github.com/Dexterity-Works/lockwright-utils-password-check/tar.gz/dc56473c03d574ddb80a98f2560cea69d01b1cca}
+    version: 0.0.14
+
+  lockwright-utils-password-generator@https://codeload.github.com/Dexterity-Works/lockwright-utils-password-generator/tar.gz/e3f4b7689ff3eef247a64bff0790357d4bee793a:
+    resolution: {gitHosted: true, integrity: sha512-i9fSsglFa/R6bUq7U+39PXeynXrip8nlADwHCdyEY8cp4g0xOL2EIfF/CFQY+5iuw5zkno1DQFMwbZci2tiDMQ==, tarball: https://codeload.github.com/Dexterity-Works/lockwright-utils-password-generator/tar.gz/e3f4b7689ff3eef247a64bff0790357d4bee793a}
     version: 0.0.11
 
-  lockwright-utils-pattern-search@https://codeload.github.com/Dexterity-Works/lockwright-utils-pattern-search/tar.gz/37021914926a45d3f1ed1fd9c817db3ade370f25:
-    resolution: {gitHosted: true, tarball: https://codeload.github.com/Dexterity-Works/lockwright-utils-pattern-search/tar.gz/37021914926a45d3f1ed1fd9c817db3ade370f25}
+  lockwright-utils-pattern-search@https://codeload.github.com/Dexterity-Works/lockwright-utils-pattern-search/tar.gz/88169a629daf7b9a95dfe0cfdb0459671b64b428:
+    resolution: {gitHosted: true, integrity: sha512-B6SgEIR/kxzYl4JHbaGpjRER6Xrr3IwXA0EZ7CAvDC6G6AF9yrdWHvD4Lye2LjAk0diicNm1qHodYr7etHxRlg==, tarball: https://codeload.github.com/Dexterity-Works/lockwright-utils-pattern-search/tar.gz/88169a629daf7b9a95dfe0cfdb0459671b64b428}
     version: 0.0.5
 
-  lockwright-utils-qr@https://codeload.github.com/Dexterity-Works/lockwright-utils-qr/tar.gz/1d824382bc5ed15c966e4cea824ad44517944e1b:
-    resolution: {gitHosted: true, tarball: https://codeload.github.com/Dexterity-Works/lockwright-utils-qr/tar.gz/1d824382bc5ed15c966e4cea824ad44517944e1b}
+  lockwright-utils-qr@https://codeload.github.com/Dexterity-Works/lockwright-utils-qr/tar.gz/c6ca850b1dec0dd7e8d12d3c380964ed607114cc:
+    resolution: {gitHosted: true, integrity: sha512-uNO7uNNh/bmYR2/uZEN/ZGkNY154qHPumekmweoOw1r7+1+bE1fUrRFwh14F1R/iQ4dJ8L+j67MUPEqLiWiAwQ==, tarball: https://codeload.github.com/Dexterity-Works/lockwright-utils-qr/tar.gz/c6ca850b1dec0dd7e8d12d3c380964ed607114cc}
     version: 0.0.5
 
-  lockwright-utils-validator@https://codeload.github.com/Dexterity-Works/lockwright-utils-validator/tar.gz/c9fc16de463fbc78df9bb1f3aa3f588a8ae06bf9:
-    resolution: {gitHosted: true, tarball: https://codeload.github.com/Dexterity-Works/lockwright-utils-validator/tar.gz/c9fc16de463fbc78df9bb1f3aa3f588a8ae06bf9}
+  lockwright-utils-validator@https://codeload.github.com/Dexterity-Works/lockwright-utils-validator/tar.gz/95488f2c385ec7b09619c587417baf454134dd7b:
+    resolution: {gitHosted: true, integrity: sha512-b/3YP9TctPt6qXBOEwKNpy8/tkRW++Cw61affk4TJ8UeVIduo8O8yxjFIMoZSML8HCcUbHyosvkIO2ymPZvzsw==, tarball: https://codeload.github.com/Dexterity-Works/lockwright-utils-validator/tar.gz/95488f2c385ec7b09619c587417baf454134dd7b}
     version: 0.0.10
 
   lodash.debounce@4.0.8:
@@ -9022,7 +9009,7 @@ snapshots:
       bare-process: 4.5.1(bare-buffer@3.6.2)
       bare-url: 2.4.7
       events: 3.3.0
-      lockwright-lib-constants: https://codeload.github.com/Dexterity-Works/lockwright-lib-constants/tar.gz/701bf1988d16458c634db85269b436eb9c07cacc
+      lockwright-lib-constants: https://codeload.github.com/Dexterity-Works/lockwright-lib-constants/tar.gz/f6142c9554e9f972519dd8115b2b73f02b73d5fb
       pear-ipc: 6.4.0(bare-buffer@3.6.2)(bare-url@2.4.7)
     transitivePeerDependencies:
       - bare-abort-controller
@@ -13112,11 +13099,11 @@ snapshots:
     dependencies:
       p-locate: 5.0.0
 
-  lockwright-lib-constants@https://codeload.github.com/Dexterity-Works/lockwright-lib-constants/tar.gz/701bf1988d16458c634db85269b436eb9c07cacc: {}
+  lockwright-lib-constants@https://codeload.github.com/Dexterity-Works/lockwright-lib-constants/tar.gz/f6142c9554e9f972519dd8115b2b73f02b73d5fb: {}
 
-  lockwright-lib-data-export@https://codeload.github.com/Dexterity-Works/lockwright-lib-data-export/tar.gz/e2f2f642e32ee590b10be206454d1b98f30ee515: {}
+  lockwright-lib-data-export@https://codeload.github.com/Dexterity-Works/lockwright-lib-data-export/tar.gz/9fe6af5fcf740fe8a52eb05a09bb188d6dcd7de1: {}
 
-  lockwright-lib-data-import@https://codeload.github.com/Dexterity-Works/lockwright-lib-data-import/tar.gz/5178ac264bade22523c5175c0af916d30cf5ca82:
+  lockwright-lib-data-import@https://codeload.github.com/Dexterity-Works/lockwright-lib-data-import/tar.gz/6a872f3c2d618a3e2b16e425c2b6c6e2fed693dc:
     dependencies:
       '@noble/ciphers': 1.2.1
       '@noble/hashes': 1.7.1
@@ -13124,7 +13111,7 @@ snapshots:
       fflate: 0.7.4
       kdbxweb: 2.1.1
 
-  lockwright-lib-ui-react-hooks@https://codeload.github.com/Dexterity-Works/lockwright-lib-ui-react-hooks/tar.gz/56efd44bfc554e38604b1acce2f3ee904b2b16ce(react-dom@19.1.0(react@19.1.0))(react@19.1.0):
+  lockwright-lib-ui-react-hooks@https://codeload.github.com/Dexterity-Works/lockwright-lib-ui-react-hooks/tar.gz/8552ca7b1bd06a077c3f97b78634cb1014839ba3(react-dom@19.1.0(react@19.1.0))(react@19.1.0):
     dependencies:
       react: 19.1.0
       react-dom: 19.1.0(react@19.1.0)
@@ -13181,30 +13168,33 @@ snapshots:
   lockwright-lib-vault@file:../pearpass-lib-vault(@types/react@19.2.7)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)(redux@5.0.1):
     dependencies:
       '@reduxjs/toolkit': 2.5.0(react-redux@9.1.2(@types/react@19.2.7)(react@19.1.0)(redux@5.0.1))(react@19.1.0)
+      lockwright-lib-constants: https://codeload.github.com/Dexterity-Works/lockwright-lib-constants/tar.gz/f6142c9554e9f972519dd8115b2b73f02b73d5fb
+      lockwright-utils-generate-unique-id: https://codeload.github.com/Dexterity-Works/lockwright-utils-generate-unique-id/tar.gz/b1cec22b12b85bb1186aafa05223be64b7aea2cc
+      lockwright-utils-password-check: https://codeload.github.com/Dexterity-Works/lockwright-utils-password-check/tar.gz/dc56473c03d574ddb80a98f2560cea69d01b1cca
+      lockwright-utils-validator: https://codeload.github.com/Dexterity-Works/lockwright-utils-validator/tar.gz/95488f2c385ec7b09619c587417baf454134dd7b
       react: 19.1.0
       react-dom: 19.1.0(react@19.1.0)
       react-redux: 9.1.2(@types/react@19.2.7)(react@19.1.0)(redux@5.0.1)
     transitivePeerDependencies:
       - '@types/react'
+      - expo-crypto
       - redux
 
-  lockwright-utils-avatar-initials@https://codeload.github.com/Dexterity-Works/lockwright-utils-avatar-initials/tar.gz/4b143620f2047f51296f36f34289e39a83e4c6cb: {}
-
-  lockwright-utils-date@https://codeload.github.com/Dexterity-Works/lockwright-utils-date/tar.gz/f95507d089126b27561a584147ebcb38852cfe58: {}
-
-  lockwright-utils-generate-unique-id@https://codeload.github.com/Dexterity-Works/lockwright-utils-generate-unique-id/tar.gz/99a1450ca075c570fa08855280c8f73789cea07a: {}
+  lockwright-utils-generate-unique-id@https://codeload.github.com/Dexterity-Works/lockwright-utils-generate-unique-id/tar.gz/b1cec22b12b85bb1186aafa05223be64b7aea2cc: {}
 
   lockwright-utils-password-check@https://codeload.github.com/Dexterity-Works/lockwright-utils-password-check/tar.gz/3fb28bee9328290a12119feaaf912d1018fcf6f8: {}
 
-  lockwright-utils-password-generator@https://codeload.github.com/Dexterity-Works/lockwright-utils-password-generator/tar.gz/382806f37823902b41087200c6d96bd83f3d3358: {}
+  lockwright-utils-password-check@https://codeload.github.com/Dexterity-Works/lockwright-utils-password-check/tar.gz/dc56473c03d574ddb80a98f2560cea69d01b1cca: {}
 
-  lockwright-utils-pattern-search@https://codeload.github.com/Dexterity-Works/lockwright-utils-pattern-search/tar.gz/37021914926a45d3f1ed1fd9c817db3ade370f25: {}
+  lockwright-utils-password-generator@https://codeload.github.com/Dexterity-Works/lockwright-utils-password-generator/tar.gz/e3f4b7689ff3eef247a64bff0790357d4bee793a: {}
 
-  lockwright-utils-qr@https://codeload.github.com/Dexterity-Works/lockwright-utils-qr/tar.gz/1d824382bc5ed15c966e4cea824ad44517944e1b:
+  lockwright-utils-pattern-search@https://codeload.github.com/Dexterity-Works/lockwright-utils-pattern-search/tar.gz/88169a629daf7b9a95dfe0cfdb0459671b64b428: {}
+
+  lockwright-utils-qr@https://codeload.github.com/Dexterity-Works/lockwright-utils-qr/tar.gz/c6ca850b1dec0dd7e8d12d3c380964ed607114cc:
     dependencies:
       qrcode: 1.5.4
 
-  lockwright-utils-validator@https://codeload.github.com/Dexterity-Works/lockwright-utils-validator/tar.gz/c9fc16de463fbc78df9bb1f3aa3f588a8ae06bf9: {}
+  lockwright-utils-validator@https://codeload.github.com/Dexterity-Works/lockwright-utils-validator/tar.gz/95488f2c385ec7b09619c587417baf454134dd7b: {}
 
   lodash.debounce@4.0.8: {}
 

@@ -345,20 +345,8 @@ declare module 'lockwright-utils-qr' {
   export const generateQRCodeSVG: any
 }
 
-declare module 'lockwright-utils-avatar-initials' {
-  export function generateAvatarInitials(name: string): string
-}
-
 declare module 'lockwright-utils-validator' {
   export const Validator: any
-}
-
-declare module 'lockwright-utils-date' {
-  export function formatDate(
-    date: string | Date,
-    format: string,
-    separator: string
-  ): string
 }
 
 declare module 'lockwright-lib-vault/src/utils/buffer' {

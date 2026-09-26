@@ -1,6 +1,6 @@
 import React from 'react'
 
-import { generateAvatarInitials } from 'lockwright-utils-avatar-initials'
+import { generateAvatarInitials } from '../../utils/generateAvatarInitials'
 import { Text, useTheme } from 'lockwright-lib-ui-react-native-components'
 import { useFavicon } from 'lockwright-lib-vault'
 

@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react'
 
 // @ts-ignore - JS module without type declarations
-import { generateAvatarInitials } from 'lockwright-utils-avatar-initials'
+import { generateAvatarInitials } from '../../../utils/generateAvatarInitials'
 import { Button, Dialog, Text, useTheme } from 'lockwright-lib-ui-react-native-components'
 import { useFolders, useRecords } from 'lockwright-lib-vault'
 

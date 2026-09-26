@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react'
 
-import { formatDate } from 'lockwright-utils-date'
+import { formatDate } from '../../../utils/date'
 import {
   Button,
   ContextMenu,
