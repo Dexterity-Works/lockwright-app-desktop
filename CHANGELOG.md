@@ -11,7 +11,7 @@ Starts at 0.0.17, after the Lockwright package rename. Earlier history is git.
 
 ## [0.0.27] - 2026-09-27
 
-`BUMP_SHA`
+`8d75d4629859d202f7d4e42f97821e57ed71e639`
 
 ### Security
 
@@ -141,8 +141,8 @@ Starts at 0.0.17, after the Lockwright package rename. Earlier history is git.
 
 - A PearPass vault copied onto disk is treated as a vault, not empty.
 
-[unreleased]: https://github.com/Dexterity-Works/lockwright-app-desktop/compare/BUMP_SHA...HEAD
-[0.0.27]: https://github.com/Dexterity-Works/lockwright-app-desktop/compare/8d12b446874c983511c486751d05ac9f0631932f...BUMP_SHA
+[unreleased]: https://github.com/Dexterity-Works/lockwright-app-desktop/compare/8d75d4629859d202f7d4e42f97821e57ed71e639...HEAD
+[0.0.27]: https://github.com/Dexterity-Works/lockwright-app-desktop/compare/8d12b446874c983511c486751d05ac9f0631932f...8d75d4629859d202f7d4e42f97821e57ed71e639
 [0.0.26]: https://github.com/Dexterity-Works/lockwright-app-desktop/compare/9f57e1d733e098e6c2ab5061574735a62b000a4e...8d12b446874c983511c486751d05ac9f0631932f
 [0.0.25]: https://github.com/Dexterity-Works/lockwright-app-desktop/compare/812fba79e2e17c7939426ccad01f840e5e72ef64...9f57e1d733e098e6c2ab5061574735a62b000a4e
 [0.0.24]: https://github.com/Dexterity-Works/lockwright-app-desktop/compare/69c6e3c8c45f18beebfd59f0940da53876320166...812fba79e2e17c7939426ccad01f840e5e72ef64
