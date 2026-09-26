@@ -103,7 +103,7 @@ function spawnDetachedWindowsClipboardHelper(
   )
 }
 
-function scheduleClipboardCleanup({
+async function scheduleClipboardCleanup({
   app,
   clipboard,
   logger,
@@ -115,7 +115,9 @@ function scheduleClipboardCleanup({
     Number.isFinite(delayMs) && delayMs > 0
       ? delayMs
       : DEFAULT_CLIPBOARD_CLEAR_DELAY_MS
-  const textToMatch = typeof text === 'string' ? text : clipboard.readText()
+  // clipboard.readText() is async from Electron 44 on.
+  const textToMatch =
+    typeof text === 'string' ? text : await clipboard.readText()
 
   if (typeof textToMatch !== 'string' || textToMatch.length === 0) {
     return false

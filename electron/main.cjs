@@ -27,10 +27,10 @@ const {
   legacyUserDataDirs,
   migratePearPassUserData
 } = require('./migrateUserData.cjs')
+const { openExternalIfAllowed } = require('./openExternalPolicy.cjs')
 const { adoptInheritedVault, hasVault } = require('./pickRuntimeStorage.cjs')
 // eslint-disable-next-line import/order
 const { scheduleClipboardCleanup } = require('./clipboardCleanup.cjs')
-const { openExternalIfAllowed } = require('./openExternalPolicy.cjs')
 
 const debugMode = false
 
@@ -684,7 +684,8 @@ function createWindow() {
     }
   })
 
-  mainWindow.webContents.on('console-message', (_e, level, message, line, sourceId) => {
+  mainWindow.webContents.on('console-message', (event) => {
+    const { level, message, line, sourceId } = event
     emitStartupMarker(
       'RENDERER_CONSOLE',
       `level=${level} ${message} (${sourceId}:${line})`

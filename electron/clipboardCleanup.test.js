@@ -19,7 +19,7 @@ jest.mock('child_process', () => ({
   }))
 }))
 
-const scheduleWith = (isWindows) => {
+const scheduleWith = (isWindows, overrides = {}) => {
   const { scheduleClipboardCleanup } = require('./clipboardCleanup.cjs')
   return scheduleClipboardCleanup({
     app: {
@@ -27,11 +27,13 @@ const scheduleWith = (isWindows) => {
         name === 'temp' ? 'C:\\Temp' : `/unknown/${name}`
       )
     },
-    clipboard: { readText: jest.fn(() => 'secret') },
+    // Electron 44: clipboard.readText() resolves asynchronously.
+    clipboard: { readText: jest.fn(() => Promise.resolve('secret')) },
     logger: { warn: jest.fn() },
     isWindows,
     text: 'secret',
-    delayMs: 30000
+    delayMs: 30000,
+    ...overrides
   })
 }
 
@@ -45,11 +47,11 @@ describe('clipboardCleanup', () => {
     ['Unix', false]
   ])(
     'hands the secret to the %s helper over stdin, never a file or argv',
-    (_label, isWindows) => {
+    async (_label, isWindows) => {
       const fs = require('fs')
       const { spawn } = require('child_process')
 
-      expect(scheduleWith(isWindows)).toBe(true)
+      await expect(scheduleWith(isWindows)).resolves.toBe(true)
 
       for (const [, data] of fs.writeFileSync.mock.calls) {
         expect(String(data)).not.toContain('secret')
@@ -64,12 +66,12 @@ describe('clipboardCleanup', () => {
     }
   )
 
-  it('uses the Windows script', () => {
+  it('uses the Windows script', async () => {
     const path = require('path')
     const fs = require('fs')
     const { spawn } = require('child_process')
 
-    expect(scheduleWith(true)).toBe(true)
+    await expect(scheduleWith(true)).resolves.toBe(true)
     expect(fs.writeFileSync).toHaveBeenCalledWith(
       path.join('C:\\Temp', 'pearpass-clipboard-cleanup-current.token'),
       'token-1',
@@ -91,5 +93,27 @@ describe('clipboardCleanup', () => {
         windowsHide: true
       })
     )
+  })
+
+  it('awaits the async clipboard read when no text is given', async () => {
+    const { spawn } = require('child_process')
+
+    await expect(scheduleWith(false, { text: undefined })).resolves.toBe(true)
+    expect(spawn.mock.results[0].value.stdin.end).toHaveBeenCalledWith(
+      'secret',
+      'utf8'
+    )
+  })
+
+  it('schedules nothing when the clipboard is empty', async () => {
+    const { spawn } = require('child_process')
+
+    await expect(
+      scheduleWith(false, {
+        text: undefined,
+        clipboard: { readText: jest.fn(() => Promise.resolve('')) }
+      })
+    ).resolves.toBe(false)
+    expect(spawn).not.toHaveBeenCalled()
   })
 })
