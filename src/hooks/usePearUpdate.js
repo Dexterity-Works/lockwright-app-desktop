@@ -1,5 +1,3 @@
-/** @typedef {import('pear-interface')} */
-
 import { useEffect, useRef } from 'react'
 
 import { html } from 'htm/react'

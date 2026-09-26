@@ -1,5 +1,3 @@
-/** @typedef {import('pear-interface')} */
-
 class Logger {
   constructor({ debugMode = false } = {}) {
     this.debugMode = debugMode

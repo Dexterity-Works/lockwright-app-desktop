@@ -48,7 +48,6 @@ describe('Lockwright app id', () => {
       fs.readFileSync(path.join(root, 'package.json'), 'utf8')
     )
     expect(pkg.name).toBe('lockwright-app-desktop')
-    expect(pkg.pear.name).toBe('lockwright-app-desktop')
   })
 
   it('ships productName Lockwright, not PearPass', () => {
@@ -91,13 +90,6 @@ describe('Lockwright app id', () => {
     expect(src).not.toMatch(/sendSlackFeedback|sendGoogleFormFeedback/)
     expect(src).toMatch(/PEARPASS_WEBSITE/)
     expect(src).toMatch(/\/contact\//)
-
-    const pkg = JSON.parse(
-      fs.readFileSync(path.join(root, 'package.json'), 'utf8')
-    )
-    const links = (pkg.pear.links || []).join('\n')
-    expect(links).not.toMatch(/slack\.com/)
-    expect(links).not.toMatch(/docs\.google\.com\/forms/)
   })
 
   it('nulls the pear upgrade link for Linux AppImage like Windows', () => {

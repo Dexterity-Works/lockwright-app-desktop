@@ -1,4 +1,4 @@
-/** @typedef {import('pear-interface')} */ /* global Pear */
+/* global Pear */
 import pearRun from 'pear-run'
 
 let pipe
