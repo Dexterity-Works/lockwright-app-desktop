@@ -27,6 +27,7 @@ const {
   legacyUserDataDirs,
   migratePearPassUserData
 } = require('./migrateUserData.cjs')
+const { createNativeMessaging } = require('./nativeMessaging.cjs')
 const { openExternalIfAllowed } = require('./openExternalPolicy.cjs')
 const { adoptInheritedVault, hasVault } = require('./pickRuntimeStorage.cjs')
 // eslint-disable-next-line import/order
@@ -148,6 +149,8 @@ let workletSidecar = null
 
 /** @type {import('lockwright-lib-vault-core').PearpassVaultClient | null} */
 let vaultClient = null
+
+const nativeMessaging = createNativeMessaging()
 
 function getExecPath() {
   if (!app.isPackaged) return null
@@ -763,6 +766,8 @@ function registerIPC() {
   })
 
   ipcMain.handle('app:getVersion', () => app.getVersion())
+
+  nativeMessaging.register(ipcMain)
 
   ipcMain.handle('runtime:getConfig', async () => {
     const storage = await resolveRuntimeStorageDir()

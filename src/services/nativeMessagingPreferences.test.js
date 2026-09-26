@@ -1,5 +1,6 @@
 import {
   getNativeMessagingEnabled,
+  pushNativeMessagingPrefs,
   readNativeMessagingPrefs,
   setNativeMessagingEnabled
 } from './nativeMessagingPreferences'
@@ -66,6 +67,33 @@ describe('nativeMessagingPreferences', () => {
         autoLockEnabled: false,
         autoLockTimeoutMs: null
       })
+    })
+  })
+
+  describe('pushNativeMessagingPrefs', () => {
+    afterEach(() => {
+      delete window.electronAPI
+    })
+
+    it('is a no-op outside Electron', async () => {
+      await expect(pushNativeMessagingPrefs()).resolves.toBeUndefined()
+    })
+
+    it('sends the snapshot to main, also when the flag is toggled', async () => {
+      const setNativeMessagingPrefs = jest.fn().mockResolvedValue({
+        running: true
+      })
+      window.electronAPI = { setNativeMessagingPrefs }
+
+      setNativeMessagingEnabled(true)
+      expect(setNativeMessagingPrefs).toHaveBeenCalledWith({
+        nativeMessagingEnabled: true,
+        autoLockEnabled: true,
+        autoLockTimeoutMs: 300000
+      })
+
+      setNativeMessagingPrefs.mockRejectedValueOnce(new Error('no main'))
+      await expect(pushNativeMessagingPrefs()).resolves.toBeUndefined()
     })
   })
 })

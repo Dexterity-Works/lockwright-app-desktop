@@ -30,6 +30,15 @@ declare global {
         enabled: boolean
       ) => Promise<{ enabled: boolean; forced: boolean }>
       logError: (component: string, args: unknown[]) => void
+      setNativeMessagingPrefs: (prefs: NativeMessagingPrefs) => Promise<{
+        running: boolean
+      }>
     }
+  }
+
+  interface NativeMessagingPrefs {
+    nativeMessagingEnabled: boolean
+    autoLockEnabled: boolean
+    autoLockTimeoutMs: number | null
   }
 }

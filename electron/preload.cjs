@@ -71,5 +71,6 @@ window.electronAPI = {
   setLogging: (enabled) =>
     ipcRenderer.invoke('vault:setLogging', { enabled: !!enabled }),
   logError: (component, args) =>
-    ipcRenderer.send('renderer:logError', { component, args })
+    ipcRenderer.send('renderer:logError', { component, args }),
+  setNativeMessagingPrefs: (prefs) => ipcRenderer.invoke('nm:prefs', prefs)
 }

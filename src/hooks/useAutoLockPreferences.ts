@@ -11,6 +11,7 @@ import {
 import { DEFAULT_AUTO_LOCK_TIMEOUT, AUTO_LOCK_ENABLED } from 'lockwright-lib-constants'
 
 import { LOCAL_STORAGE_KEYS } from '../constants/localStorage'
+import { pushNativeMessagingPrefs } from '../services/nativeMessagingPreferences'
 import {
   applyAutoLockEnabled,
   applyAutoLockTimeout,
@@ -92,6 +93,11 @@ export const AutoLockProvider = ({ children }: { children: React.ReactNode }) =>
   }, [])
 
 
+
+  // The native messaging server in main reads a mirror of these settings.
+  useEffect(() => {
+    void pushNativeMessagingPrefs()
+  }, [autoLockEnabled, timeoutMs])
 
   const setAutoLockEnabled = useCallback((enabled: boolean) => {
     applyAutoLockEnabled(enabled)

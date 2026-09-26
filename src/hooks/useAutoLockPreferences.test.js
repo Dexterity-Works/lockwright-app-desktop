@@ -252,4 +252,35 @@ describe('storage sync events', () => {
 
     expect(result.current.timeoutMs).toBe(newTimeout)
   })
+
+  describe('main-process mirror', () => {
+    afterEach(() => {
+      delete window.electronAPI
+    })
+
+    it('pushes the snapshot on mount and again when a setting changes', async () => {
+      const setNativeMessagingPrefs = jest.fn().mockResolvedValue({
+        running: false
+      })
+      window.electronAPI = { setNativeMessagingPrefs }
+
+      const { result } = renderHook(() => useAutoLockPreferences(), {
+        wrapper: AutoLockProvider
+      })
+      expect(setNativeMessagingPrefs).toHaveBeenCalledWith({
+        nativeMessagingEnabled: false,
+        autoLockEnabled: true,
+        autoLockTimeoutMs: DEFAULT_AUTO_LOCK_TIMEOUT
+      })
+
+      act(() => {
+        result.current.setTimeoutMs(null)
+      })
+      expect(setNativeMessagingPrefs).toHaveBeenLastCalledWith({
+        nativeMessagingEnabled: false,
+        autoLockEnabled: true,
+        autoLockTimeoutMs: null
+      })
+    })
+  })
 })
