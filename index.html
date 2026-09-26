@@ -1,13 +1,14 @@
 <!doctype html>
 <html>
+  <head>
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; connect-src 'self'; font-src 'self' data:; object-src 'none'; base-uri 'none'"
+    />
+  </head>
   <body style="max-width: 100%; min-width: 1080px; min-height: 900px; overflow: auto;">
     <div id="root"></div>
     <link rel="stylesheet" href="./dist/renderer.bundle.css" />
-    <!-- Must run before bundle: pear-ref and similar expect global.Pear at load time -->
-    <script>
-      window.global = window.global || window;
-      window.Pear = window.Pear || { config: { storage: '', key: null, applink: '' }, constructor: {} };
-    </script>
     <script src="./dist/renderer.bundle.js"></script>
   </body>
 </html>

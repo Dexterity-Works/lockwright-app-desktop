@@ -1,7 +1,9 @@
 /* eslint-disable no-underscore-dangle */
 /**
  * Preload: with contextIsolation false, runs in the same context as the page.
- * Injects Node globals (__dirname, __filename) and Pear placeholder so the original
+ * Injects Node globals (__dirname, __filename) and the Pear placeholder the
+ * bundle's deps (pear-ref and friends) expect at load time. It lives here and
+ * not in an inline <script> so index.html's CSP can keep script-src 'self'.
  */
 const path = require('path')
 
@@ -20,6 +22,10 @@ const fsNativeExtDir = path.join(
 global.__dirname = fsNativeExtDir
 global.__filename = path.join(fsNativeExtDir, 'binding.js')
 global.global = global
+global.Pear = global.Pear || {
+  config: { storage: '', key: null, applink: '' },
+  constructor: {}
+}
 
 window.electronAPI = {
   productName: pkg.productName,
