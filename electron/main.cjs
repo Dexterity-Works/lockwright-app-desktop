@@ -712,9 +712,9 @@ function createWindow() {
     autoHideMenuBar: true,
     webPreferences: {
       preload: path.join(__dirname, 'preload.cjs'),
-      nodeIntegration: true,
-      contextIsolation: false,
-      sandbox: false
+      nodeIntegration: false,
+      contextIsolation: true,
+      sandbox: true
     }
   })
 

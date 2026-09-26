@@ -2,6 +2,7 @@ import { html } from 'htm/react'
 import { useTheme } from 'lockwright-lib-ui-react-native-components'
 import styled from 'styled-components'
 
+import { isMacPlatform } from '../../electron'
 import { PearpassLogo } from '../../svgs/PearpassLogo'
 
 const BarInner = styled.div`
@@ -24,7 +25,7 @@ const Brand = styled.div`
 `
 
 export const TitleBar = () => {
-  if (process.platform !== 'darwin') return null
+  if (!isMacPlatform()) return null
 
   const { theme } = useTheme()
   const backgroundColor = theme.colors.colorBackground

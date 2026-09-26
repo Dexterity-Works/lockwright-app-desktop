@@ -1,8 +1,8 @@
 #!/usr/bin/env node
 /**
  * Bundle the renderer (app.electron.tsx + deps) into a single file for Electron.
- * Only `crypto` stays external: kdbxweb requires it behind a try/catch and
- * resolves it at runtime in the renderer (nodeIntegration: true).
+ * Nothing stays external: the page is sandboxed without Node, so every Node
+ * touchpoint is shimmed (scripts/renderer-shims.cjs).
  */
 import * as esbuild from 'esbuild'
 import { readFile } from 'fs/promises'
@@ -13,6 +13,11 @@ import path from 'path'
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const root = path.join(__dirname, '..')
 const watch = process.argv.includes('--watch')
+const outfileArg = process.argv.indexOf('--outfile')
+const outfile =
+  outfileArg > -1
+    ? path.resolve(process.argv[outfileArg + 1])
+    : path.join(root, 'dist', 'renderer.bundle.js')
 const prod = process.env.NODE_ENV === 'production'
 const require = createRequire(import.meta.url)
 const postcss = require('postcss')
@@ -20,6 +25,7 @@ const babel = require('@babel/core')
 const fg = require('fast-glob')
 const reactStrictDomPostcssPlugin = require('react-strict-dom/postcss-plugin')
 const strictDomBabelConfig = require(path.join(root, 'babel.strict-dom.cjs'))
+const { rendererShims } = require('./renderer-shims.cjs')
 const strictDomCssInclude = [
   'app.electron.tsx',
   'src/**/*.{js,jsx,mjs,ts,tsx}',
@@ -100,7 +106,7 @@ function strictDomCssPlugin() {
 const ctx = await esbuild.context({
   entryPoints: [path.join(root, 'app.electron.tsx')],
   bundle: true,
-  outfile: path.join(root, 'dist', 'renderer.bundle.js'),
+  outfile,
   platform: 'browser',
   target: ['es2020'],
   format: 'iife',
@@ -131,13 +137,17 @@ const ctx = await esbuild.context({
     '.css',
     '.json'
   ],
-  plugins: [strictDomBabelPlugin(), strictDomCssPlugin()],
+  plugins: [
+    strictDomBabelPlugin(),
+    strictDomCssPlugin(),
+    ...rendererShims.plugins
+  ],
+  inject: rendererShims.inject,
   jsx: 'automatic',
   alias: {
     react: path.join(root, 'node_modules', 'react'),
     'react-dom': path.join(root, 'node_modules', 'react-dom')
   },
-  external: ['crypto'],
   logLevel: 'info'
 })
 

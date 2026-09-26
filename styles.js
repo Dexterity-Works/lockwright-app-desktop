@@ -1,5 +1,6 @@
 import { css } from 'styled-components'
 
+import { isMacPlatform } from './src/electron'
 import { applyGlobalStyles } from './src/utils/applyGlobalStyles'
 
 export const setFontsAndResetCSS = () => {
@@ -23,7 +24,7 @@ export const setFontsAndResetCSS = () => {
 
     @layer globals {
       :root {
-        --title-bar-height: ${process.platform === 'darwin' ? '44px' : '0px'};
+        --title-bar-height: ${isMacPlatform() ? '44px' : '0px'};
       }
 
       pear-ctrl[data-platform='darwin'] {

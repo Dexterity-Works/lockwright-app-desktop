@@ -3,6 +3,7 @@ export {}
 declare global {
   interface Window {
     electronAPI?: {
+      platform: string
       getConfig: () => Promise<{
         storage: string
         hasVault?: boolean

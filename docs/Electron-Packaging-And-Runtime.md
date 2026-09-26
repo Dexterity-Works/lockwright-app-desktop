@@ -104,7 +104,7 @@ The vault worklet lives in `lockwright-lib-vault-core` (Git dependency) under `s
 
 ## 6. Preload (electron/preload.cjs)
 
-- **Attached to the renderer** via `webPreferences.preload`. The page is context-isolated, so the preload is the only bridge: it exposes `window.electronAPI` through `contextBridge.exposeInMainWorld` and never hands out `ipcRenderer` itself.
+- **Attached to the renderer** via `webPreferences.preload`. The page is context-isolated and sandboxed (`nodeIntegration: false`, `contextIsolation: true`, `sandbox: true`), so the preload is the only bridge: it exposes `window.electronAPI` through `contextBridge.exposeInMainWorld` and never hands out `ipcRenderer` itself.
 - **Renderer API** (`window.electronAPI`):
   - Runtime: `getConfig`, `applyUpdate`, `restart`, `checkUpdated`, `onRuntimeUpdating`, `onRuntimeUpdated`
   - Vault: `vaultInvoke(method, args)`, `vaultOnUpdate(cb)`, `vaultOnMasterUpdate(cb)`, `vaultOnPersonalSwarmEnvelope(cb)`, `clearStaleVaultsDir`

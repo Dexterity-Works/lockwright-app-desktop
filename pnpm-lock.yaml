@@ -350,6 +350,9 @@ importers:
       babel-jest:
         specifier: 29.7.0
         version: 29.7.0(@babel/core@7.26.10)
+      buffer:
+        specifier: ^6.0.3
+        version: 6.0.3
       concurrently:
         specifier: 9.2.1
         version: 9.2.1

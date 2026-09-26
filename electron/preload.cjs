@@ -16,6 +16,8 @@ const subscribe = (channel, cb) => {
 const subscribeSignal = (channel, cb) => subscribe(channel, () => cb())
 
 contextBridge.exposeInMainWorld('electronAPI', {
+  // Synchronous: layout reads it while the bundle loads
+  platform: process.platform,
   getConfig: () => ipcRenderer.invoke('runtime:getConfig'),
   onRuntimeUpdating: (cb) => subscribeSignal('runtime:updating', cb),
   onRuntimeUpdated: (cb) => subscribeSignal('runtime:updated', cb),

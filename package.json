@@ -126,6 +126,7 @@
     "@types/react": "19.2.7",
     "@types/react-dom": "19.2.3",
     "babel-jest": "29.7.0",
+    "buffer": "^6.0.3",
     "concurrently": "9.2.1",
     "cross-env": "^10.1.0",
     "electron": "^44.4.5",

@@ -1,6 +1,8 @@
 import { rawTokens } from 'lockwright-lib-ui-react-native-components'
 import styled from 'styled-components'
 
+import { isMacPlatform } from '../../electron'
+
 export const AppWrapper = styled.div`
   height: 100%;
 `
@@ -23,7 +25,7 @@ export const ContentFrame = styled.div`
   min-height: 0;
   min-width: 0;
   margin: ${rawTokens.spacing8}px;
-  border-radius: ${process.platform === 'darwin'
+  border-radius: ${isMacPlatform()
     ? `${rawTokens.radius8}px ${rawTokens.radius8}px ${rawTokens.radius20}px ${rawTokens.radius20}px`
     : `${rawTokens.radius8}px`};
   border: ${({ $borderColor }) => `1px solid ${$borderColor || 'transparent'}`};

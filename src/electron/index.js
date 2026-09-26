@@ -52,6 +52,13 @@ export function isElectron() {
   return typeof window !== 'undefined' && !!window.electronAPI
 }
 
+// The page has no `process`; the preload publishes the platform instead.
+export function isMacPlatform() {
+  return (
+    typeof window !== 'undefined' && window.electronAPI?.platform === 'darwin'
+  )
+}
+
 // Recovers from a partial master-password creation on a previous launch (see
 // the matching IPC handler in electron/main.cjs). Call before createMasterPassword.
 export async function clearStaleVaultsDir() {
