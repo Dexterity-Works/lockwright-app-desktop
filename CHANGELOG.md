@@ -9,6 +9,21 @@ Starts at 0.0.17, after the Lockwright package rename. Earlier history is git.
 
 ## [Unreleased]
 
+## [0.0.27] - 2026-09-27
+
+`BUMP_SHA`
+
+### Security
+
+- The renderer runs isolated and sandboxed with no Node access. Everything it needs comes through a contextBridge API, and the bundle carries no Node builtins.
+- The native-messaging server runs in the main process next to the vault client. The extension protocol is unchanged, and existing pairings carry over.
+- Electron 44. Only web and mail links open outside the app, and the renderer has a content security policy.
+- One running Lockwright per profile. A second launch focuses the first, and a live socket is never deleted.
+
+### Changed
+
+- Renderer errors reach the Diagnostics log. Vault-file imports no longer depend on Node crypto.
+
 ## [0.0.26] - 2026-09-26
 
 `8d12b446874c983511c486751d05ac9f0631932f`
@@ -126,7 +141,8 @@ Starts at 0.0.17, after the Lockwright package rename. Earlier history is git.
 
 - A PearPass vault copied onto disk is treated as a vault, not empty.
 
-[unreleased]: https://github.com/Dexterity-Works/lockwright-app-desktop/compare/8d12b446874c983511c486751d05ac9f0631932f...HEAD
+[unreleased]: https://github.com/Dexterity-Works/lockwright-app-desktop/compare/BUMP_SHA...HEAD
+[0.0.27]: https://github.com/Dexterity-Works/lockwright-app-desktop/compare/8d12b446874c983511c486751d05ac9f0631932f...BUMP_SHA
 [0.0.26]: https://github.com/Dexterity-Works/lockwright-app-desktop/compare/9f57e1d733e098e6c2ab5061574735a62b000a4e...8d12b446874c983511c486751d05ac9f0631932f
 [0.0.25]: https://github.com/Dexterity-Works/lockwright-app-desktop/compare/812fba79e2e17c7939426ccad01f840e5e72ef64...9f57e1d733e098e6c2ab5061574735a62b000a4e
 [0.0.24]: https://github.com/Dexterity-Works/lockwright-app-desktop/compare/69c6e3c8c45f18beebfd59f0940da53876320166...812fba79e2e17c7939426ccad01f840e5e72ef64
