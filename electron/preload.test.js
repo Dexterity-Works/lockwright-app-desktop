@@ -51,6 +51,7 @@ describe('preload.cjs', () => {
 
   it('exposes electronAPI on window with expected methods', () => {
     expect(window.electronAPI).toBeDefined()
+    expect(window.electronAPI.platform).toBe(process.platform)
     expect(window.electronAPI.getAppVersion).toBeUndefined()
     expect(window.electronAPI.productName).toBeUndefined()
     expect(typeof window.electronAPI.getConfig).toBe('function')
