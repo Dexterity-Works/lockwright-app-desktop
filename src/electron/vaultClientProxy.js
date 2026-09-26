@@ -7,6 +7,8 @@
  */
 import EventEmitter from 'events'
 
+import vaultMethods from '../../electron/vaultMethods.cjs'
+
 function isBufferLike(value) {
   return (
     value instanceof Uint8Array ||
@@ -57,83 +59,7 @@ function fromSerializableData(data) {
   return data
 }
 
-// `removeVault` deletes a whole vault (disk wipe + master entry).
-// `vaultsRemove` deletes a single key from the master vault. Distinct.
-const VAULT_METHODS = [
-  'setStoragePath',
-  'vaultsInit',
-  'vaultsGetStatus',
-  'vaultsGet',
-  'vaultsClose',
-  'vaultsAdd',
-  'removeVault',
-  'activeVaultGetFile',
-  'activeVaultRemoveFile',
-  'vaultsList',
-  'activeVaultInit',
-  'activeVaultGetStatus',
-  'getVaultMigrationStatus',
-  'recordFailedMasterPassword',
-  'getMasterPasswordStatus',
-  'resetFailedAttempts',
-  'createMasterPassword',
-  'initWithPassword',
-  'updateMasterPassword',
-  'initWithCredentials',
-  'activeVaultClose',
-  'activeVaultAdd',
-  'activeVaultRemove',
-  'activeVaultRemoveWriter',
-  'activeVaultList',
-  'activeVaultGet',
-  'activeVaultCreateInvite',
-  'activeVaultDeleteInvite',
-  'pairActiveVault',
-  'cancelPairActiveVault',
-  'initListener',
-  'getBlindMirrors',
-  'addBlindMirrors',
-  'removeBlindMirror',
-  'addDefaultBlindMirrors',
-  'removeAllBlindMirrors',
-  'encryptionInit',
-  'encryptExportData',
-  'encryptionGetStatus',
-  'encryptionGet',
-  'encryptionAdd',
-  'hashPassword',
-  'encryptVaultKeyWithHashedPassword',
-  'encryptVaultWithKey',
-  'getDecryptionKey',
-  'decryptVaultKey',
-  'encryptionClose',
-  'closeAllInstances',
-  'activeVaultAddFile',
-  'activeVaultGetFile',
-  'beginBackground',
-  'endBackground',
-  'generateOtpCodesByIds',
-  'generateHotpNext',
-  'addOtpToRecord',
-  'exportOtpRecords',
-  'removeOtpFromRecord',
-  'findOtpDuplicates',
-  'fetchFavicon',
-  'decryptExportData',
-  'decryptBitwardenExport',
-  'decryptProtonExport',
-  'keepassArgon2',
-  'activeVaultFind',
-  'activeVaultGetWriterKey',
-  'personalSwarmInit',
-  'personalSwarmClose',
-  'personalSwarmGetTopic',
-  'personalSwarmSend',
-  'vaultsRemove',
-  'vaultsFind',
-  'signMessage',
-  'verifySignature'
-]
+const { VAULT_METHODS } = vaultMethods
 
 /**
  * Creates a proxy that implements the vault client interface over IPC.

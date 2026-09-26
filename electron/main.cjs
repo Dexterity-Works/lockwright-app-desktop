@@ -66,6 +66,7 @@ const {
 } = require('./nativeHostWrapper.cjs')
 const { installAppImageDesktop } = require('./installAppImageDesktop.cjs')
 const runtimeConfig = require('./runtime-config.cjs')
+const { assertVaultMethod } = require('./vaultMethods.cjs')
 const devicePreferences = require('../src/utils/devicePreferences.cjs')
 const {
   getLogPaths,
@@ -801,6 +802,7 @@ function registerIPC() {
     if (!vaultClient) {
       throw new Error('Vault client not ready')
     }
+    assertVaultMethod(method)
     const fn = vaultClient[method]
     if (typeof fn !== 'function') {
       throw new Error(`Unknown vault method: ${method}`)
