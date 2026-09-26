@@ -418,7 +418,6 @@ declare module 'lockwright-lib-constants' {
   export const DELETE_VAULT_ENABLED: boolean
   export const AUTHENTICATOR_ENABLED: boolean
   export const DESKTOP_DESIGN_VERSION: number
-  export const DESKTOP_2FA_IMPORTS_ENABLED: boolean
   export const DATE_FORMAT: string
   export const MAX_IMPORT_RECORDS: number
   export const NATIVE_MESSAGING_BRIDGE_PEAR_LINK_PRODUCTION: string

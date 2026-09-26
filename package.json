@@ -165,7 +165,6 @@
     "lockwright-utils-password-check": "git+https://github.com/Dexterity-Works/lockwright-utils-password-check.git#3fb28bee9328290a12119feaaf912d1018fcf6f8",
     "lockwright-utils-password-generator": "git+https://github.com/Dexterity-Works/lockwright-utils-password-generator.git",
     "htm": "3.1.1",
-    "jsqr": "^1.4.0",
     "jszip": "3.10.1",
     "pear-ipc": "6.4.0",
     "pear-run": "1.0.5",

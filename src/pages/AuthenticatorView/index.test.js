@@ -8,8 +8,7 @@ let mockSearchValue = ''
 let mockRecords = []
 
 jest.mock('lockwright-lib-constants', () => ({
-  DESKTOP_DESIGN_VERSION: 2,
-  DESKTOP_2FA_IMPORTS_ENABLED: true
+  DESKTOP_DESIGN_VERSION: 2
 }))
 
 jest.mock('lockwright-lib-vault', () => ({
@@ -167,7 +166,6 @@ jest.mock('lockwright-lib-ui-react-native-components/icons', () => {
     Checklist: Stub,
     ContentCopy: Stub,
     FilterList: Stub,
-    ImportExport: Stub,
     SortByAlpha: Stub
   }
 })
@@ -231,10 +229,6 @@ jest.mock('../../containers/MultiSelectActionsBar', () => ({
   MultiSelectActionsBar: () => <div data-testid="multi-select-actions-bar" />
 }))
 
-jest.mock('../../pages/SettingsView/SettingsView', () => ({
-  SettingsItemKey: { ImportItems: 'ImportItems' }
-}))
-
 jest.mock('../../svgs/ItemCardIllustration', () => ({
   ItemCardIllustration: () => null
 }))
@@ -257,16 +251,13 @@ describe('AuthenticatorView', () => {
     expect(useOtpWatch).toHaveBeenCalledWith('all')
   })
 
-  test('renders empty state with Add/Import buttons when no records and no search', () => {
+  test('renders empty state with Add button when no records and no search', () => {
     render(<AuthenticatorView />)
 
     expect(screen.getByText('No codes saved')).toBeInTheDocument()
     expect(screen.getByTestId('authenticator-empty-state')).toBeInTheDocument()
     expect(
       screen.getByTestId('authenticator-empty-add-code')
-    ).toBeInTheDocument()
-    expect(
-      screen.getByTestId('authenticator-empty-import-codes')
     ).toBeInTheDocument()
   })
 

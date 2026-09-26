@@ -2,7 +2,6 @@ import { useCallback, useEffect, useMemo, useState } from 'react'
 
 import { useLingui } from '@lingui/react'
 import { html } from 'htm/react'
-import { DESKTOP_2FA_IMPORTS_ENABLED } from 'lockwright-lib-constants'
 import {
   Breadcrumb,
   Button,
@@ -20,7 +19,6 @@ import {
   Checklist,
   ContentCopy,
   FilterList,
-  ImportExport,
   SortByAlpha
 } from 'lockwright-lib-ui-react-native-components/icons'
 import {
@@ -51,7 +49,6 @@ import { useModal } from '../../context/ModalContext'
 import { useRouter } from '../../context/RouterContext'
 import { useCopyToClipboard } from '../../hooks/useCopyToClipboard.electron'
 import { useCreateOrEditRecord } from '../../hooks/useCreateOrEditRecord'
-import { SettingsItemKey } from '../../pages/SettingsView/SettingsView'
 import { ItemCardIllustration } from '../../svgs/ItemCardIllustration'
 import { getRecordSubtitle } from '../../utils/getRecordSubtitle'
 
@@ -370,28 +367,6 @@ export const AuthenticatorView = () => {
                         ${i18n._('Add Code')}
                       <//>
                     </div>
-                    ${DESKTOP_2FA_IMPORTS_ENABLED &&
-                    html`
-                      <div style=${emptyStateStyles.ctaButton}>
-                        <${Button}
-                          variant="secondary"
-                          size="small"
-                          fullWidth
-                          data-testid="authenticator-empty-import-codes"
-                          iconBefore=${html`<${ImportExport}
-                            width=${16}
-                            height=${16}
-                            color=${iconColor}
-                          />`}
-                          onClick=${() =>
-                            navigate('settings', {
-                              initialTab: SettingsItemKey.ImportItems
-                            })}
-                        >
-                          ${i18n._('Import Codes')}
-                        <//>
-                      </div>
-                    `}
                   </div>
                 </div>
               </div>

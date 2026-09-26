@@ -1,6 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react'
 
-import { DESKTOP_2FA_IMPORTS_ENABLED } from 'lockwright-lib-constants'
 import {
   Button,
   NavbarListItem,
@@ -26,8 +25,7 @@ import {
   Sync,
   SystemSecurityUpdateFilled,
   TerminalTone,
-  Translate,
-  TwoFactorAuthenticationOutlined
+  Translate
 } from 'lockwright-lib-ui-react-native-components/icons'
 
 import { UnsavedChangesModalContent } from '../../containers/Modal/UnsavedChangesModalContent'
@@ -45,9 +43,7 @@ import {
   AppVersionContent,
   BlindPeersContent,
   DiagnosticsContent,
-  ExportCodesContent,
   ExportItemsContent,
-  ImportCodesContent,
   ImportItemsContent,
   LanguageContent,
   MasterPasswordContent,
@@ -64,8 +60,6 @@ export enum SettingsItemKey {
   YourVaults = 'your-vaults',
   ImportItems = 'import-items',
   ExportItems = 'export-items',
-  ImportCodes = 'import-codes',
-  ExportCodes = 'export-codes',
   Language = 'language',
   ReportAProblem = 'report-a-problem',
   Diagnostics = 'diagnostics',
@@ -104,10 +98,6 @@ const renderActiveContent = (
       return <ImportItemsContent />
     case SettingsItemKey.ExportItems:
       return <ExportItemsContent />
-    case SettingsItemKey.ImportCodes:
-      return <ImportCodesContent />
-    case SettingsItemKey.ExportCodes:
-      return <ExportCodesContent />
     case SettingsItemKey.ReportAProblem:
       return <ReportAProblemContent currentVersion={currentVersion} />
     case SettingsItemKey.Diagnostics:
@@ -187,27 +177,6 @@ const SettingsViewBody = () => {
           }
         ]
       },
-      ...(DESKTOP_2FA_IMPORTS_ENABLED
-        ? [
-            {
-              key: 'authenticator',
-              title: t('Authenticator'),
-              icon: TwoFactorAuthenticationOutlined,
-              items: [
-                {
-                  key: SettingsItemKey.ImportCodes,
-                  label: t('Import Codes'),
-                  icon: Login
-                },
-                {
-                  key: SettingsItemKey.ExportCodes,
-                  label: t('Export Codes'),
-                  icon: Logout
-                }
-              ]
-            }
-          ]
-        : []),
       {
         key: 'appearance',
         title: t('Appearance'),
