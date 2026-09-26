@@ -16,6 +16,7 @@ describe('runtime-config version', () => {
     process.env.LOCKWRIGHT_GIT_SHA = 'cafeba1234'
     jest.resetModules()
     const cfg = require('./runtime-config.cjs')
-    expect(cfg.version).toBe('0.0.1-cafeba')
+    const { version } = require('../package.json')
+    expect(cfg.version).toBe(`${version}-cafeba`)
   })
 })

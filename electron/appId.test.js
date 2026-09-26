@@ -24,12 +24,13 @@ describe('Lockwright app id', () => {
     }
   })
 
-  it('pins lockwright-lib-constants to Dexterity-Works git, not Tether or file:', () => {
+  it('pins lockwright-lib-constants to a Dexterity-Works git commit, not Tether or file:', () => {
     const pkg = JSON.parse(
       fs.readFileSync(path.join(root, 'package.json'), 'utf8')
     )
-    expect(pkg.dependencies['lockwright-lib-constants']).toBe(
-      'git+https://github.com/Dexterity-Works/lockwright-lib-constants.git#0cf657575130f2168f883579c17daf344e4aaefd'
+    // The commit moves with every pin bump; the shape must not.
+    expect(pkg.dependencies['lockwright-lib-constants']).toMatch(
+      /^git\+https:\/\/github\.com\/Dexterity-Works\/lockwright-lib-constants\.git#[0-9a-f]{40}$/
     )
   })
 
