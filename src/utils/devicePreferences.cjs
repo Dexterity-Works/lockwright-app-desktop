@@ -13,18 +13,25 @@ const path = require('path')
 const FILE_NAME = 'device-preferences.json'
 
 const DEFAULTS = {
-  loggingEnabled: false
+  loggingEnabled: false,
+  // Extension public keys whose pairing the user confirmed. Lets the
+  // extension ask "am I paired?" before the vault is unlocked.
+  nmClientPublicKeys: []
 }
+
+const stringList = (value) =>
+  Array.isArray(value) ? value.filter((key) => typeof key === 'string') : []
 
 function read(storageDir) {
   try {
     const raw = fs.readFileSync(path.join(storageDir, FILE_NAME), 'utf8')
     const parsed = JSON.parse(raw)
     return {
-      loggingEnabled: parsed.loggingEnabled === true
+      loggingEnabled: parsed.loggingEnabled === true,
+      nmClientPublicKeys: stringList(parsed.nmClientPublicKeys)
     }
   } catch {
-    return { ...DEFAULTS }
+    return { ...DEFAULTS, nmClientPublicKeys: [] }
   }
 }
 
@@ -32,7 +39,8 @@ function write(storageDir, partial) {
   fs.mkdirSync(storageDir, { recursive: true })
   const merged = { ...read(storageDir), ...partial }
   const out = {
-    loggingEnabled: !!merged.loggingEnabled
+    loggingEnabled: !!merged.loggingEnabled,
+    nmClientPublicKeys: stringList(merged.nmClientPublicKeys)
   }
   fs.writeFileSync(
     path.join(storageDir, FILE_NAME),

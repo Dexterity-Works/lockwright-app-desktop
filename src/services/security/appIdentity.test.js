@@ -9,9 +9,11 @@ import {
   __getMemIdentity,
   setClientIdentityPublicKey,
   confirmClientPairing,
-  removeClientIdentity
+  removeClientIdentity,
+  createMemoryClientKeyStore,
+  getCachedClientIdentityPublicKeys,
+  setClientKeyStore
 } from './appIdentity'
-import { LOCAL_STORAGE_KEYS } from '../../constants/localStorage'
 import { PAIRING_STATES } from '../../constants/pairing'
 import { logger } from '../../utils/logger'
 
@@ -55,10 +57,12 @@ jest.mock('sodium-native', () => ({
 
 describe('appIdentity', () => {
   let mockClient
+  let clientKeys
 
   beforeEach(() => {
     jest.clearAllMocks()
-    localStorage.clear()
+    clientKeys = createMemoryClientKeyStore()
+    setClientKeyStore(clientKeys)
 
     mockClient = {
       encryptionGetStatus: jest.fn(),
@@ -340,7 +344,7 @@ describe('appIdentity', () => {
     })
   })
   describe('setClientIdentityPublicKey', () => {
-    it('should store client data in vault but NOT in localStorage', async () => {
+    it('should store client data in vault but NOT in the confirmed-key cache', async () => {
       const clientPub = 'clientPub123'
       mockClient.encryptionGet.mockResolvedValue(null)
       await setClientIdentityPublicKey(mockClient, clientPub)
@@ -357,9 +361,7 @@ describe('appIdentity', () => {
         })
       )
 
-      expect(
-        localStorage.getItem(LOCAL_STORAGE_KEYS.NM_CLIENT_PUBLIC_KEY)
-      ).toBeNull()
+      expect(clientKeys.read()).toEqual([])
     })
 
     it('keeps a confirmed client when a second extension starts pairing', async () => {
@@ -401,7 +403,7 @@ describe('appIdentity', () => {
   })
 
   describe('confirmClientPairing', () => {
-    it('should update vault state and set localStorage', async () => {
+    it('should update vault state and cache the confirmed key', async () => {
       const clientPub = 'clientPub123'
 
       mockClient.encryptionGet.mockResolvedValue(
@@ -425,16 +427,11 @@ describe('appIdentity', () => {
         })
       )
 
-      expect(
-        localStorage.getItem(LOCAL_STORAGE_KEYS.NM_CLIENT_PUBLIC_KEY)
-      ).toBe(JSON.stringify([clientPub]))
+      expect(clientKeys.read()).toEqual([clientPub])
     })
 
     it('confirms a second client without dropping the first', async () => {
-      localStorage.setItem(
-        LOCAL_STORAGE_KEYS.NM_CLIENT_PUBLIC_KEY,
-        JSON.stringify(['chromePub'])
-      )
+      clientKeys.write(['chromePub'])
       mockClient.encryptionGet.mockResolvedValue(
         JSON.stringify({
           clients: [
@@ -467,18 +464,13 @@ describe('appIdentity', () => {
           ]
         })
       )
-      expect(
-        localStorage.getItem(LOCAL_STORAGE_KEYS.NM_CLIENT_PUBLIC_KEY)
-      ).toBe(JSON.stringify(['chromePub', 'firefoxPub']))
+      expect(clientKeys.read()).toEqual(['chromePub', 'firefoxPub'])
     })
   })
 
   describe('removeClientIdentity', () => {
     it('drops one paired client and leaves the other confirmed', async () => {
-      localStorage.setItem(
-        LOCAL_STORAGE_KEYS.NM_CLIENT_PUBLIC_KEY,
-        JSON.stringify(['chromePub', 'firefoxPub'])
-      )
+      clientKeys.write(['chromePub', 'firefoxPub'])
       mockClient.encryptionGet.mockResolvedValue(
         JSON.stringify({
           clients: [
@@ -517,9 +509,14 @@ describe('appIdentity', () => {
           ]
         })
       )
-      expect(
-        localStorage.getItem(LOCAL_STORAGE_KEYS.NM_CLIENT_PUBLIC_KEY)
-      ).toBe(JSON.stringify(['chromePub']))
+      expect(clientKeys.read()).toEqual(['chromePub'])
+    })
+  })
+
+  describe('getCachedClientIdentityPublicKeys', () => {
+    it('reads through the injected store and drops non-string entries', () => {
+      clientKeys.write(['chromePub', '', 7, null])
+      expect(getCachedClientIdentityPublicKeys()).toEqual(['chromePub'])
     })
   })
 })

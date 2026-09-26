@@ -5,7 +5,6 @@
 import sodium from 'sodium-native'
 
 import { clearAllSessions } from './sessionStore.js'
-import { LOCAL_STORAGE_KEYS } from '../../constants/localStorage.js'
 import { PAIRING_STATES } from '../../constants/pairing.js'
 import { SecurityErrorCodes } from '../../constants/securityErrors.js'
 import { createErrorWithCode } from '../../utils/createErrorWithCode.js'
@@ -21,6 +20,31 @@ const PAIRING_CODE_TAG = Buffer.from('pearpass/pairingcode/v1', 'utf8')
 // In-memory fallback cache if persistence is unavailable (e.g., before unlock)
 // Structure: { ed25519PublicKeyBytes, ed25519PrivateKeyBytes, x25519PublicKeyBytes, x25519PrivateKeyBytes, creationDate }
 let MEMORY_IDENTITY = null
+
+/**
+ * @typedef {{ read: () => string[], write: (keys: string[]) => void }} ClientKeyStore
+ * Where confirmed extension public keys live outside the vault, so the
+ * extension can ask whether it is paired before unlock.
+ */
+
+/** @returns {ClientKeyStore} */
+export const createMemoryClientKeyStore = () => {
+  let keys = []
+  return {
+    read: () => keys,
+    write: (next) => {
+      keys = next
+    }
+  }
+}
+
+/** @type {ClientKeyStore} */
+let clientKeyStore = createMemoryClientKeyStore()
+
+/** @param {ClientKeyStore} store */
+export const setClientKeyStore = (store) => {
+  clientKeyStore = store
+}
 
 // Some bundlers/environments can fail to populate sodium-native's *BYTES
 // constants on first import. Provide safe fallbacks using the known sizes
@@ -399,8 +423,8 @@ export const resetIdentity = async (client) => {
     await client.encryptionAdd(ENC_KEY_CLIENT_DATA, '').catch(() => {})
     await client.encryptionAdd(ENC_KEY_PAIRING_SECRET, '').catch(() => {})
 
-    // Also clear client public key from localStorage
-    localStorage.removeItem(LOCAL_STORAGE_KEYS.NM_CLIENT_PUBLIC_KEY)
+    // Also forget the confirmed client keys cached outside the vault
+    persistCachedClientIdentityPublicKeys([])
 
     logger.info('APP-IDENTITY', 'Cleared existing identity keys')
   } catch (err) {
@@ -543,38 +567,25 @@ export const getClientIdentityPublicKey = async (client) => {
 }
 
 /**
- * Load confirmed client public keys from local storage cache.
+ * Load confirmed client public keys from the cache outside the vault.
  * @returns {string[]}
  */
 export const getCachedClientIdentityPublicKeys = () => {
-  const raw = localStorage.getItem(LOCAL_STORAGE_KEYS.NM_CLIENT_PUBLIC_KEY)
-  if (!raw) return []
-  try {
-    const parsed = JSON.parse(raw)
-    if (Array.isArray(parsed)) {
-      return parsed.filter((key) => typeof key === 'string')
-    }
-    if (typeof parsed === 'string' && parsed.length > 0) {
-      return [parsed]
-    }
-  } catch {
-    // Legacy: a single base64 public key, not JSON
-  }
-  return [raw]
+  const keys = clientKeyStore.read()
+  return Array.isArray(keys)
+    ? keys.filter((key) => typeof key === 'string' && key.length > 0)
+    : []
 }
 
 /**
- * Load client (extension) Ed25519 public key from local storage cache.
+ * Load client (extension) Ed25519 public key from the cache outside the vault.
  * @returns {string|null}
  */
 export const getCachedClientIdentityPublicKey = () =>
   getCachedClientIdentityPublicKeys()[0] || null
 
 const persistCachedClientIdentityPublicKeys = (keys) => {
-  localStorage.setItem(
-    LOCAL_STORAGE_KEYS.NM_CLIENT_PUBLIC_KEY,
-    JSON.stringify(keys)
-  )
+  clientKeyStore.write(keys)
 }
 
 /**

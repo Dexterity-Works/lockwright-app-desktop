@@ -17,7 +17,10 @@ describe('devicePreferences', () => {
   })
 
   it('returns defaults when the file is missing', () => {
-    expect(read(tmpDir)).toEqual({ loggingEnabled: false })
+    expect(read(tmpDir)).toEqual({
+      loggingEnabled: false,
+      nmClientPublicKeys: []
+    })
   })
 
   it('returns defaults on malformed JSON', () => {
@@ -26,20 +29,32 @@ describe('devicePreferences', () => {
       'not-json{',
       'utf8'
     )
-    expect(read(tmpDir)).toEqual({ loggingEnabled: false })
+    expect(read(tmpDir)).toEqual({
+      loggingEnabled: false,
+      nmClientPublicKeys: []
+    })
   })
 
   it('writes then reads back loggingEnabled=true', () => {
     write(tmpDir, { loggingEnabled: true })
-    expect(read(tmpDir)).toEqual({ loggingEnabled: true })
+    expect(read(tmpDir)).toEqual({
+      loggingEnabled: true,
+      nmClientPublicKeys: []
+    })
   })
 
   it('coerces truthy/falsy values to booleans', () => {
     write(tmpDir, { loggingEnabled: 'yes' })
-    expect(read(tmpDir)).toEqual({ loggingEnabled: true })
+    expect(read(tmpDir)).toEqual({
+      loggingEnabled: true,
+      nmClientPublicKeys: []
+    })
 
     write(tmpDir, { loggingEnabled: 0 })
-    expect(read(tmpDir)).toEqual({ loggingEnabled: false })
+    expect(read(tmpDir)).toEqual({
+      loggingEnabled: false,
+      nmClientPublicKeys: []
+    })
   })
 
   it('creates the storage directory if missing', () => {
@@ -57,6 +72,18 @@ describe('devicePreferences', () => {
       'utf8'
     )
     write(tmpDir, {})
-    expect(read(tmpDir)).toEqual({ loggingEnabled: true })
+    expect(read(tmpDir)).toEqual({
+      loggingEnabled: true,
+      nmClientPublicKeys: []
+    })
+  })
+
+  it('keeps only string entries in nmClientPublicKeys and preserves loggingEnabled', () => {
+    write(tmpDir, { loggingEnabled: true })
+    write(tmpDir, { nmClientPublicKeys: ['a', 1, null, 'b'] })
+    expect(read(tmpDir)).toEqual({
+      loggingEnabled: true,
+      nmClientPublicKeys: ['a', 'b']
+    })
   })
 })

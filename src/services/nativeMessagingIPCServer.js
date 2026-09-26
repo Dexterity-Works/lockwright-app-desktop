@@ -1,5 +1,6 @@
 import IPC from 'pear-ipc'
 
+import { LOCAL_STORAGE_KEYS } from '../constants/localStorage.js'
 import { SecurityErrorCodes } from '../constants/securityErrors.js'
 import { COMMAND_DEFINITIONS } from '../shared/commandDefinitions'
 import { createErrorWithCode } from '../utils/createErrorWithCode.js'
@@ -12,6 +13,7 @@ import { MethodRegistry } from './ipc/MethodRegistry'
 import { SocketManager, getIpcPath } from './ipc/SocketManager'
 import { applyNativeMessagingEvent } from './nativeMessagingEvents'
 import { readNativeMessagingPrefs } from './nativeMessagingPreferences'
+import { setClientKeyStore } from './security/appIdentity'
 
 // Re-export for backward compatibility
 export { getIpcPath }
@@ -23,6 +25,8 @@ export { getIpcPath }
  *   towards the UI; the renderer re-dispatches each as a window event
  * @property {{ get: () => NativeMessagingPrefs, set: (partial: Partial<NativeMessagingPrefs>) => void }} preferences
  *   mirror of the UI's preferences (localStorage stays the source of truth)
+ * @property {import('./security/appIdentity').ClientKeyStore} [clientKeyStore]
+ *   where confirmed extension keys persist outside the vault
  */
 
 /**
@@ -33,13 +37,14 @@ export class NativeMessagingIPCServer {
    * @param {import('lockwright-lib-vault-core').PearpassVaultClient} pearpassClient
    * @param {NativeMessagingServerDeps} deps
    */
-  constructor(pearpassClient, { emit, preferences }) {
+  constructor(pearpassClient, { emit, preferences, clientKeyStore }) {
     /** @type {import('lockwright-lib-vault-core').PearpassVaultClient} */
     this.client = pearpassClient
     /** @type {(type: string, payload?: object) => void} */
     this.emit = emit
     /** @type {NativeMessagingServerDeps['preferences']} */
     this.preferences = preferences
+    if (clientKeyStore) setClientKeyStore(clientKeyStore)
     /** @type {import('pear-ipc').Server|null} */
     this.server = null
     /** @type {boolean} */
@@ -537,6 +542,27 @@ export class NativeMessagingIPCServer {
   }
 }
 
+/** @type {import('./security/appIdentity').ClientKeyStore} */
+const localStorageClientKeyStore = {
+  read: () => {
+    const raw = localStorage.getItem(LOCAL_STORAGE_KEYS.NM_CLIENT_PUBLIC_KEY)
+    if (!raw) return []
+    try {
+      const parsed = JSON.parse(raw)
+      if (Array.isArray(parsed)) return parsed
+      if (typeof parsed === 'string' && parsed.length > 0) return [parsed]
+    } catch {
+      // Legacy: a single base64 public key, not JSON
+    }
+    return [raw]
+  },
+  write: (keys) =>
+    localStorage.setItem(
+      LOCAL_STORAGE_KEYS.NM_CLIENT_PUBLIC_KEY,
+      JSON.stringify(keys)
+    )
+}
+
 /** @type {NativeMessagingIPCServer|null} */
 let ipcServerInstance = null
 /** @type {Promise<NativeMessagingIPCServer>|null} */
@@ -562,7 +588,8 @@ export const startNativeMessagingIPC = async (pearpassClient) => {
       emit: applyNativeMessagingEvent,
       // The renderer applies auto-lock changes through the emit above, so
       // localStorage is already current by the time anyone reads it again.
-      preferences: { get: readNativeMessagingPrefs, set: () => {} }
+      preferences: { get: readNativeMessagingPrefs, set: () => {} },
+      clientKeyStore: localStorageClientKeyStore
     })
     await ipcServerInstance.start()
     return ipcServerInstance

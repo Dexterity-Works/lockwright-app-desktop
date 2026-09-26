@@ -61,6 +61,10 @@ jest.mock('pear-ipc', () => ({
   })
 }))
 
+jest.mock('./security/appIdentity', () => ({
+  setClientKeyStore: jest.fn()
+}))
+
 jest.mock('../utils/logger.js', () => ({
   logger: {
     log: jest.fn(),
