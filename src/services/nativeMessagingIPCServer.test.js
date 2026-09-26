@@ -225,6 +225,18 @@ const mockPearpassClient = {
   off: jest.fn()
 }
 
+const deps = {
+  emit: jest.fn(),
+  preferences: {
+    get: () => ({
+      nativeMessagingEnabled: true,
+      autoLockEnabled: true,
+      autoLockTimeoutMs: 1234
+    }),
+    set: jest.fn()
+  }
+}
+
 describe('nativeMessagingIPCServer', () => {
   beforeEach(async () => {
     jest.clearAllMocks()
@@ -259,11 +271,12 @@ describe('nativeMessagingIPCServer', () => {
       platform.mockReturnValue('linux')
       mockPearpassClient.on.mockReset()
       mockPearpassClient.off.mockReset()
-      serverInstance = new NativeMessagingIPCServer(mockPearpassClient)
+      serverInstance = new NativeMessagingIPCServer(mockPearpassClient, deps)
     })
 
     it('should construct with initial state', () => {
       expect(serverInstance.client).toBe(mockPearpassClient)
+      expect(SecurityHandlers).toHaveBeenCalledWith(mockPearpassClient, deps)
       expect(serverInstance.server).toBeNull()
       expect(serverInstance.isRunning).toBe(false)
       expect(serverInstance.socketPath).toBe(
@@ -311,7 +324,7 @@ describe('nativeMessagingIPCServer', () => {
           return this
         })
 
-        const newServer = new NativeMessagingIPCServer(mockPearpassClient)
+        const newServer = new NativeMessagingIPCServer(mockPearpassClient, deps)
         await expect(newServer.start()).rejects.toThrow(error)
         expect(newServer.isRunning).toBe(false)
         expect(logger.error).toHaveBeenCalledWith(
@@ -424,7 +437,6 @@ describe('nativeMessagingIPCServer', () => {
       it('proves it owns the pipe before any session, without resetting the auto-lock timer', async () => {
         await serverInstance.start()
         const handlers = IPC.Server.mock.calls[0][0].handlers
-        const dispatchEvent = jest.spyOn(window, 'dispatchEvent')
         const nonceHex = '00112233445566778899aabbccddeeff'
 
         const result = await handlers.nmProveServer({ nonceHex })
@@ -434,9 +446,7 @@ describe('nativeMessagingIPCServer', () => {
             .update(Buffer.from(nonceHex, 'hex'))
             .digest('hex')
         })
-        expect(dispatchEvent).not.toHaveBeenCalledWith(
-          expect.objectContaining({ type: 'ipc-activity' })
-        )
+        expect(deps.emit).not.toHaveBeenCalledWith('ipc-activity')
       })
 
       it.each([undefined, '', 'zz', '0011223344556677', '0'.repeat(64)])(
@@ -454,33 +464,24 @@ describe('nativeMessagingIPCServer', () => {
       it('does not reset the auto-lock timer on a failed plaintext call', async () => {
         await serverInstance.start()
         const handlers = IPC.Server.mock.calls[0][0].handlers
-        const dispatchEvent = jest.spyOn(window, 'dispatchEvent')
         SecurityHandlers.mock.instances
           .at(-1)
           .nmGetAppIdentity.mockRejectedValueOnce(new Error('bad token'))
 
         await expect(handlers.nmGetAppIdentity({})).rejects.toThrow('bad token')
 
-        expect(dispatchEvent).not.toHaveBeenCalledWith(
-          expect.objectContaining({ type: 'ipc-activity' })
-        )
+        expect(deps.emit).not.toHaveBeenCalledWith('ipc-activity')
       })
 
       it('resets the auto-lock timer only from the secure request handler', async () => {
         await serverInstance.start()
         const handlers = IPC.Server.mock.calls[0][0].handlers
-        const dispatchEvent = jest.spyOn(window, 'dispatchEvent')
-
         await handlers.nmBeginHandshake({ extEphemeralPubB64: 'test-key' })
-        expect(dispatchEvent).not.toHaveBeenCalledWith(
-          expect.objectContaining({ type: 'ipc-activity' })
-        )
+        expect(deps.emit).not.toHaveBeenCalledWith('ipc-activity')
 
         const [, , onActivity] = SecureRequestHandler.mock.calls.at(-1)
         onActivity()
-        expect(dispatchEvent).toHaveBeenCalledWith(
-          expect.objectContaining({ type: 'ipc-activity' })
-        )
+        expect(deps.emit).toHaveBeenCalledWith('ipc-activity')
       })
 
       it('should subscribe to vault-access-revoked on the pearpass client', async () => {
@@ -591,7 +592,7 @@ describe('nativeMessagingIPCServer', () => {
 
     beforeEach(() => {
       platform.mockReturnValue('win32')
-      serverInstance = new NativeMessagingIPCServer(mockPearpassClient)
+      serverInstance = new NativeMessagingIPCServer(mockPearpassClient, deps)
     })
 
     const published = () => {

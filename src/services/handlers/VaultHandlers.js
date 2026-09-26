@@ -5,8 +5,13 @@ import { logger } from '../../utils/logger'
  * Handles vault-related IPC operations
  */
 export class VaultHandlers {
-  constructor(client) {
+  /**
+   * @param {object} client
+   * @param {{ emit: (type: string, payload?: object) => void }} deps
+   */
+  constructor(client, { emit }) {
     this.client = client
+    this.emit = emit
   }
 
   async vaultsInit(params) {
@@ -172,11 +177,7 @@ export class VaultHandlers {
         'Desktop was authenticated, navigating to master password screen after extension exit'
       )
 
-      if (global.window) {
-        global.window.dispatchEvent(
-          new CustomEvent(HANDLER_EVENTS.extensionExit)
-        )
-      }
+      this.emit(HANDLER_EVENTS.extensionExit)
     }
 
     return { success: true }

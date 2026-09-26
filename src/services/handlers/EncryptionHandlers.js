@@ -7,8 +7,13 @@ import { logger } from '../../utils/logger'
  * Handles encryption-related IPC operations
  */
 export class EncryptionHandlers {
-  constructor(client) {
+  /**
+   * @param {object} client
+   * @param {{ emit: (type: string, payload?: object) => void }} deps
+   */
+  constructor(client, { emit }) {
     this.client = client
+    this.emit = emit
   }
 
   async encryptionInit() {
@@ -77,8 +82,8 @@ export class EncryptionHandlers {
   async getMasterPasswordStatus() {
     const status = await this.client.getMasterPasswordStatus()
 
-    if (status?.isLocked && global.window) {
-      global.window.dispatchEvent(new CustomEvent(HANDLER_EVENTS.extensionLock))
+    if (status?.isLocked) {
+      this.emit(HANDLER_EVENTS.extensionLock)
     }
 
     return status

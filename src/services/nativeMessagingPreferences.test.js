@@ -1,7 +1,14 @@
 import {
   getNativeMessagingEnabled,
+  readNativeMessagingPrefs,
   setNativeMessagingEnabled
 } from './nativeMessagingPreferences'
+import { LOCAL_STORAGE_KEYS } from '../constants/localStorage'
+
+jest.mock('lockwright-lib-constants', () => ({
+  AUTO_LOCK_ENABLED: true,
+  DEFAULT_AUTO_LOCK_TIMEOUT: 300000
+}))
 
 describe('nativeMessagingPreferences', () => {
   beforeEach(() => {
@@ -39,6 +46,26 @@ describe('nativeMessagingPreferences', () => {
     it('should not add the item if it does not exist and enabled is false', () => {
       setNativeMessagingEnabled(false)
       expect(localStorage.getItem('native-messaging-enabled')).toBeNull()
+    })
+  })
+
+  describe('readNativeMessagingPrefs', () => {
+    it('snapshots the three settings from localStorage', () => {
+      expect(readNativeMessagingPrefs()).toEqual({
+        nativeMessagingEnabled: false,
+        autoLockEnabled: true,
+        autoLockTimeoutMs: 300000
+      })
+
+      setNativeMessagingEnabled(true)
+      localStorage.setItem(LOCAL_STORAGE_KEYS.AUTO_LOCK_ENABLED, 'false')
+      localStorage.setItem(LOCAL_STORAGE_KEYS.AUTO_LOCK_TIMEOUT_MS, 'null')
+
+      expect(readNativeMessagingPrefs()).toEqual({
+        nativeMessagingEnabled: true,
+        autoLockEnabled: false,
+        autoLockTimeoutMs: null
+      })
     })
   })
 })

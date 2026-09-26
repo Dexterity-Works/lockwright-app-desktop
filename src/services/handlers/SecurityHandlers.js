@@ -2,17 +2,8 @@ import sodium from 'sodium-native'
 
 import { PAIRING_STATES } from '../../constants/pairing.js'
 import { SecurityErrorCodes } from '../../constants/securityErrors.js'
-import {
-  getAutoLockTimeoutMs,
-  isAutoLockEnabled
-} from '../../hooks/useAutoLockPreferences.js'
-import {
-  applyAutoLockEnabled,
-  applyAutoLockTimeout
-} from '../../utils/autoLock.js'
 import { createErrorWithCode } from '../../utils/createErrorWithCode.js'
 import { logger } from '../../utils/logger.js'
-import { getNativeMessagingEnabled } from '../nativeMessagingPreferences.js'
 import {
   getOrCreateIdentity,
   getFingerprint,
@@ -39,10 +30,32 @@ const MAX_PAIRING_TOKEN_FAILURES = 5
  * Handles security-related IPC operations for native messaging
  */
 export class SecurityHandlers {
-  constructor(client) {
+  /**
+   * @param {object} client
+   * @param {object} deps
+   * @param {(type: string, payload?: object) => void} deps.emit event sink
+   *   towards the UI (the renderer re-dispatches on window)
+   * @param {{ get: () => { nativeMessagingEnabled: boolean, autoLockEnabled: boolean, autoLockTimeoutMs: number | null }, set: (partial: object) => void }} deps.preferences
+   *   the UI's preference snapshot; localStorage in the renderer is the
+   *   source of truth, this is its mirror
+   */
+  constructor(client, { emit, preferences }) {
     this.client = client
+    this.emit = emit
+    this.preferences = preferences
     /** @type {Map<string, number>} failed pairing tokens per identity key */
     this.pairingTokenFailures = new Map()
+  }
+
+  assertNativeMessagingEnabled() {
+    if (!this.preferences.get().nativeMessagingEnabled) {
+      throw new Error(
+        createErrorWithCode(
+          SecurityErrorCodes.NATIVE_MESSAGING_DISABLED,
+          'Extension connection is disabled'
+        )
+      )
+    }
   }
 
   /**
@@ -61,7 +74,7 @@ export class SecurityHandlers {
       'SECURITY',
       `Pairing secret rotated after ${failures} wrong pairing tokens`
     )
-    window.dispatchEvent(new Event('pairing-secret-rotated'))
+    this.emit('pairing-secret-rotated')
   }
 
   /**
@@ -156,14 +169,7 @@ export class SecurityHandlers {
   async nmBeginHandshake(params) {
     // Only allow handshake if native messaging is enabled
     // This prevents previously paired extensions from reconnecting after being disabled
-    if (!getNativeMessagingEnabled()) {
-      throw new Error(
-        createErrorWithCode(
-          SecurityErrorCodes.NATIVE_MESSAGING_DISABLED,
-          'Extension connection is disabled'
-        )
-      )
-    }
+    this.assertNativeMessagingEnabled()
 
     const { extEphemeralPubB64, clientEd25519PublicKeyB64 } = params || {}
     if (!extEphemeralPubB64) {
@@ -339,14 +345,7 @@ export class SecurityHandlers {
   async checkExtensionPairingStatus(params) {
     const { clientEd25519PublicKeyB64 } = params || {}
 
-    if (!getNativeMessagingEnabled()) {
-      throw new Error(
-        createErrorWithCode(
-          SecurityErrorCodes.NATIVE_MESSAGING_DISABLED,
-          'Extension connection is disabled'
-        )
-      )
-    }
+    this.assertNativeMessagingEnabled()
 
     if (!clientEd25519PublicKeyB64) {
       throw new Error(
@@ -366,30 +365,14 @@ export class SecurityHandlers {
   }
 
   async getAutoLockSettings() {
-    if (!getNativeMessagingEnabled()) {
-      throw new Error(
-        createErrorWithCode(
-          SecurityErrorCodes.NATIVE_MESSAGING_DISABLED,
-          'Extension connection is disabled'
-        )
-      )
-    }
-    return {
-      autoLockEnabled: isAutoLockEnabled(),
-      autoLockTimeoutMs: getAutoLockTimeoutMs()
-    }
+    this.assertNativeMessagingEnabled()
+    const { autoLockEnabled, autoLockTimeoutMs } = this.preferences.get()
+    return { autoLockEnabled, autoLockTimeoutMs }
   }
 
   async setAutoLockTimeout(params) {
     const { autoLockTimeoutMs } = params || {}
-    if (!getNativeMessagingEnabled()) {
-      throw new Error(
-        createErrorWithCode(
-          SecurityErrorCodes.NATIVE_MESSAGING_DISABLED,
-          'Extension connection is disabled'
-        )
-      )
-    }
+    this.assertNativeMessagingEnabled()
     // `autoLockTimeoutMs` can be null when user selects "never"
     const isNever = autoLockTimeoutMs === null
     const isValidTimeoutMs =
@@ -405,20 +388,14 @@ export class SecurityHandlers {
         )
       )
     }
-    applyAutoLockTimeout(autoLockTimeoutMs)
+    this.preferences.set({ autoLockTimeoutMs })
+    this.emit('apply-auto-lock-timeout', { autoLockTimeoutMs })
     return { ok: true }
   }
 
   async setAutoLockEnabled(params) {
     const { autoLockEnabled } = params || {}
-    if (!getNativeMessagingEnabled()) {
-      throw new Error(
-        createErrorWithCode(
-          SecurityErrorCodes.NATIVE_MESSAGING_DISABLED,
-          'Extension connection is disabled'
-        )
-      )
-    }
+    this.assertNativeMessagingEnabled()
     if (typeof autoLockEnabled !== 'boolean') {
       throw new Error(
         createErrorWithCode(
@@ -427,21 +404,14 @@ export class SecurityHandlers {
         )
       )
     }
-    applyAutoLockEnabled(autoLockEnabled)
+    this.preferences.set({ autoLockEnabled })
+    this.emit('apply-auto-lock-enabled', { autoLockEnabled })
     return { ok: true }
   }
 
   async resetTimer() {
-    if (!getNativeMessagingEnabled()) {
-      throw new Error(
-        createErrorWithCode(
-          SecurityErrorCodes.NATIVE_MESSAGING_DISABLED,
-          'Extension connection is disabled'
-        )
-      )
-    }
-
-    window.dispatchEvent(new Event('reset-timer'))
+    this.assertNativeMessagingEnabled()
+    this.emit('reset-timer')
     return { ok: true }
   }
 }

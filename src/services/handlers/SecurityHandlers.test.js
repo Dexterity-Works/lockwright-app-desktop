@@ -22,15 +22,6 @@ jest.mock('sodium-native', () => ({
 
 import { SecurityHandlers } from './SecurityHandlers'
 import { SecurityErrorCodes } from '../../constants/securityErrors'
-import {
-  getAutoLockTimeoutMs,
-  isAutoLockEnabled
-} from '../../hooks/useAutoLockPreferences.js'
-import {
-  applyAutoLockEnabled,
-  applyAutoLockTimeout
-} from '../../utils/autoLock.js'
-import { getNativeMessagingEnabled } from '../nativeMessagingPreferences'
 import * as appIdentity from '../security/appIdentity'
 import * as sessionManager from '../security/sessionManager'
 import * as sessionStore from '../security/sessionStore'
@@ -38,30 +29,27 @@ import * as sessionStore from '../security/sessionStore'
 jest.mock('../security/appIdentity')
 jest.mock('../security/sessionManager')
 jest.mock('../security/sessionStore')
-jest.mock('../nativeMessagingPreferences', () => ({
-  getNativeMessagingEnabled: jest.fn()
-}))
-
-jest.mock('../../utils/autoLock', () => ({
-  applyAutoLockEnabled: jest.fn(),
-  applyAutoLockTimeout: jest.fn()
-}))
-jest.mock(
-  '../../hooks/useAutoLockPreferences.js',
-  () => ({
-    getAutoLockTimeoutMs: jest.fn(),
-    isAutoLockEnabled: jest.fn()
-  }),
-  { virtual: true }
-)
 
 describe('SecurityHandlers', () => {
   let client
   let handlers
+  let emit
+  let prefs
+  let preferences
 
   beforeEach(() => {
     client = { id: 'test-client' }
-    handlers = new SecurityHandlers(client)
+    emit = jest.fn()
+    prefs = {
+      nativeMessagingEnabled: false,
+      autoLockEnabled: true,
+      autoLockTimeoutMs: 999
+    }
+    preferences = {
+      get: () => prefs,
+      set: jest.fn((partial) => Object.assign(prefs, partial))
+    }
+    handlers = new SecurityHandlers(client, { emit, preferences })
     jest.clearAllMocks()
   })
 
@@ -127,7 +115,6 @@ describe('SecurityHandlers', () => {
         x25519PublicKey: 'xPubKey'
       })
       appIdentity.verifyPairingToken.mockResolvedValue(false)
-      const dispatchSpy = jest.spyOn(window, 'dispatchEvent')
       const attempt = () =>
         handlers.nmGetAppIdentity({
           pairingToken: 'wrong',
@@ -145,9 +132,7 @@ describe('SecurityHandlers', () => {
         SecurityErrorCodes.INVALID_PAIRING_TOKEN
       )
       expect(appIdentity.rotatePairingSecret).toHaveBeenCalledWith(client)
-      expect(dispatchSpy).toHaveBeenCalledWith(
-        expect.objectContaining({ type: 'pairing-secret-rotated' })
-      )
+      expect(emit).toHaveBeenCalledWith('pairing-secret-rotated')
     })
 
     it('clears the failure count on a valid token', async () => {
@@ -241,13 +226,13 @@ describe('SecurityHandlers', () => {
 
   describe('nmBeginHandshake', () => {
     beforeEach(() => {
-      getNativeMessagingEnabled.mockReturnValue(true)
+      prefs.nativeMessagingEnabled = true
       // By default, simulate a paired client with a stored public key
       appIdentity.getClientIdentityPublicKey.mockResolvedValue('clientPubKey')
     })
 
     it('throws if native messaging is disabled', async () => {
-      getNativeMessagingEnabled.mockReturnValue(false)
+      prefs.nativeMessagingEnabled = false
       await expect(
         handlers.nmBeginHandshake({ extEphemeralPubB64: 'abc' })
       ).rejects.toThrow(SecurityErrorCodes.NATIVE_MESSAGING_DISABLED)
@@ -406,6 +391,10 @@ describe('SecurityHandlers', () => {
   })
 
   describe('checkExtensionPairingStatus', () => {
+    beforeEach(() => {
+      prefs.nativeMessagingEnabled = true
+    })
+
     it('throws if clientEd25519PublicKeyB64 is missing', async () => {
       await expect(handlers.checkExtensionPairingStatus({})).rejects.toThrow(
         SecurityErrorCodes.CLIENT_PUBLIC_KEY_REQUIRED
@@ -454,14 +443,12 @@ describe('SecurityHandlers', () => {
 
   describe('auto-lock handlers', () => {
     beforeEach(() => {
-      getNativeMessagingEnabled.mockReturnValue(true)
-      isAutoLockEnabled.mockReturnValue(true)
-      getAutoLockTimeoutMs.mockReturnValue(999)
+      prefs.nativeMessagingEnabled = true
     })
 
     describe('getAutoLockSettings', () => {
       it('throws when native messaging is disabled', async () => {
-        getNativeMessagingEnabled.mockReturnValue(false)
+        prefs.nativeMessagingEnabled = false
         await expect(handlers.getAutoLockSettings()).rejects.toThrow(
           SecurityErrorCodes.NATIVE_MESSAGING_DISABLED
         )
@@ -478,7 +465,7 @@ describe('SecurityHandlers', () => {
 
     describe('setAutoLockTimeout', () => {
       it('throws when native messaging is disabled', async () => {
-        getNativeMessagingEnabled.mockReturnValue(false)
+        prefs.nativeMessagingEnabled = false
         await expect(
           handlers.setAutoLockTimeout({ autoLockTimeoutMs: 1234 })
         ).rejects.toThrow(SecurityErrorCodes.NATIVE_MESSAGING_DISABLED)
@@ -492,21 +479,31 @@ describe('SecurityHandlers', () => {
 
       it('applies timeout when provided', async () => {
         await handlers.setAutoLockTimeout({ autoLockTimeoutMs: 1234 })
-        expect(applyAutoLockTimeout).toHaveBeenCalledWith(1234)
+        expect(preferences.set).toHaveBeenCalledWith({
+          autoLockTimeoutMs: 1234
+        })
+        expect(emit).toHaveBeenCalledWith('apply-auto-lock-timeout', {
+          autoLockTimeoutMs: 1234
+        })
       })
 
       it('accepts null timeout (never) when provided', async () => {
         const result = await handlers.setAutoLockTimeout({
           autoLockTimeoutMs: null
         })
-        expect(applyAutoLockTimeout).toHaveBeenCalledWith(null)
+        expect(preferences.set).toHaveBeenCalledWith({
+          autoLockTimeoutMs: null
+        })
+        expect(emit).toHaveBeenCalledWith('apply-auto-lock-timeout', {
+          autoLockTimeoutMs: null
+        })
         expect(result).toEqual({ ok: true })
       })
     })
 
     describe('setAutoLockEnabled', () => {
       it('throws when native messaging is disabled', async () => {
-        getNativeMessagingEnabled.mockReturnValue(false)
+        prefs.nativeMessagingEnabled = false
         await expect(
           handlers.setAutoLockEnabled({ autoLockEnabled: true })
         ).rejects.toThrow(SecurityErrorCodes.NATIVE_MESSAGING_DISABLED)
@@ -520,24 +517,26 @@ describe('SecurityHandlers', () => {
 
       it('applies enabled flag when valid', async () => {
         await handlers.setAutoLockEnabled({ autoLockEnabled: false })
-        expect(applyAutoLockEnabled).toHaveBeenCalledWith(false)
+        expect(preferences.set).toHaveBeenCalledWith({
+          autoLockEnabled: false
+        })
+        expect(emit).toHaveBeenCalledWith('apply-auto-lock-enabled', {
+          autoLockEnabled: false
+        })
       })
     })
 
     describe('resetTimer', () => {
       it('throws when native messaging is disabled', async () => {
-        getNativeMessagingEnabled.mockReturnValue(false)
+        prefs.nativeMessagingEnabled = false
         await expect(handlers.resetTimer()).rejects.toThrow(
           SecurityErrorCodes.NATIVE_MESSAGING_DISABLED
         )
       })
 
-      it('dispatches reset-timer event when enabled', async () => {
-        const dispatchSpy = jest.spyOn(window, 'dispatchEvent')
+      it('emits reset-timer when enabled', async () => {
         await handlers.resetTimer()
-        expect(dispatchSpy).toHaveBeenCalledWith(
-          expect.objectContaining({ type: 'reset-timer' })
-        )
+        expect(emit).toHaveBeenCalledWith('reset-timer')
       })
     })
   })

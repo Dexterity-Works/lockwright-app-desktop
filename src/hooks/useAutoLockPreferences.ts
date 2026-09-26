@@ -11,8 +11,14 @@ import {
 import { DEFAULT_AUTO_LOCK_TIMEOUT, AUTO_LOCK_ENABLED } from 'lockwright-lib-constants'
 
 import { LOCAL_STORAGE_KEYS } from '../constants/localStorage'
-import { applyAutoLockEnabled, applyAutoLockTimeout } from '../utils/autoLock'
+import {
+  applyAutoLockEnabled,
+  applyAutoLockTimeout,
+  getAutoLockTimeoutMs,
+  isAutoLockEnabled
+} from '../utils/autoLock'
 
+export { getAutoLockTimeoutMs, isAutoLockEnabled }
 
 type AutoLockContextValue = {
   shouldBypassAutoLock: boolean
@@ -114,19 +120,3 @@ export const AutoLockProvider = ({ children }: { children: React.ReactNode }) =>
 }
 
 export const useAutoLockPreferences = () => useContext(AutoLockContext)
-
-export function getAutoLockTimeoutMs(): number | null {
-  if (!AUTO_LOCK_ENABLED) {
-    return DEFAULT_AUTO_LOCK_TIMEOUT
-  }
-  const stored = localStorage.getItem(LOCAL_STORAGE_KEYS.AUTO_LOCK_TIMEOUT_MS)
-  if (stored === 'null') {
-    return null
-  }
-  return stored ? Number(stored) : DEFAULT_AUTO_LOCK_TIMEOUT
-}
-
-export function isAutoLockEnabled(): boolean {
-  const stored = localStorage.getItem(LOCAL_STORAGE_KEYS.AUTO_LOCK_ENABLED)
-  return stored !== 'false'
-}

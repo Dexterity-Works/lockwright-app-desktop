@@ -1,6 +1,25 @@
-import { AUTO_LOCK_ENABLED } from 'lockwright-lib-constants'
+import {
+  AUTO_LOCK_ENABLED,
+  DEFAULT_AUTO_LOCK_TIMEOUT
+} from 'lockwright-lib-constants'
 
 import { LOCAL_STORAGE_KEYS } from '../constants/localStorage'
+
+export function getAutoLockTimeoutMs() {
+  if (!AUTO_LOCK_ENABLED) {
+    return DEFAULT_AUTO_LOCK_TIMEOUT
+  }
+  const stored = localStorage.getItem(LOCAL_STORAGE_KEYS.AUTO_LOCK_TIMEOUT_MS)
+  if (stored === 'null') {
+    return null
+  }
+  return stored ? Number(stored) : DEFAULT_AUTO_LOCK_TIMEOUT
+}
+
+export function isAutoLockEnabled() {
+  const stored = localStorage.getItem(LOCAL_STORAGE_KEYS.AUTO_LOCK_ENABLED)
+  return stored !== 'false'
+}
 
 export function applyAutoLockEnabled(enabled) {
   if (!AUTO_LOCK_ENABLED) return

@@ -10,9 +10,20 @@ import { SecurityHandlers } from './handlers/SecurityHandlers'
 import { VaultHandlers } from './handlers/VaultHandlers'
 import { MethodRegistry } from './ipc/MethodRegistry'
 import { SocketManager, getIpcPath } from './ipc/SocketManager'
+import { applyNativeMessagingEvent } from './nativeMessagingEvents'
+import { readNativeMessagingPrefs } from './nativeMessagingPreferences'
 
 // Re-export for backward compatibility
 export { getIpcPath }
+
+/**
+ * @typedef {{ nativeMessagingEnabled: boolean, autoLockEnabled: boolean, autoLockTimeoutMs: number | null }} NativeMessagingPrefs
+ * @typedef {object} NativeMessagingServerDeps
+ * @property {(type: string, payload?: object) => void} emit event sink
+ *   towards the UI; the renderer re-dispatches each as a window event
+ * @property {{ get: () => NativeMessagingPrefs, set: (partial: Partial<NativeMessagingPrefs>) => void }} preferences
+ *   mirror of the UI's preferences (localStorage stays the source of truth)
+ */
 
 /**
  * IPC server for native messaging bridge communication
@@ -20,10 +31,15 @@ export { getIpcPath }
 export class NativeMessagingIPCServer {
   /**
    * @param {import('lockwright-lib-vault-core').PearpassVaultClient} pearpassClient
+   * @param {NativeMessagingServerDeps} deps
    */
-  constructor(pearpassClient) {
+  constructor(pearpassClient, { emit, preferences }) {
     /** @type {import('lockwright-lib-vault-core').PearpassVaultClient} */
     this.client = pearpassClient
+    /** @type {(type: string, payload?: object) => void} */
+    this.emit = emit
+    /** @type {NativeMessagingServerDeps['preferences']} */
+    this.preferences = preferences
     /** @type {import('pear-ipc').Server|null} */
     this.server = null
     /** @type {boolean} */
@@ -53,9 +69,10 @@ export class NativeMessagingIPCServer {
    */
   setupHandlers() {
     // Security handlers
-    const securityHandlers = new SecurityHandlers(this.client)
-    const encryptionHandlers = new EncryptionHandlers(this.client)
-    const vaultHandlers = new VaultHandlers(this.client)
+    const deps = { emit: this.emit, preferences: this.preferences }
+    const securityHandlers = new SecurityHandlers(this.client, deps)
+    const encryptionHandlers = new EncryptionHandlers(this.client, deps)
+    const vaultHandlers = new VaultHandlers(this.client, deps)
 
     // Register security methods (always available)
     this.methodRegistry.register(
@@ -147,10 +164,8 @@ export class NativeMessagingIPCServer {
    * Emit IPC activity event to reset inactivity timer
    */
   emitIPCActivity() {
-    if (global.window) {
-      logger.debug('IPC-SERVER', 'Emitting IPC activity event')
-      global.window.dispatchEvent(new Event('ipc-activity'))
-    }
+    logger.debug('IPC-SERVER', 'Emitting IPC activity event')
+    this.emit('ipc-activity')
   }
 
   /**
@@ -543,7 +558,12 @@ export const startNativeMessagingIPC = async (pearpassClient) => {
   }
 
   startPromise = (async () => {
-    ipcServerInstance = new NativeMessagingIPCServer(pearpassClient)
+    ipcServerInstance = new NativeMessagingIPCServer(pearpassClient, {
+      emit: applyNativeMessagingEvent,
+      // The renderer applies auto-lock changes through the emit above, so
+      // localStorage is already current by the time anyone reads it again.
+      preferences: { get: readNativeMessagingPrefs, set: () => {} }
+    })
     await ipcServerInstance.start()
     return ipcServerInstance
   })()

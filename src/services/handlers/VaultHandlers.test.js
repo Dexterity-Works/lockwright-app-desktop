@@ -5,7 +5,7 @@ describe('VaultHandlers file commands', () => {
     const client = {
       activeVaultGetFile: jest.fn().mockResolvedValue(Buffer.from('hi'))
     }
-    const handlers = new VaultHandlers(client)
+    const handlers = new VaultHandlers(client, { emit: jest.fn() })
 
     await expect(
       handlers.activeVaultGetFile({ key: 'record-v2/r/file/f' })
@@ -20,7 +20,7 @@ describe('VaultHandlers file commands', () => {
     const client = {
       activeVaultAddFile: jest.fn().mockResolvedValue(undefined)
     }
-    const handlers = new VaultHandlers(client)
+    const handlers = new VaultHandlers(client, { emit: jest.fn() })
 
     await expect(
       handlers.activeVaultAddFile({
@@ -49,7 +49,7 @@ describe('VaultHandlers list commands', () => {
       activeVaultGetStatus: jest.fn(),
       activeVaultList: jest.fn().mockResolvedValue([{ id: 'r1' }])
     }
-    const handlers = new VaultHandlers(client)
+    const handlers = new VaultHandlers(client, { emit: jest.fn() })
 
     await expect(
       handlers.activeVaultList({ filterKey: 'record-v2/' })
@@ -67,7 +67,7 @@ describe('VaultHandlers list commands', () => {
       encryptionGetStatus: jest.fn(),
       vaultsList: jest.fn().mockResolvedValue([{ id: 'v1' }])
     }
-    const handlers = new VaultHandlers(client)
+    const handlers = new VaultHandlers(client, { emit: jest.fn() })
 
     await expect(handlers.vaultsList({ filterKey: 'vault/' })).resolves.toEqual(
       [{ id: 'v1' }]
@@ -76,5 +76,25 @@ describe('VaultHandlers list commands', () => {
     expect(client.vaultsList).toHaveBeenCalledWith('vault/')
     expect(client.vaultsGetStatus).not.toHaveBeenCalled()
     expect(client.encryptionGetStatus).not.toHaveBeenCalled()
+  })
+})
+
+describe('VaultHandlers closeAllInstances', () => {
+  it('emits extension-exit only when the desktop was authenticated', async () => {
+    const emit = jest.fn()
+    const client = {
+      vaultsGetStatus: jest.fn().mockResolvedValueOnce({ status: false }),
+      closeAllInstances: jest.fn().mockResolvedValue(undefined)
+    }
+    const handlers = new VaultHandlers(client, { emit })
+
+    await handlers.closeAllInstances()
+    expect(emit).not.toHaveBeenCalled()
+
+    client.vaultsGetStatus.mockResolvedValueOnce({ status: true })
+    await expect(handlers.closeAllInstances()).resolves.toEqual({
+      success: true
+    })
+    expect(emit).toHaveBeenCalledWith('extension-exit')
   })
 })
