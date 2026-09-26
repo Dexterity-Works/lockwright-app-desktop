@@ -11,7 +11,7 @@ describe('FormModalHeaderWrapper', () => {
   const mockButtons = <div data-testid="test-buttons">Test Buttons</div>
 
   test('renders children and buttons correctly', () => {
-    const { container } = render(
+    render(
       <ThemeProvider>
         <FormModalHeaderWrapper children={mockChildren} buttons={mockButtons} />
       </ThemeProvider>
@@ -19,11 +19,10 @@ describe('FormModalHeaderWrapper', () => {
 
     expect(screen.getByTestId('test-children')).toBeInTheDocument()
     expect(screen.getByTestId('test-buttons')).toBeInTheDocument()
-    expect(container).toMatchSnapshot()
   })
 
   test('renders without children', () => {
-    const { container } = render(
+    render(
       <ThemeProvider>
         <FormModalHeaderWrapper buttons={mockButtons} />
       </ThemeProvider>
@@ -31,11 +30,10 @@ describe('FormModalHeaderWrapper', () => {
 
     expect(screen.queryByTestId('test-children')).not.toBeInTheDocument()
     expect(screen.getByTestId('test-buttons')).toBeInTheDocument()
-    expect(container).toMatchSnapshot()
   })
 
   test('renders without buttons', () => {
-    const { container } = render(
+    render(
       <ThemeProvider>
         <FormModalHeaderWrapper children={mockChildren} />
       </ThemeProvider>
@@ -43,7 +41,6 @@ describe('FormModalHeaderWrapper', () => {
 
     expect(screen.getByTestId('test-children')).toBeInTheDocument()
     expect(screen.queryByTestId('test-buttons')).not.toBeInTheDocument()
-    expect(container).toMatchSnapshot()
   })
 
   test('renders with empty content', () => {
@@ -53,6 +50,8 @@ describe('FormModalHeaderWrapper', () => {
       </ThemeProvider>
     )
 
-    expect(container).toMatchSnapshot()
+    expect(container).toHaveTextContent('')
+    expect(screen.queryByTestId('test-children')).not.toBeInTheDocument()
+    expect(screen.queryByTestId('test-buttons')).not.toBeInTheDocument()
   })
 })

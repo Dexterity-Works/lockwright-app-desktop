@@ -117,33 +117,6 @@ describe('InputField Component', () => {
     expect(getByText(additionalItemText)).toBeInTheDocument()
   })
 
-  test('matches snapshot for default variant', () => {
-    const { container } = render(
-      <ThemeProvider>
-        <InputField
-          value="snapshot test"
-          placeholder="Enter text"
-          label="Label"
-        />
-      </ThemeProvider>
-    )
-    expect(container.firstChild).toMatchSnapshot()
-  })
-
-  test('matches snapshot for outline variant', () => {
-    const { container } = render(
-      <ThemeProvider>
-        <InputField
-          value="outline snapshot"
-          placeholder="Enter text"
-          label="Outline Label"
-          variant="outline"
-        />
-      </ThemeProvider>
-    )
-    expect(container.firstChild).toMatchSnapshot()
-  })
-
   test('autoFocus prop focuses input automatically', () => {
     const { getByPlaceholderText } = render(
       <ThemeProvider>

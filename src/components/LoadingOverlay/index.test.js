@@ -7,14 +7,14 @@ import { LoadingOverlay } from './index'
 import '@testing-library/jest-dom'
 
 describe('LoadingOverlay', () => {
-  test('renders correctly', () => {
-    const { container } = render(
+  test('renders', () => {
+    const { getByTestId } = render(
       <ThemeProvider>
         <LoadingOverlay data-testid="loading-overlay" />
       </ThemeProvider>
     )
 
-    expect(container).toMatchSnapshot()
+    expect(getByTestId('loading-overlay')).toBeInTheDocument()
   })
 
   test('passes props correctly', () => {

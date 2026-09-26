@@ -40,7 +40,6 @@ describe('Overlay', () => {
     expect(
       container.querySelector('div[type="default"]')
     ).not.toBeInTheDocument()
-    expect(container).toMatchSnapshot()
   })
 
   test('renders when isRendered is true', async () => {

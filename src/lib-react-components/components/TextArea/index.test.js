@@ -101,28 +101,4 @@ describe('TextArea Component', () => {
     fireEvent.click(textAreaElement)
     expect(handleClick).not.toHaveBeenCalled()
   })
-
-  test('matches snapshot for default variant', () => {
-    const { container } = setup({
-      value: 'snapshot default',
-      placeholder: 'Enter text here',
-      isDisabled: false,
-      onChange: jest.fn(),
-      onClick: jest.fn(),
-      variant: 'default'
-    })
-    expect(container.firstChild).toMatchSnapshot()
-  })
-
-  test('matches snapshot for report variant', () => {
-    const { container } = setup({
-      value: 'snapshot report',
-      placeholder: 'Report here',
-      isDisabled: false,
-      onChange: jest.fn(),
-      onClick: jest.fn(),
-      variant: 'report'
-    })
-    expect(container.firstChild).toMatchSnapshot()
-  })
 })

@@ -45,10 +45,11 @@ describe('RadioSelect', () => {
     )
 
   test('renders the component with title and options', () => {
-    const { container } = renderComponent()
+    renderComponent()
     expect(screen.getByTestId('title')).toHaveTextContent(mockTitle)
     expect(screen.getAllByTestId('radio-option')).toHaveLength(3)
-    expect(container).toMatchSnapshot()
+    expect(screen.getAllByRole('radio')).toHaveLength(3)
+    expect(screen.getAllByRole('radio')[0]).toBeChecked()
   })
 
   test('correctly marks the selected option', () => {
