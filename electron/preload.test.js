@@ -1,12 +1,15 @@
-/* eslint-disable no-underscore-dangle */
 /* eslint-env jest */
 
-const path = require('path')
-
 jest.mock('electron', () => ({
+  contextBridge: {
+    exposeInMainWorld: jest.fn((name, api) => {
+      globalThis.window[name] = api
+    })
+  },
   ipcRenderer: {
-    sendSync: jest.fn(() => '/fake/app/path'),
+    sendSync: jest.fn(),
     invoke: jest.fn(),
+    send: jest.fn(),
     on: jest.fn(),
     removeListener: jest.fn()
   }
@@ -22,36 +25,34 @@ const loadPreload = () => {
 
 describe('preload.cjs', () => {
   beforeEach(() => {
-    // Provide a minimal window shim so preload.cjs can attach electronAPI
+    // Provide a minimal window shim so the mocked contextBridge has a main world
     globalThis.window = globalThis.window || {}
-
-    // Clean up globals that the preload may set
-    delete globalThis.__dirname
-    delete globalThis.__filename
-    if (typeof window !== 'undefined') {
-      delete window.electronAPI
-    }
+    delete window.electronAPI
+    delete window.Pear
 
     jest.clearAllMocks()
 
-    // Load the preload script (which will set globals and window.electronAPI)
     loadPreload()
   })
 
-  it('sets Node-related globals correctly', () => {
-    const expectedDir = path.join(
-      '/fake/app/path',
-      'node_modules',
-      'fs-native-extensions'
-    )
+  it('exposes electronAPI through contextBridge only', () => {
+    const { contextBridge, ipcRenderer } = require('electron')
 
-    expect(globalThis.__dirname).toBe(expectedDir)
-    expect(globalThis.__filename).toBe(path.join(expectedDir, 'binding.js'))
+    expect(contextBridge.exposeInMainWorld).toHaveBeenCalledTimes(1)
+    expect(contextBridge.exposeInMainWorld).toHaveBeenCalledWith(
+      'electronAPI',
+      expect.any(Object)
+    )
+    // Nothing synchronous at load, and no Node globals leak into the page
+    expect(ipcRenderer.sendSync).not.toHaveBeenCalled()
+    expect(window.Pear).toBeUndefined()
+    expect(Object.values(window.electronAPI)).not.toContain(ipcRenderer)
   })
 
   it('exposes electronAPI on window with expected methods', () => {
     expect(window.electronAPI).toBeDefined()
-    expect(typeof window.electronAPI.getAppVersion).toBe('function')
+    expect(window.electronAPI.getAppVersion).toBeUndefined()
+    expect(window.electronAPI.productName).toBeUndefined()
     expect(typeof window.electronAPI.getConfig).toBe('function')
     expect(typeof window.electronAPI.onRuntimeUpdating).toBe('function')
     expect(typeof window.electronAPI.onRuntimeUpdated).toBe('function')
@@ -78,7 +79,15 @@ describe('preload.cjs', () => {
     expect(typeof window.electronAPI.clearClipboardAfter).toBe('function')
     expect(typeof window.electronAPI.vaultInvoke).toBe('function')
     expect(typeof window.electronAPI.vaultOnUpdate).toBe('function')
+    expect(typeof window.electronAPI.vaultOnMasterUpdate).toBe('function')
+    expect(typeof window.electronAPI.vaultOnPersonalSwarmEnvelope).toBe(
+      'function'
+    )
     expect(typeof window.electronAPI.clearStaleVaultsDir).toBe('function')
+    expect(typeof window.electronAPI.openExternal).toBe('function')
+    expect(typeof window.electronAPI.openLogsFolder).toBe('function')
+    expect(typeof window.electronAPI.isLoggingEnabled).toBe('function')
+    expect(typeof window.electronAPI.setLogging).toBe('function')
   })
 
   it('routes clearStaleVaultsDir through ipcRenderer.invoke', async () => {
@@ -92,14 +101,13 @@ describe('preload.cjs', () => {
   it('routes simple invoke-based APIs through ipcRenderer.invoke', async () => {
     const { ipcRenderer } = require('electron')
 
-    await window.electronAPI.getAppVersion()
     await window.electronAPI.getConfig()
     await window.electronAPI.applyUpdate()
     await window.electronAPI.restart()
     await window.electronAPI.checkUpdated()
     await window.electronAPI.clearClipboardAfter('secret', 30000)
+    await window.electronAPI.setLogging(1)
 
-    expect(ipcRenderer.invoke).toHaveBeenCalledWith('app:getVersion')
     expect(ipcRenderer.invoke).toHaveBeenCalledWith('runtime:getConfig')
     expect(ipcRenderer.invoke).toHaveBeenCalledWith('runtime:applyUpdate')
     expect(ipcRenderer.invoke).toHaveBeenCalledWith('runtime:restart')
@@ -107,6 +115,9 @@ describe('preload.cjs', () => {
     expect(ipcRenderer.invoke).toHaveBeenCalledWith('clipboard:clearAfter', {
       text: 'secret',
       delayMs: 30000
+    })
+    expect(ipcRenderer.invoke).toHaveBeenCalledWith('vault:setLogging', {
+      enabled: true
     })
   })
 
@@ -121,58 +132,54 @@ describe('preload.cjs', () => {
     })
   })
 
-  it('subscribes and unsubscribes to runtime updating events', () => {
+  it('sends logError as a fire-and-forget message', () => {
     const { ipcRenderer } = require('electron')
-    const cb = jest.fn()
 
-    const unsubscribe = window.electronAPI.onRuntimeUpdating(cb)
+    window.electronAPI.logError('Comp', ['boom'])
 
-    expect(ipcRenderer.on).toHaveBeenCalledTimes(1)
-    const [channel, handler] = ipcRenderer.on.mock.calls[0]
-    expect(channel).toBe('runtime:updating')
-    expect(typeof handler).toBe('function')
-
-    // When unsubscribe is called, it should remove the same handler
-    unsubscribe()
-    expect(ipcRenderer.removeListener).toHaveBeenCalledWith(
-      'runtime:updating',
-      handler
-    )
+    expect(ipcRenderer.send).toHaveBeenCalledWith('renderer:logError', {
+      component: 'Comp',
+      args: ['boom']
+    })
   })
 
-  it('subscribes and unsubscribes to runtime updated events', () => {
+  it.each([
+    ['onRuntimeUpdating', 'runtime:updating'],
+    ['onRuntimeUpdated', 'runtime:updated'],
+    ['vaultOnUpdate', 'vault:update'],
+    ['vaultOnMasterUpdate', 'vault:master-update']
+  ])('%s subscribes to %s and returns an unsubscribe', (api, channel) => {
     const { ipcRenderer } = require('electron')
     const cb = jest.fn()
 
-    const unsubscribe = window.electronAPI.onRuntimeUpdated(cb)
+    const unsubscribe = window.electronAPI[api](cb)
 
     expect(ipcRenderer.on).toHaveBeenCalledTimes(1)
-    const [channel, handler] = ipcRenderer.on.mock.calls[0]
-    expect(channel).toBe('runtime:updated')
-    expect(typeof handler).toBe('function')
+    const [subscribed, handler] = ipcRenderer.on.mock.calls[0]
+    expect(subscribed).toBe(channel)
+    // The page callback never sees the IpcRendererEvent
+    handler({ sender: 'ipc' })
+    expect(cb).toHaveBeenCalledWith()
 
     unsubscribe()
-    expect(ipcRenderer.removeListener).toHaveBeenCalledWith(
-      'runtime:updated',
-      handler
-    )
+    expect(ipcRenderer.removeListener).toHaveBeenCalledWith(channel, handler)
   })
 
-  it('subscribes and unsubscribes to vault update events', () => {
+  it.each([
+    ['vaultOnPersonalSwarmEnvelope', 'vault:personal-swarm-envelope'],
+    ['onNativeMessagingEvent', 'nm:event']
+  ])('%s hands the page the payload of %s', (api, channel) => {
     const { ipcRenderer } = require('electron')
     const cb = jest.fn()
 
-    const unsubscribe = window.electronAPI.vaultOnUpdate(cb)
+    const unsubscribe = window.electronAPI[api](cb)
 
-    expect(ipcRenderer.on).toHaveBeenCalledTimes(1)
-    const [channel, handler] = ipcRenderer.on.mock.calls[0]
-    expect(channel).toBe('vault:update')
-    expect(typeof handler).toBe('function')
+    const [subscribed, handler] = ipcRenderer.on.mock.calls[0]
+    expect(subscribed).toBe(channel)
+    handler({ sender: 'ipc' }, { type: 'x' })
+    expect(cb).toHaveBeenCalledWith({ type: 'x' })
 
     unsubscribe()
-    expect(ipcRenderer.removeListener).toHaveBeenCalledWith(
-      'vault:update',
-      handler
-    )
+    expect(ipcRenderer.removeListener).toHaveBeenCalledWith(channel, handler)
   })
 })

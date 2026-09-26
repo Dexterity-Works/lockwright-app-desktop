@@ -11,7 +11,7 @@ This document describes how the Lockwright desktop app is built, packaged, and h
 │  Renderer (React)                                               │
 │  - Uses window.electronAPI (from preload) for vault & runtime   │
 └────────────────────────────┬────────────────────────────────────┘
-                             │ IPC (vault:invoke, runtime:*, get-app-path)
+                             │ IPC (vault:invoke, runtime:*, nm:*)      
                              ▼
 ┌─────────────────────────────────────────────────────────────────┐
 │  Main process (electron/main.cjs)                               │
@@ -43,7 +43,7 @@ This document describes how the Lockwright desktop app is built, packaged, and h
 - **Storage layout:** Tries to reuse existing Pear platform storage via `pear-runtime-legacy-storage`. If none is found, it falls back to `app.getPath('userData')/app-storage/by-dkey/<upgrade-key>`.
 - **Flatpak compatibility:** `electron/flatpak-paths.cjs` wraps both `app.getPath('userData')` and any legacy Pear storage path with `getSandboxSafePath()`. Inside Flatpak, host-mapped XDG paths under `~/.var/app/...` are remapped into `~/.config/...` compatibility paths so the vault worklet accepts them.
 - **Packaged app:** With `asar: false` all code and `node_modules` live under `Contents/Resources/app/` on macOS, so the worklet and renderer resolve modules from the real filesystem (no `app.asar` indirection).
-- **IPC:** Handles `get-app-path`, `runtime:getConfig`, `runtime:applyUpdate`, `runtime:restart`, `runtime:checkUpdated`, and `vault:invoke`. Vault methods are forwarded to `vaultClient`; Buffers are serialized as `{ __base64 }`. It also listens for `pearRuntime.updater` events and forwards `runtime:updating` / `runtime:updated` to the renderer to drive the OTA UI.
+- **IPC:** Handles `runtime:getConfig`, `runtime:applyUpdate`, `runtime:restart`, `runtime:checkUpdated`, and `vault:invoke`. Vault methods are forwarded to `vaultClient`; Buffers are serialized as `{ __base64 }`. It also listens for `pearRuntime.updater` events and forwards `runtime:updating` / `runtime:updated` to the renderer to drive the OTA UI.
 
 ---
 
@@ -104,13 +104,14 @@ The vault worklet lives in `lockwright-lib-vault-core` (Git dependency) under `s
 
 ## 6. Preload (electron/preload.cjs)
 
-- **Attached to the renderer** via `webPreferences.preload` (with `nodeIntegration: true`, `contextIsolation: false`).
-- **Responsibilities:**
-  1. **App path for fs-native-extensions:** Sends `get-app-path` sync, then sets `global.__dirname` and `global.__filename` to the `fs-native-extensions` path so code that uses it (e.g. via pear-ipc) in the renderer does not break.
-  2. **Renderer API:** Exposes `window.electronAPI` with:
-     - Runtime: `getConfig`, `applyUpdate`, `restart`, `checkUpdated`, `onRuntimeUpdating`, `onRuntimeUpdated`
-     - Vault: `vaultInvoke(method, args)`, `vaultOnUpdate(cb)`
-- The renderer must use this preload; without it there is no `window.electronAPI` and no correct `__dirname`/`__filename` for fs-native-extensions.
+- **Attached to the renderer** via `webPreferences.preload`. The page is context-isolated, so the preload is the only bridge: it exposes `window.electronAPI` through `contextBridge.exposeInMainWorld` and never hands out `ipcRenderer` itself.
+- **Renderer API** (`window.electronAPI`):
+  - Runtime: `getConfig`, `applyUpdate`, `restart`, `checkUpdated`, `onRuntimeUpdating`, `onRuntimeUpdated`
+  - Vault: `vaultInvoke(method, args)`, `vaultOnUpdate(cb)`, `vaultOnMasterUpdate(cb)`, `vaultOnPersonalSwarmEnvelope(cb)`, `clearStaleVaultsDir`
+  - Shell and logs: `openExternal`, `openLogsFolder`, `isLoggingEnabled`, `setLogging`, `logError`, `clearClipboardAfter`
+  - Native messaging: `nativeMessaging.*`, `onNativeMessagingEvent(cb)`, `setNativeMessagingPrefs(prefs)`
+- Every `on*` subscription returns an unsubscribe function and passes page callbacks only the payload, never the `IpcRendererEvent`.
+- The `Pear` global that `usePearUpdate` reads is built in `app.electron.tsx` from `electronAPI`, not by the preload.
 
 ---
 

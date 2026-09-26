@@ -1,46 +1,24 @@
-/* eslint-disable no-underscore-dangle */
 /**
- * Preload: with contextIsolation false, runs in the same context as the page.
- * Injects Node globals (__dirname, __filename) and the Pear placeholder the
- * bundle's deps (pear-ref and friends) expect at load time. It lives here and
- * not in an inline <script> so index.html's CSP can keep script-src 'self'.
+ * Preload: the only bridge between the page and the main process. It runs
+ * context-isolated, so the page sees nothing but the `electronAPI` object
+ * exposed here; ipcRenderer itself never crosses the bridge. Subscriptions
+ * return an unsubscribe function and strip the IpcRendererEvent so page
+ * callbacks only ever get the payload.
  */
-const path = require('path')
+const { contextBridge, ipcRenderer } = require('electron')
 
-const { ipcRenderer } = require('electron')
-
-const pkg = require('../package.json')
-
-const appPath = ipcRenderer.sendSync('get-app-path')
-
-// Required by fs-native-extensions (pulled in via pear-ipc): binding.js uses __filename
-const fsNativeExtDir = path.join(
-  appPath,
-  'node_modules',
-  'fs-native-extensions'
-)
-global.__dirname = fsNativeExtDir
-global.__filename = path.join(fsNativeExtDir, 'binding.js')
-global.global = global
-global.Pear = global.Pear || {
-  config: { storage: '', key: null, applink: '' },
-  constructor: {}
+const subscribe = (channel, cb) => {
+  const sub = (_event, msg) => cb(msg)
+  ipcRenderer.on(channel, sub)
+  return () => ipcRenderer.removeListener(channel, sub)
 }
 
-window.electronAPI = {
-  productName: pkg.productName,
-  getAppVersion: () => ipcRenderer.invoke('app:getVersion'),
+const subscribeSignal = (channel, cb) => subscribe(channel, () => cb())
+
+contextBridge.exposeInMainWorld('electronAPI', {
   getConfig: () => ipcRenderer.invoke('runtime:getConfig'),
-  onRuntimeUpdating: (cb) => {
-    const sub = () => cb()
-    ipcRenderer.on('runtime:updating', sub)
-    return () => ipcRenderer.removeListener('runtime:updating', sub)
-  },
-  onRuntimeUpdated: (cb) => {
-    const sub = () => cb()
-    ipcRenderer.on('runtime:updated', sub)
-    return () => ipcRenderer.removeListener('runtime:updated', sub)
-  },
+  onRuntimeUpdating: (cb) => subscribeSignal('runtime:updating', cb),
+  onRuntimeUpdated: (cb) => subscribeSignal('runtime:updated', cb),
   applyUpdate: () => ipcRenderer.invoke('runtime:applyUpdate'),
   restart: () => ipcRenderer.invoke('runtime:restart'),
   checkUpdated: () => ipcRenderer.invoke('runtime:checkUpdated'),
@@ -48,22 +26,10 @@ window.electronAPI = {
     ipcRenderer.invoke('clipboard:clearAfter', { text, delayMs }),
   vaultInvoke: (method, args) =>
     ipcRenderer.invoke('vault:invoke', { method, args }),
-  vaultOnUpdate: (cb) => {
-    const sub = () => cb()
-    ipcRenderer.on('vault:update', sub)
-    return () => ipcRenderer.removeListener('vault:update', sub)
-  },
-  vaultOnMasterUpdate: (cb) => {
-    const sub = () => cb()
-    ipcRenderer.on('vault:master-update', sub)
-    return () => ipcRenderer.removeListener('vault:master-update', sub)
-  },
-  vaultOnPersonalSwarmEnvelope: (cb) => {
-    const sub = (_event, msg) => cb(msg)
-    ipcRenderer.on('vault:personal-swarm-envelope', sub)
-    return () =>
-      ipcRenderer.removeListener('vault:personal-swarm-envelope', sub)
-  },
+  vaultOnUpdate: (cb) => subscribeSignal('vault:update', cb),
+  vaultOnMasterUpdate: (cb) => subscribeSignal('vault:master-update', cb),
+  vaultOnPersonalSwarmEnvelope: (cb) =>
+    subscribe('vault:personal-swarm-envelope', cb),
   clearStaleVaultsDir: () => ipcRenderer.invoke('vault:clearStaleVaultsDir'),
   openExternal: (url) => ipcRenderer.invoke('shell:openExternal', url),
   openLogsFolder: () => ipcRenderer.invoke('vault:openLogsFolder'),
@@ -73,11 +39,7 @@ window.electronAPI = {
   logError: (component, args) =>
     ipcRenderer.send('renderer:logError', { component, args }),
   setNativeMessagingPrefs: (prefs) => ipcRenderer.invoke('nm:prefs', prefs),
-  onNativeMessagingEvent: (cb) => {
-    const sub = (_event, msg) => cb(msg)
-    ipcRenderer.on('nm:event', sub)
-    return () => ipcRenderer.removeListener('nm:event', sub)
-  },
+  onNativeMessagingEvent: (cb) => subscribe('nm:event', cb),
   nativeMessaging: {
     setup: () => ipcRenderer.invoke('nm:setup'),
     start: () => ipcRenderer.invoke('nm:start'),
@@ -95,4 +57,4 @@ window.electronAPI = {
     importClientKeys: (keys) =>
       ipcRenderer.invoke('nm:importClientKeys', { keys })
   }
-}
+})

@@ -792,12 +792,6 @@ function toSerializableArg(value) {
 }
 
 function registerIPC() {
-  ipcMain.on('get-app-path', (e) => {
-    e.returnValue = app.getAppPath()
-  })
-
-  ipcMain.handle('app:getVersion', () => app.getVersion())
-
   nativeMessaging.register(ipcMain)
 
   ipcMain.handle('runtime:getConfig', async () => {

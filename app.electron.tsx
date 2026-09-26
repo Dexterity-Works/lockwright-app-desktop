@@ -1,5 +1,7 @@
 /**
- * Electron-only entry for the renderer bundle (nodeIntegration: true).
+ * Electron-only entry for the renderer bundle. The page is context-isolated:
+ * everything from the main process arrives through window.electronAPI, and
+ * the `Pear` global usePearUpdate reads is built here from it.
  */
 import { i18n } from '@lingui/core'
 import { compileMessage } from '@lingui/message-utils/compileMessage'
