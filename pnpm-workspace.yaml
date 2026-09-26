@@ -28,7 +28,7 @@ allowBuilds:
   "lockwright-lib-constants@https://codeload.github.com/Dexterity-Works/lockwright-lib-constants/tar.gz/701bf1988d16458c634db85269b436eb9c07cacc": true
   "lockwright-lib-vault-core@file:../pearpass-lib-vault-core": true
   "lockwright-lib-vault@file:../pearpass-lib-vault": true
-  "@tetherto/pearpass-lib-native-messaging-bridge@https://codeload.github.com/Dexterity-Works/pearpass-lib-native-messaging-bridge/tar.gz/db6158a07367f25766b79dd246646a1d6bbe81f5": true
+  "@tetherto/pearpass-lib-native-messaging-bridge@https://codeload.github.com/Dexterity-Works/pearpass-lib-native-messaging-bridge/tar.gz/8ad5022e06d1be141db20ac20e1fc57549859541": true
   electron: set this to true or false
   electron-winstaller: set this to true or false
   esbuild: set this to true or false
@@ -38,3 +38,4 @@ allowBuilds:
   "esbuild@0.24.2": true
   '@tetherto/pearpass-lib-native-messaging-bridge@https://codeload.github.com/Dexterity-Works/pearpass-lib-native-messaging-bridge/tar.gz/74407289f3877dfd08719eb18627c744d3216d02': set this to true or false
   lockwright-lib-data-import@https://codeload.github.com/Dexterity-Works/lockwright-lib-data-import/tar.gz/82cbfdde64c2f16e71748b4a4c44a82a91a5b0d5: set this to true or false
+  '@tetherto/pearpass-lib-native-messaging-bridge@https://codeload.github.com/Dexterity-Works/pearpass-lib-native-messaging-bridge/tar.gz/db6158a07367f25766b79dd246646a1d6bbe81f5': set this to true or false

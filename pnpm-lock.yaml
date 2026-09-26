@@ -224,8 +224,8 @@ importers:
         specifier: 5.1.2
         version: 5.1.2(@lingui/babel-plugin-lingui-macro@5.9.5(babel-plugin-macros@3.1.0)(typescript@5.9.3))(babel-plugin-macros@3.1.0)(react@19.1.0)
       '@tetherto/pearpass-lib-native-messaging-bridge':
-        specifier: git+https://github.com/Dexterity-Works/pearpass-lib-native-messaging-bridge.git#db6158a07367f25766b79dd246646a1d6bbe81f5
-        version: https://codeload.github.com/Dexterity-Works/pearpass-lib-native-messaging-bridge/tar.gz/db6158a07367f25766b79dd246646a1d6bbe81f5(bare-buffer@3.6.2)
+        specifier: git+https://github.com/Dexterity-Works/pearpass-lib-native-messaging-bridge.git#8ad5022e06d1be141db20ac20e1fc57549859541
+        version: https://codeload.github.com/Dexterity-Works/pearpass-lib-native-messaging-bridge/tar.gz/8ad5022e06d1be141db20ac20e1fc57549859541(bare-buffer@3.6.2)
       autopass:
         specifier: ~3.3.0
         version: 3.3.0(bare-buffer@3.6.2)(bare-events@2.9.1)(bare-url@2.4.7)
@@ -2284,8 +2284,8 @@ packages:
       '@types/react-dom':
         optional: true
 
-  '@tetherto/pearpass-lib-native-messaging-bridge@https://codeload.github.com/Dexterity-Works/pearpass-lib-native-messaging-bridge/tar.gz/db6158a07367f25766b79dd246646a1d6bbe81f5':
-    resolution: {gitHosted: true, integrity: sha512-8FiIKDqAAZ8NwSPqYvYn04Fos8AcGCdmrJQJkG/TeiYfhC0Nq7qwe6lYFrU4N+4EXzGgRzP5iN/WGZqt/LlJgA==, tarball: https://codeload.github.com/Dexterity-Works/pearpass-lib-native-messaging-bridge/tar.gz/db6158a07367f25766b79dd246646a1d6bbe81f5}
+  '@tetherto/pearpass-lib-native-messaging-bridge@https://codeload.github.com/Dexterity-Works/pearpass-lib-native-messaging-bridge/tar.gz/8ad5022e06d1be141db20ac20e1fc57549859541':
+    resolution: {gitHosted: true, integrity: sha512-GTgFyq40JyVmQ31Wn9jqdkfwpg/CR6ScQEjnySccwV/1Th+u8+531vFr3vEXBJWCw834k4qkzEAEydvR1mcw4w==, tarball: https://codeload.github.com/Dexterity-Works/pearpass-lib-native-messaging-bridge/tar.gz/8ad5022e06d1be141db20ac20e1fc57549859541}
     version: 0.0.2
 
   '@tetherto/tether-dev-docs@https://codeload.github.com/Dexterity-Works/tether-dev-docs/tar.gz/cb82786f04714a56577df1555db947969ec90aeb':
@@ -9836,7 +9836,7 @@ snapshots:
       '@types/react': 19.2.7
       '@types/react-dom': 19.2.3(@types/react@19.2.7)
 
-  '@tetherto/pearpass-lib-native-messaging-bridge@https://codeload.github.com/Dexterity-Works/pearpass-lib-native-messaging-bridge/tar.gz/db6158a07367f25766b79dd246646a1d6bbe81f5(bare-buffer@3.6.2)':
+  '@tetherto/pearpass-lib-native-messaging-bridge@https://codeload.github.com/Dexterity-Works/pearpass-lib-native-messaging-bridge/tar.gz/8ad5022e06d1be141db20ac20e1fc57549859541(bare-buffer@3.6.2)':
     dependencies:
       bare-fs: 4.5.0(bare-buffer@3.6.2)
       bare-os: 3.6.2

@@ -202,7 +202,7 @@
     "lockwright-lib-constants": "git+https://github.com/Dexterity-Works/lockwright-lib-constants.git#701bf1988d16458c634db85269b436eb9c07cacc",
     "lockwright-lib-data-export": "git+https://github.com/Dexterity-Works/lockwright-lib-data-export.git",
     "lockwright-lib-data-import": "git+https://github.com/Dexterity-Works/lockwright-lib-data-import.git#5178ac264bade22523c5175c0af916d30cf5ca82",
-    "@tetherto/pearpass-lib-native-messaging-bridge": "git+https://github.com/Dexterity-Works/pearpass-lib-native-messaging-bridge.git#db6158a07367f25766b79dd246646a1d6bbe81f5",
+    "@tetherto/pearpass-lib-native-messaging-bridge": "git+https://github.com/Dexterity-Works/pearpass-lib-native-messaging-bridge.git#8ad5022e06d1be141db20ac20e1fc57549859541",
     "lockwright-lib-ui-react-native-components": "git+https://github.com/Dexterity-Works/lockwright-lib-ui-react-native-components.git#design-system-v2",
     "lockwright-lib-vault": "file:../pearpass-lib-vault",
     "lockwright-lib-vault-core": "file:../pearpass-lib-vault-core",
