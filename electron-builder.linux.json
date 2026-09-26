@@ -8,8 +8,8 @@
   "files": [
     "electron/**/*",
     "dist/**/*",
+    "!dist/**/*.map",
     "index.html",
-    "index.js",
     "packages/**/*",
     "assets/**/*",
     "src/utils/**/*",

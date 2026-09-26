@@ -180,7 +180,22 @@ function getStorageDir() {
 //    use that path for full compatibility.
 // 2) Otherwise, fall back to an Electron-owned per-link directory under
 //    userData so multiple links can coexist on the same machine.
-async function resolveRuntimeStorageDir() {
+// The answer never changes within a process, and the uncached walk scans
+// directories synchronously; every caller shares the first resolution.
+let runtimeStorageDirPromise = null
+function resolveRuntimeStorageDir() {
+  if (!runtimeStorageDirPromise) {
+    runtimeStorageDirPromise = resolveRuntimeStorageDirUncached().catch(
+      (err) => {
+        runtimeStorageDirPromise = null
+        throw err
+      }
+    )
+  }
+  return runtimeStorageDirPromise
+}
+
+async function resolveRuntimeStorageDirUncached() {
   const { legacyChannelLink, upgrade } = runtimeConfig || {}
 
   let storageDir = getStorageDir()

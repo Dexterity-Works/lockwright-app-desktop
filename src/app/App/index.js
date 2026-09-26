@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect, useRef } from 'react'
+import { useEffect, useRef } from 'react'
 
 import { html } from 'htm/react'
 import { useTheme } from 'lockwright-lib-ui-react-native-components'
@@ -24,7 +24,6 @@ export const App = () => {
   const { theme } = useTheme()
   const { currentPage, navigate } = useRouter()
   usePearUpdate()
-  const [isLoadingPageComplete, setIsLoadingPageComplete] = useState(false)
 
   useInactivity()
   const { isLoading: isDataLoading } = useRedirect()
@@ -77,16 +76,11 @@ export const App = () => {
     }
   }, [activeVault?.id, vaultsForDevTrigger, switchVault, navigate])
 
-  const handleLoadingComplete = useCallback(() => {
-    setIsLoadingPageComplete(true)
-  }, [])
-
   // Only gate the vault UI on schema migration — welcome/intro must not stall
   // if migrate/addDevice hang. Routes also treats currentPage === 'loading' as
   // splash, so useRedirect must always navigate away (see useRedirect.js).
   const showLoadingPage =
     isDataLoading ||
-    !isLoadingPageComplete ||
     ((currentPage === 'vault' || currentPage === 'generator') &&
       !!activeVault?.id &&
       !isMigrationReady)
@@ -103,7 +97,6 @@ export const App = () => {
       >
         <${Routes}
           isDataLoading=${showLoadingPage}
-          onLoadingComplete=${handleLoadingComplete}
           migrationProgress=${migrationProgress}
         />
       <//>

@@ -16,24 +16,14 @@ import { WelcomePage } from '../../pages/WelcomePage'
 /**
  * @param {Object} props
  * @param {boolean} props.isDataLoading - Shows LoadingPage with progress bar
- * @param {() => void} [props.onLoadingComplete] - Callback when LoadingPage finishes
  * @param {{ done: number, total: number }|null} [props.migrationProgress]
  * @returns {import('react').ReactNode}
  */
-export const Routes = ({
-  isDataLoading,
-  onLoadingComplete,
-  migrationProgress
-}) => {
+export const Routes = ({ isDataLoading, migrationProgress }) => {
   const { currentPage, data } = useRouter()
 
   if (isDataLoading || currentPage === 'loading') {
-    return html`
-      <${LoadingPage}
-        onLoadingComplete=${onLoadingComplete}
-        migrationProgress=${migrationProgress}
-      />
-    `
+    return html` <${LoadingPage} migrationProgress=${migrationProgress} /> `
   }
 
   if (currentPage === 'intro') {

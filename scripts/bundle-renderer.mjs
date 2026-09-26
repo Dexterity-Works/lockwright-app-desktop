@@ -12,6 +12,7 @@ import path from 'path'
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const root = path.join(__dirname, '..')
 const watch = process.argv.includes('--watch')
+const prod = process.env.NODE_ENV === 'production'
 const require = createRequire(import.meta.url)
 const postcss = require('postcss')
 const babel = require('@babel/core')
@@ -102,7 +103,8 @@ const ctx = await esbuild.context({
   platform: 'browser',
   target: ['es2020'],
   format: 'iife',
-  sourcemap: true,
+  minify: prod,
+  sourcemap: !prod,
   define: {
     'process.env.NODE_ENV': JSON.stringify(
       process.env.NODE_ENV || 'development'
