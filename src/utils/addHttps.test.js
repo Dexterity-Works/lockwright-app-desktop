@@ -38,3 +38,23 @@ describe('addHttps', () => {
     )
   })
 })
+
+describe('addHttps case handling', () => {
+  test('lowercases the scheme and host but keeps the path as typed', () => {
+    expect(addHttps('HTTPS://Example.COM/Reset/Token?Key=AbC#Frag')).toBe(
+      'https://example.com/Reset/Token?Key=AbC#Frag'
+    )
+  })
+
+  test('lowercases the host when prefixing https', () => {
+    expect(addHttps('Example.COM/CaseSensitive')).toBe(
+      'https://example.com/CaseSensitive'
+    )
+  })
+
+  test('keeps userinfo as typed', () => {
+    expect(addHttps('https://User:PassWord@Example.com/Path')).toBe(
+      'https://User:PassWord@example.com/Path'
+    )
+  })
+})

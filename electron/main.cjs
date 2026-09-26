@@ -30,6 +30,7 @@ const {
 const { adoptInheritedVault, hasVault } = require('./pickRuntimeStorage.cjs')
 // eslint-disable-next-line import/order
 const { scheduleClipboardCleanup } = require('./clipboardCleanup.cjs')
+const { openExternalIfAllowed } = require('./openExternalPolicy.cjs')
 
 const debugMode = false
 
@@ -704,7 +705,7 @@ function createWindow() {
 
   // Open external links in the default browser instead of the Electron window
   mainWindow.webContents.setWindowOpenHandler(({ url }) => {
-    shell.openExternal(url)
+    openExternalIfAllowed({ shell, logger }, url)
     return { action: 'deny' }
   })
 
@@ -712,7 +713,7 @@ function createWindow() {
     const appUrl = mainWindow.webContents.getURL()
     if (url !== appUrl) {
       event.preventDefault()
-      shell.openExternal(url)
+      openExternalIfAllowed({ shell, logger }, url)
     }
   })
 
@@ -803,7 +804,7 @@ function registerIPC() {
   )
 
   ipcMain.handle('shell:openExternal', async (_event, url) => {
-    await shell.openExternal(url)
+    await openExternalIfAllowed({ shell, logger }, url)
   })
 
   ipcMain.handle('vault:invoke', async (_event, { method, args }) => {
