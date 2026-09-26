@@ -13,6 +13,19 @@ jest.mock('os', () => ({
 jest.mock('lockwright-lib-constants', () => ({
   IPC_SOCKET_DIR_NAME: '.lockwright'
 }))
+// Default: nothing listens on the path (a connect attempt errors out).
+jest.mock('net', () => ({
+  createConnection: jest.fn(() => {
+    const socket = {
+      once: (event, cb) => {
+        if (event === 'error') setTimeout(() => cb(new Error('ENOENT')), 0)
+        return socket
+      },
+      destroy: jest.fn()
+    }
+    return socket
+  })
+}))
 jest.mock('../../utils/logger', () => ({
   logger: {
     info: jest.fn(),
@@ -21,6 +34,7 @@ jest.mock('../../utils/logger', () => ({
 }))
 
 import fs from 'fs'
+import net from 'net'
 
 import { SocketManager, getIpcPath } from './SocketManager'
 
@@ -160,6 +174,26 @@ describe('SocketManager', () => {
       const manager = new SocketManager(socketName)
       await manager.cleanupSocket()
       expect(logger.warn).not.toHaveBeenCalled()
+    })
+
+    it('refuses to unlink a socket another live instance is listening on', async () => {
+      require('os').platform.mockReturnValue('linux')
+      const live = {
+        once: (event, cb) => {
+          if (event === 'connect') setTimeout(cb, 0)
+          return live
+        },
+        destroy: jest.fn()
+      }
+      net.createConnection.mockReturnValueOnce(live)
+
+      const manager = new SocketManager(socketName)
+      await expect(manager.cleanupSocket()).rejects.toThrow(
+        'Another instance is listening'
+      )
+      expect(net.createConnection).toHaveBeenCalledWith(unixPath)
+      expect(live.destroy).toHaveBeenCalled()
+      expect(fs.promises.unlink).not.toHaveBeenCalled()
     })
   })
 })

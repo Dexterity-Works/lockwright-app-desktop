@@ -51,6 +51,25 @@ if (isLinux) {
   app.commandLine.appendSwitch('class', pkg.productName)
 }
 
+// One Lockwright per userData: a second launch quits and the first focuses
+// its window. Two instances would fight over the vault and the native
+// messaging socket. Dev builds skip the lock because electron-reload spawns
+// the replacement before the old process exits; LOCKWRIGHT_SINGLE_INSTANCE=1
+// forces it on there.
+const wantsSingleInstance =
+  app.isPackaged || process.env.LOCKWRIGHT_SINGLE_INSTANCE === '1'
+const hasSingleInstanceLock =
+  !wantsSingleInstance || app.requestSingleInstanceLock()
+if (!hasSingleInstanceLock) {
+  app.quit()
+} else if (wantsSingleInstance) {
+  app.on('second-instance', () => {
+    if (!mainWindow || mainWindow.isDestroyed()) return
+    if (mainWindow.isMinimized()) mainWindow.restore()
+    mainWindow.focus()
+  })
+}
+
 const {
   getSandboxSafePath,
   isFlatpakRuntime,
@@ -78,7 +97,7 @@ const { logger, loggingForced, enableWorkletFileLogging } = setupLogging({
   getVaultClient: () => vaultClient
 })
 
-if (process.env.PEARPASS_DEV_RESET !== '1') {
+if (hasSingleInstanceLock && process.env.PEARPASS_DEV_RESET !== '1') {
   try {
     const destDir = getStorageDir()
     const result = migratePearPassUserData({
@@ -929,6 +948,7 @@ function registerIPC() {
 }
 
 app.whenReady().then(async () => {
+  if (!hasSingleInstanceLock) return
   emitStartupMarker('PEARPASS_MAIN_READY')
   const { loggingEnabled } = devicePreferences.read(getStorageDir())
   loggingActive = loggingForced || loggingEnabled

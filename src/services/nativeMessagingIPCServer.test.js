@@ -44,6 +44,20 @@ global.Pear = {
   }
 }
 
+// Nothing listens on the socket path in tests.
+jest.mock('net', () => ({
+  createConnection: jest.fn(() => {
+    const socket = {
+      once: (event, cb) => {
+        if (event === 'error') setTimeout(() => cb(new Error('ENOENT')), 0)
+        return socket
+      },
+      destroy: jest.fn()
+    }
+    return socket
+  })
+}))
+
 jest.mock('pear-ipc', () => ({
   Server: jest.fn().mockImplementation(function (options) {
     this.options = options

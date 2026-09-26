@@ -1,5 +1,6 @@
 import { createHmac, randomBytes } from 'crypto'
 import fs from 'fs'
+import net from 'net'
 import { homedir, platform } from 'os'
 import { join } from 'path'
 
@@ -102,10 +103,33 @@ export class SocketManager {
   }
 
   /**
-   * Clean up existing socket file (Unix only)
+   * Whether something is listening on the socket path. A leftover file from
+   * a crash refuses the connection; a live Lockwright accepts it.
+   * @returns {Promise<boolean>}
+   */
+  isSocketLive() {
+    return new Promise((resolve) => {
+      const socket = net.createConnection(this.socketPath)
+      socket.once('connect', () => {
+        socket.destroy()
+        resolve(true)
+      })
+      socket.once('error', () => resolve(false))
+    })
+  }
+
+  /**
+   * Clean up existing socket file (Unix only). Never unlinks a socket
+   * another running instance owns.
    */
   async cleanupSocket() {
     if (platform() === 'win32') return
+
+    if (await this.isSocketLive()) {
+      throw new Error(
+        `Another instance is listening on ${this.socketPath}; not starting`
+      )
+    }
 
     try {
       await unlink(this.socketPath)
