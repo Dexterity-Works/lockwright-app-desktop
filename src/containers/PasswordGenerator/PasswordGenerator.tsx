@@ -163,6 +163,7 @@ export const PasswordGenerator = ({
     }
   })
   const [history, setHistory] = useState<HistoryEntry[]>([])
+  const [generationNonce, setGenerationNonce] = useState(0)
 
   const lengthValue =
     selectedOption === PASSWORD_OPTIONS.passphrase
@@ -204,7 +205,7 @@ export const PasswordGenerator = ({
       upperCase: selectedRules.password.capitalLetters,
       numbers: selectedRules.password.numbers
     }) as string
-  }, [selectedOption, selectedRules])
+  }, [selectedOption, selectedRules, generationNonce])
 
   const passType =
     selectedOption === PASSWORD_OPTIONS.passphrase
@@ -422,9 +423,32 @@ export const PasswordGenerator = ({
   return (
     <div style={styles.body} data-testid="password-generator">
       <div style={styles.section}>
-        <Text variant="caption" color={theme.colors.colorTextSecondary}>
-          {t('Generated Password')}
-        </Text>
+        <div style={styles.sectionHeader}>
+          <Text variant="caption" color={theme.colors.colorTextSecondary}>
+            {t('Generated Password')}
+          </Text>
+          <div style={styles.sectionActions}>
+            <Button
+              variant="secondary"
+              size="small"
+              type="button"
+              onClick={() => setGenerationNonce((n) => n + 1)}
+              data-testid="password-generator-generate"
+            >
+              {t('Generate')}
+            </Button>
+            <Button
+              variant="tertiary"
+              size="small"
+              type="button"
+              iconBefore={<ContentCopy width={16} height={16} />}
+              onClick={() => copyToClipboard(generatedValue)}
+              data-testid="password-generator-copy"
+            >
+              {t('Copy')}
+            </Button>
+          </div>
+        </div>
 
         <div style={styles.groupedCard}>
           <div style={styles.generatedPasswordBlock}>
@@ -595,7 +619,7 @@ export const PasswordGenerator = ({
       </div>
 
       <div style={styles.section}>
-        <div style={styles.historyHeader}>
+        <div style={styles.sectionHeader}>
           <Text variant="caption" color={theme.colors.colorTextSecondary}>
             {t('History')}
           </Text>

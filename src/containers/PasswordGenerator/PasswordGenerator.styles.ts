@@ -76,11 +76,17 @@ export const createStyles = (colors: ThemeColors) => ({
     gap: `${rawTokens.spacing12}px`,
     padding: `${rawTokens.spacing12}px ${rawTokens.spacing16}px`
   },
-  historyHeader: {
+  sectionHeader: {
     display: 'flex' as const,
     alignItems: 'center' as const,
     justifyContent: 'space-between' as const,
     gap: `${rawTokens.spacing8}px`
+  },
+  sectionActions: {
+    display: 'flex' as const,
+    alignItems: 'center' as const,
+    gap: `${rawTokens.spacing8}px`,
+    flexShrink: 0
   },
   historyList: {
     border: `1px solid ${colors.colorBorderPrimary}`,

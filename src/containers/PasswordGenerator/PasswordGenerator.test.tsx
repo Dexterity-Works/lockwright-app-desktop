@@ -262,6 +262,27 @@ describe('PasswordGenerator', () => {
     expect(mockMarkHistoryUsed).not.toHaveBeenCalled()
   })
 
+  it('regenerates the password when Generate is clicked', () => {
+    render(<PasswordGenerator />)
+
+    const heading = screen.getByRole('heading', { level: 3 })
+    expect(heading.textContent).toBe('Abcdef1!')
+
+    mockGeneratePassword.mockReturnValueOnce('Zyxwvu9?')
+    fireEvent.click(screen.getByTestId('password-generator-generate'))
+
+    expect(heading.textContent).toBe('Zyxwvu9?')
+  })
+
+  it('copies the current password from the header without marking it used', () => {
+    render(<PasswordGenerator />)
+
+    fireEvent.click(screen.getByTestId('password-generator-copy'))
+
+    expect(mockCopyToClipboard).toHaveBeenCalledWith('Abcdef1!')
+    expect(mockMarkHistoryUsed).not.toHaveBeenCalled()
+  })
+
   it('shows random-mode charset toggles, all on by default', () => {
     render(<PasswordGenerator />)
 

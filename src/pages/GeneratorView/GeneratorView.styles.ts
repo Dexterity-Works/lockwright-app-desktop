@@ -13,9 +13,5 @@ export const createStyles = (colors: ThemeColors) => ({
     gap: `${rawTokens.spacing24}px`,
     boxSizing: 'border-box' as const,
     backgroundColor: colors.colorSurfacePrimary
-  },
-  actions: {
-    display: 'flex' as const,
-    justifyContent: 'flex-end' as const
   }
 })
