@@ -15,6 +15,7 @@ Starts at 0.0.17, after the Lockwright package rename. Earlier history is git.
 
 ### Changed
 
+- Generate and Copy sit above the generated password. The Generator page drops its bottom Copy Password button.
 - The browser-extension native host is built from `native-host/` in this repo and names the Lockwright socket itself, instead of rewriting the PearPass bridge bundle.
 
 ### Removed
