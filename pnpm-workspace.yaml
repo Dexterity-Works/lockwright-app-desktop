@@ -10,7 +10,6 @@ overrides:
   "kdbxweb>@xmldom/xmldom": "0.8.15"
 
 allowBuilds:
-  "@electron/node-gyp@https://codeload.github.com/electron/node-gyp/tar.gz/06b29aafb7708acef8b3669835c8a7857ebc92d2": true
   "lockwright-lib-ui-react-native-components@https://codeload.github.com/Dexterity-Works/lockwright-lib-ui-react-native-components/tar.gz/82167746355a4d1b931dae2c3d4abe10a7e10b7e": true
   "@tetherto/tether-dev-docs@https://codeload.github.com/Dexterity-Works/tether-dev-docs/tar.gz/cb82786f04714a56577df1555db947969ec90aeb": true
   "lockwright-lib-vault-core@file:../pearpass-lib-vault-core": true

@@ -16,6 +16,7 @@ Starts at 0.0.17, after the Lockwright package rename. Earlier history is git.
 ### Removed
 
 - The unused `lockwright-utils-pattern-search` dependency.
+- The Electron Forge MSIX build. Windows ships as the electron-builder NSIS installer.
 
 ## [0.0.27] - 2026-09-27
 

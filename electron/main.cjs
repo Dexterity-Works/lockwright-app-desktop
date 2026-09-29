@@ -449,7 +449,7 @@ async function startRuntime() {
   const { PearpassVaultClient } = await import(
     'lockwright-lib-vault-core'
   )
-  // MSIX (Store/Forge) vs NSIS/portable: Pear OTA artifact extension must match.
+  // MSIX (Store) vs NSIS/portable: Pear OTA artifact extension must match.
   const extension = isLinux
     ? '.AppImage'
     : isMac

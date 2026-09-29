@@ -79,7 +79,7 @@ The vault worklet lives in `lockwright-lib-vault-core` (Git dependency) under `s
 
 ---
 
-## 5. Packaging (no asar; mac = electron-builder, win = electron-forge)
+## 5. Packaging (no asar; electron-builder on every platform)
 
 - **asar:** Disabled (`"asar": false` in `build`). All app code and `node_modules` are real files on disk (no `app.asar`), so the worklet and renderer always resolve modules from the filesystem.
 - **Why no asar:** Electron patches the Node `fs` module so any access to `*.asar` is routed through its ASAR reader. During OTA on macOS, `pear-runtime-updater` mirrors a partially written `app.asar` into the `next` directory; Electron’s patched `fs` then tries to treat that in‑progress file as a valid ASAR and throws `Error: Invalid package ...app.asar`. Turning asar off avoids this class of error and lets the updater see only plain files.
@@ -94,11 +94,12 @@ The vault worklet lives in `lockwright-lib-vault-core` (Git dependency) under `s
   - CI uses `scripts/notarize.cjs` as an `afterSign` hook (`@electron/notarize` + `notarytool`) to sign and notarize the app.
   - After that, `Lockwright.app` is copied into `out/darwin-arm64/` and `pear:build:darwin` produces the Pear drive layout (`by-arch/darwin-arm64/app/Lockwright.app/...`).
 
-### 5.2 Windows (electron-forge, MSIX)
+### 5.2 Windows (electron-builder, NSIS)
 
-- **Tooling:** **Electron Forge** for Windows packaging (electron-builder does not support MSIX).
-- **Build:** Forge produces an MSIX package for the Windows desktop app; CI then stages that MSIX into the Pear drive for the `win32-x64` arch so `PearRuntime` on Windows can install it via `MSIXManager`.
-- **Pear layout:** The staged drive contains `by-arch/win32-x64/app/<name>.msix`, where `<name>` matches the `name` passed to `PearRuntime` in `electron/main.cjs`.
+- **Tooling:** electron-builder with `electron-builder.win.json` (`nsis` target).
+- **Build commands:** `pnpm run dist:win:nsis:x64` and `pnpm run dist:win:nsis:arm64` → `out/Lockwright-Setup-<version>-<arch>.exe`.
+- **Pear layout:** `PearRuntime` in `electron/main.cjs` names the Windows artifact `<productName>.exe` (`.msix` only when `process.windowsStore`).
+- `build-assets/win/AppxManifest.xml` has no packager. It stays because the App version sync and `scripts/apply-flavor.mjs` still write it.
 
 ---
 
@@ -155,4 +156,4 @@ The vault worklet lives in `lockwright-lib-vault-core` (Git dependency) under `s
   Ensure `electron/main.cjs` still routes both `app.getPath('userData')` and `pear-runtime-legacy-storage` results through `getSandboxSafePath()` from `electron/flatpak-paths.cjs`. Flatpak commonly exposes XDG directories under `~/.var/app/...`, which the worklet rejects unless they are remapped to the approved `~/.config/...` compatibility location.
 
 - **OTA update appears stuck on Windows**  
-  Confirm that the Pear drive for `by-arch/win32-x64/app/...` contains a valid `.msix` (if `PearRuntime` is using `MSIXManager.addPackage`) and that the filename matches the `name` passed to `PearRuntime` in `electron/main.cjs`.
+  Confirm that the Pear drive for `by-arch/win32-x64/app/...` contains a valid `.exe` and that the filename matches the `name` passed to `PearRuntime` in `electron/main.cjs`.
