@@ -12,6 +12,7 @@
     "appling/app.dev.cjs",
     "appling/app.staging.cjs",
     "scripts/*.{mjs,cjs}",
+    "native-host/index.js",
     "lingui.config.js",
     "babel.config.cjs",
     "babel.strict-dom.cjs",
@@ -21,6 +22,7 @@
   "project": [
     "src/**/*.{ts,tsx,js,jsx}",
     "electron/**/*.{cjs,js}",
+    "native-host/**/*.js",
     "appling/**/*.cjs"
   ],
   "ignore": [

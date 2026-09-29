@@ -13,7 +13,6 @@ allowBuilds:
   "lockwright-lib-ui-react-native-components@https://codeload.github.com/Dexterity-Works/lockwright-lib-ui-react-native-components/tar.gz/82167746355a4d1b931dae2c3d4abe10a7e10b7e": true
   "lockwright-lib-vault-core@file:../pearpass-lib-vault-core": true
   "lockwright-lib-vault@file:../pearpass-lib-vault": true
-  "@tetherto/pearpass-lib-native-messaging-bridge@https://codeload.github.com/Dexterity-Works/pearpass-lib-native-messaging-bridge/tar.gz/8ad5022e06d1be141db20ac20e1fc57549859541": true
   "electron-winstaller@5.4.0": true
   "electron@33.4.11": true
   "esbuild@0.21.5": true
