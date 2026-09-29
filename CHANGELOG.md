@@ -9,6 +9,8 @@ Starts at 0.0.17, after the Lockwright package rename. Earlier history is git.
 
 ## [Unreleased]
 
+## [0.0.28] - 2026-09-30
+
 ### Security
 
 - KeePass import parses with a supported xmldom (0.8.15) instead of the deprecated 0.7.13.
@@ -21,7 +23,7 @@ Starts at 0.0.17, after the Lockwright package rename. Earlier history is git.
 ### Removed
 
 - The unused `lockwright-utils-pattern-search` dependency.
-- The Electron Forge MSIX build. Windows ships as the electron-builder NSIS installer.
+- The Electron Forge MSIX build and the Windows Pear staging scripts. Windows ships as the electron-builder NSIS installer.
 - The `tether-dev-docs` dev dependency. The ESLint config lives in the repo.
 
 ## [0.0.27] - 2026-09-27
