@@ -179,13 +179,6 @@
   "optionalDependencies": {
     "@esbuild/win32-x64": "0.24.2"
   },
-  "overrides": {
-    "lockwright-lib-constants": "git+https://github.com/Dexterity-Works/lockwright-lib-constants.git#f6142c9554e9f972519dd8115b2b73f02b73d5fb",
-    "@xmldom/xmldom": "^0.8.10",
-    "react": "19.1.0",
-    "react-dom": "19.1.0",
-    "electron-windows-msix": "git+https://github.com/chetasr/electron-windows-msix.git"
-  },
   "packageManager": "pnpm@11.10.0",
   "engines": {
     "node": ">=22.12.0",

@@ -7,6 +7,7 @@ blockExoticSubdeps: false
 overrides:
   "lockwright-lib-constants": "git+https://github.com/Dexterity-Works/lockwright-lib-constants.git#f6142c9554e9f972519dd8115b2b73f02b73d5fb"
   "lockwright-lib-ui-react-native-components": "git+https://github.com/Dexterity-Works/lockwright-lib-ui-react-native-components.git#design-system-v2"
+  "kdbxweb>@xmldom/xmldom": "0.8.15"
 
 allowBuilds:
   "@electron/node-gyp@https://codeload.github.com/electron/node-gyp/tar.gz/06b29aafb7708acef8b3669835c8a7857ebc92d2": true
