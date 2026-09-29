@@ -153,7 +153,6 @@ Package names match the repo names. Vault and vault-core are `file:../pearpass-l
 - [`lockwright-utils-avatar-initials`](https://github.com/Dexterity-Works/lockwright-utils-avatar-initials)
 - [`lockwright-utils-date`](https://github.com/Dexterity-Works/lockwright-utils-date)
 - [`lockwright-utils-generate-unique-id`](https://github.com/Dexterity-Works/lockwright-utils-generate-unique-id)
-- [`lockwright-utils-pattern-search`](https://github.com/Dexterity-Works/lockwright-utils-pattern-search)
 - [`lockwright-utils-qr`](https://github.com/Dexterity-Works/lockwright-utils-qr)
 - [`lockwright-utils-validator`](https://github.com/Dexterity-Works/lockwright-utils-validator)
 - [`lockwright-lib-constants`](https://github.com/Dexterity-Works/lockwright-lib-constants)

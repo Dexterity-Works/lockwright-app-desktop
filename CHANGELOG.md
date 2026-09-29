@@ -13,6 +13,10 @@ Starts at 0.0.17, after the Lockwright package rename. Earlier history is git.
 
 - KeePass import parses with a supported xmldom (0.8.15) instead of the deprecated 0.7.13.
 
+### Removed
+
+- The unused `lockwright-utils-pattern-search` dependency.
+
 ## [0.0.27] - 2026-09-27
 
 `8d75d4629859d202f7d4e42f97821e57ed71e639`

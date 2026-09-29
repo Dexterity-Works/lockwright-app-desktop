@@ -269,9 +269,6 @@ importers:
       lockwright-utils-password-generator:
         specifier: git+https://github.com/Dexterity-Works/lockwright-utils-password-generator.git#e3f4b7689ff3eef247a64bff0790357d4bee793a
         version: https://codeload.github.com/Dexterity-Works/lockwright-utils-password-generator/tar.gz/e3f4b7689ff3eef247a64bff0790357d4bee793a
-      lockwright-utils-pattern-search:
-        specifier: git+https://github.com/Dexterity-Works/lockwright-utils-pattern-search.git#88169a629daf7b9a95dfe0cfdb0459671b64b428
-        version: https://codeload.github.com/Dexterity-Works/lockwright-utils-pattern-search/tar.gz/88169a629daf7b9a95dfe0cfdb0459671b64b428
       lockwright-utils-qr:
         specifier: git+https://github.com/Dexterity-Works/lockwright-utils-qr.git#c6ca850b1dec0dd7e8d12d3c380964ed607114cc
         version: https://codeload.github.com/Dexterity-Works/lockwright-utils-qr/tar.gz/c6ca850b1dec0dd7e8d12d3c380964ed607114cc
@@ -4845,10 +4842,6 @@ packages:
   lockwright-utils-password-generator@https://codeload.github.com/Dexterity-Works/lockwright-utils-password-generator/tar.gz/e3f4b7689ff3eef247a64bff0790357d4bee793a:
     resolution: {gitHosted: true, integrity: sha512-i9fSsglFa/R6bUq7U+39PXeynXrip8nlADwHCdyEY8cp4g0xOL2EIfF/CFQY+5iuw5zkno1DQFMwbZci2tiDMQ==, tarball: https://codeload.github.com/Dexterity-Works/lockwright-utils-password-generator/tar.gz/e3f4b7689ff3eef247a64bff0790357d4bee793a}
     version: 0.0.11
-
-  lockwright-utils-pattern-search@https://codeload.github.com/Dexterity-Works/lockwright-utils-pattern-search/tar.gz/88169a629daf7b9a95dfe0cfdb0459671b64b428:
-    resolution: {gitHosted: true, integrity: sha512-B6SgEIR/kxzYl4JHbaGpjRER6Xrr3IwXA0EZ7CAvDC6G6AF9yrdWHvD4Lye2LjAk0diicNm1qHodYr7etHxRlg==, tarball: https://codeload.github.com/Dexterity-Works/lockwright-utils-pattern-search/tar.gz/88169a629daf7b9a95dfe0cfdb0459671b64b428}
-    version: 0.0.5
 
   lockwright-utils-qr@https://codeload.github.com/Dexterity-Works/lockwright-utils-qr/tar.gz/c6ca850b1dec0dd7e8d12d3c380964ed607114cc:
     resolution: {gitHosted: true, integrity: sha512-uNO7uNNh/bmYR2/uZEN/ZGkNY154qHPumekmweoOw1r7+1+bE1fUrRFwh14F1R/iQ4dJ8L+j67MUPEqLiWiAwQ==, tarball: https://codeload.github.com/Dexterity-Works/lockwright-utils-qr/tar.gz/c6ca850b1dec0dd7e8d12d3c380964ed607114cc}
@@ -13204,8 +13197,6 @@ snapshots:
   lockwright-utils-password-check@https://codeload.github.com/Dexterity-Works/lockwright-utils-password-check/tar.gz/dc56473c03d574ddb80a98f2560cea69d01b1cca: {}
 
   lockwright-utils-password-generator@https://codeload.github.com/Dexterity-Works/lockwright-utils-password-generator/tar.gz/e3f4b7689ff3eef247a64bff0790357d4bee793a: {}
-
-  lockwright-utils-pattern-search@https://codeload.github.com/Dexterity-Works/lockwright-utils-pattern-search/tar.gz/88169a629daf7b9a95dfe0cfdb0459671b64b428: {}
 
   lockwright-utils-qr@https://codeload.github.com/Dexterity-Works/lockwright-utils-qr/tar.gz/c6ca850b1dec0dd7e8d12d3c380964ed607114cc:
     dependencies:

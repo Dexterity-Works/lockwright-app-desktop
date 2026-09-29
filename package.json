@@ -173,8 +173,7 @@
     "@lingui/message-utils": "5.9.5",
     "compact-encoding": "2.18.0",
     "lockwright-utils-generate-unique-id": "git+https://github.com/Dexterity-Works/lockwright-utils-generate-unique-id.git#b1cec22b12b85bb1186aafa05223be64b7aea2cc",
-    "lockwright-utils-qr": "git+https://github.com/Dexterity-Works/lockwright-utils-qr.git#c6ca850b1dec0dd7e8d12d3c380964ed607114cc",
-    "lockwright-utils-pattern-search": "git+https://github.com/Dexterity-Works/lockwright-utils-pattern-search.git#88169a629daf7b9a95dfe0cfdb0459671b64b428"
+    "lockwright-utils-qr": "git+https://github.com/Dexterity-Works/lockwright-utils-qr.git#c6ca850b1dec0dd7e8d12d3c380964ed607114cc"
   },
   "optionalDependencies": {
     "@esbuild/win32-x64": "0.24.2"
