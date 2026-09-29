@@ -11,6 +11,8 @@ Starts at 0.0.17, after the Lockwright package rename. Earlier history is git.
 
 ## [0.0.28] - 2026-09-30
 
+`6faed0f9154115f2722e735db9e5f0f0d56402ac`
+
 ### Security
 
 - KeePass import parses with a supported xmldom (0.8.15) instead of the deprecated 0.7.13.
