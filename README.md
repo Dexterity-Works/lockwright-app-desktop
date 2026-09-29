@@ -147,7 +147,6 @@ The `src/` folder is for development and it's ignored in `package.json`:
 
 Package names match the repo names. Vault and vault-core are `file:../pearpass-lib-vault` and `file:../pearpass-lib-vault-core`.
 
-- [`@tetherto/tether-dev-docs`](https://github.com/Dexterity-Works/tether-dev-docs)
 - [`lockwright-lib-feedback`](https://github.com/Dexterity-Works/lockwright-lib-feedback)
 - [`lockwright-lib-ui-react-hooks`](https://github.com/Dexterity-Works/lockwright-lib-ui-react-hooks)
 - [`lockwright-utils-avatar-initials`](https://github.com/Dexterity-Works/lockwright-utils-avatar-initials)
