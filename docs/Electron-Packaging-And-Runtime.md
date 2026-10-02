@@ -92,7 +92,6 @@ The vault worklet lives in `lockwright-lib-vault-core` (Git dependency) under `s
   - `npm run build` → worklet bundle + `tsc` + renderer bundle (`dist/renderer.bundle.js`).
   - `npx electron-builder --mac` → `dist/mac-arm64/Lockwright.app` + DMG.
   - CI uses `scripts/notarize.cjs` as an `afterSign` hook (`@electron/notarize` + `notarytool`) to sign and notarize the app.
-  - After that, `Lockwright.app` is copied into `out/darwin-arm64/` and `pear:build:darwin` produces the Pear drive layout (`by-arch/darwin-arm64/app/Lockwright.app/...`).
 
 ### 5.2 Windows (electron-builder, NSIS)
 
@@ -137,7 +136,7 @@ The vault worklet lives in `lockwright-lib-vault-core` (Git dependency) under `s
 | Worklet bundle (CJS, packaged) | `node_modules/lockwright-lib-vault-core/src/worklet/app.cjs` (generated) |
 | Worklet build script           | `scripts/build.worklet.mjs`                                                      |
 | Renderer bundle                | `scripts/bundle-renderer.mjs` → `dist/renderer.bundle.js`                        |
-| Build pipeline                 | `package.json` scripts: `build`, `dist:*`, `pear:build:*`                        |
+| Build pipeline                 | `package.json` scripts: `build`, `dist:*`                                        |
 
 ---
 

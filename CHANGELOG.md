@@ -13,6 +13,10 @@ Starts at 0.0.17, after the Lockwright package rename. Earlier history is git.
 
 - macOS builds null the upgrade link like Windows and Linux. They no longer follow PearPass's Pear update link or keep the vault in a storage folder keyed by it.
 
+### Removed
+
+- The `pear:build:darwin:*` and `pear:build:linux:*` scripts and the `pear-build` dev dependency. Every build nulls the upgrade link, so no build ships a Pear OTA drive.
+
 ## [0.0.28] - 2026-09-30
 
 `6faed0f9154115f2722e735db9e5f0f0d56402ac`

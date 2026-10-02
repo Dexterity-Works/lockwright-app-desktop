@@ -393,9 +393,6 @@ importers:
       jest-environment-jsdom:
         specifier: 29.7.0
         version: 29.7.0
-      pear-build:
-        specifier: ^1.1.0
-        version: 1.1.1(bare-buffer@3.6.2)(bare-url@2.4.7)
       postcss:
         specifier: 8.4.49
         version: 8.4.49
@@ -4760,9 +4757,6 @@ packages:
   pako@1.0.11:
     resolution: {integrity: sha512-4hLB8Py4zZce5s4yd9XzopqwVv/yGNhV1Bl8NTmCq1763HeK2+EwVTv+leGeL13Dnh2wfbqowVPXCIO0z4taYw==}
 
-  paparam@1.11.0:
-    resolution: {integrity: sha512-yoLQ//83Q0MGnLxL5DJYGr6Ch9Cptf81Mqe/3qQDQiNG19P3/fia7k35x21WooQhWOqL6NlZPVLW9hV35/riKw==}
-
   parent-module@1.0.1:
     resolution: {integrity: sha512-GQ2EWRpQV8/o+Aw8YqtfZZPfNRWZYkbidE9k5rpl/hC3vtHHBfGm2Ifi6qWV+coDGkrUKZAxE3Lot5kcsRlh+g==}
     engines: {node: '>=6'}
@@ -4818,10 +4812,6 @@ packages:
 
   pear-aliases@1.0.6:
     resolution: {integrity: sha512-8crWoDqjrYFM2Rtlnsc43E4UWAn1/RPUklKRHjkUqhD/0tVM/5Q6vzxN2tDd5zmggQfeC+uX/flIfm1XIm3vEQ==}
-
-  pear-build@1.1.1:
-    resolution: {integrity: sha512-BCD1PzTUAHZU88yDg78dVKQJEGFdixvjcdwqgxKa18nCnGRv8sVm81QfkUQDyFeL6N8m2kxkF/uGfzC57WGDFQ==}
-    hasBin: true
 
   pear-errors@1.0.1:
     resolution: {integrity: sha512-KQyhym09QpLT4H/z3uLW0bqixgIZic2Eip2Q8Z72QmIpFzPtp6QmnzOUwB3kuHB4dqKNa+FQWHWH0NSK5lJjlw==}
@@ -12001,8 +11991,6 @@ snapshots:
 
   pako@1.0.11: {}
 
-  paparam@1.11.0: {}
-
   parent-module@1.0.1:
     dependencies:
       callsites: 3.1.0
@@ -12050,19 +12038,6 @@ snapshots:
     dependencies:
       hypercore-id-encoding: 1.3.0
     transitivePeerDependencies:
-      - react-native-b4a
-
-  pear-build@1.1.1(bare-buffer@3.6.2)(bare-url@2.4.7):
-    dependencies:
-      bare-events: 2.9.1
-      bare-fs: 4.8.0(bare-buffer@3.6.2)
-      bare-path: 3.1.1
-      localdrive: 2.2.1(bare-buffer@3.6.2)(bare-url@2.4.7)
-      paparam: 1.11.0
-    transitivePeerDependencies:
-      - bare-abort-controller
-      - bare-buffer
-      - bare-url
       - react-native-b4a
 
   pear-errors@1.0.1: {}
