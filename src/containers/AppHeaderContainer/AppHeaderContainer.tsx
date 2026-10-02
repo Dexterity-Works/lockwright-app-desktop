@@ -63,6 +63,26 @@ export const AppHeaderContainer = () => {
       : [])
   ]
 
+  const createRecord = (recordType: string) =>
+    handleCreateOrEditRecord({
+      recordType,
+      selectedFolder,
+      isFavorite: isFavoritesView ? true : undefined
+    })
+
+  // A selected type skips the menu and opens its create modal.
+  const selectedType = addItems.find(
+    (item) => item.type === routerData?.recordType
+  )?.type
+
+  const handleAddMenuOpenChange = (open: boolean) => {
+    if (open && selectedType) {
+      createRecord(selectedType)
+      return
+    }
+    setIsAddMenuOpen(open)
+  }
+
   const handleImportClick = () => {
     setModal(<ImportItemOrVaultModalContent />)
   }
@@ -71,7 +91,7 @@ export const AppHeaderContainer = () => {
     <ContextMenu
       trigger={<AppHeaderAddItemTrigger testId="main-plus-button" />}
       open={isAddMenuOpen}
-      onOpenChange={setIsAddMenuOpen}
+      onOpenChange={handleAddMenuOpenChange}
       testID="add-item-menu"
     >
       {addItems.map(item => (
@@ -82,11 +102,7 @@ export const AppHeaderContainer = () => {
           label={item.label}
           testID={`add-item-${item.type}`}
           onClick={() => {
-            handleCreateOrEditRecord({
-              recordType: item.type,
-              selectedFolder,
-              isFavorite: isFavoritesView ? true : undefined
-            })
+            createRecord(item.type)
             setIsAddMenuOpen(false)
           }}
         />

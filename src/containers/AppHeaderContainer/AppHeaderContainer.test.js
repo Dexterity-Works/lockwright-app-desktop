@@ -148,6 +148,36 @@ describe('AppHeaderContainer', () => {
     expect(mockSetModal).toHaveBeenCalledTimes(1)
   })
 
+  it('opens the create modal for the selected type instead of the menu', () => {
+    const handleCreateOrEditRecord = jest.fn()
+    useCreateOrEditRecord.mockReturnValue({ handleCreateOrEditRecord })
+
+    renderWithHeaderContext(<AppHeaderContainer />)
+    fireEvent.click(screen.getByTestId('add-item-trigger'))
+
+    expect(handleCreateOrEditRecord).toHaveBeenCalledWith({
+      recordType: 'login',
+      selectedFolder: 'folder-1',
+      isFavorite: undefined
+    })
+  })
+
+  it('opens the type menu when All Items is selected', async () => {
+    const handleCreateOrEditRecord = jest.fn()
+    useCreateOrEditRecord.mockReturnValue({ handleCreateOrEditRecord })
+    useRouter.mockReturnValue({
+      currentPage: 'vault',
+      data: { recordType: 'all' },
+      navigate: mockNavigate
+    })
+
+    renderWithHeaderContext(<AppHeaderContainer />)
+    fireEvent.click(screen.getByTestId('add-item-trigger'))
+
+    expect(await screen.findByRole('menu')).toBeInTheDocument()
+    expect(handleCreateOrEditRecord).not.toHaveBeenCalled()
+  })
+
   it('wires search to header context state', () => {
     renderWithHeaderContext(<AppHeaderContainer />)
 
