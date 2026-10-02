@@ -29,11 +29,16 @@ const { rendererShims } = require('./renderer-shims.cjs')
 const strictDomCssInclude = [
   'app.electron.tsx',
   'src/**/*.{js,jsx,mjs,ts,tsx}',
-  'node_modules/lockwright-lib-ui-react-native-components/dist/**/*.js'
+  'node_modules/lockwright-lib-ui-react-native-components/src/**/*.{ts,tsx}'
+]
+const strictDomCssExclude = [
+  'node_modules/lockwright-lib-ui-react-native-components/src/**/*.native.tsx',
+  'node_modules/lockwright-lib-ui-react-native-components/src/**/*.stories.tsx',
+  'node_modules/lockwright-lib-ui-react-native-components/src/**/*.test.tsx'
 ]
 const strictDomRuntimePaths = [
   `${path.sep}node_modules${path.sep}react-strict-dom${path.sep}dist${path.sep}`,
-  `${path.sep}node_modules${path.sep}lockwright-lib-ui-react-native-components${path.sep}dist${path.sep}`
+  `${path.sep}node_modules${path.sep}lockwright-lib-ui-react-native-components${path.sep}src${path.sep}`
 ]
 
 function shouldTransformStrictDomRuntime(filePath) {
@@ -81,12 +86,14 @@ function strictDomCssPlugin() {
           cwd: root,
           absolute: true,
           onlyFiles: true,
-          dot: false
+          dot: false,
+          ignore: strictDomCssExclude
         })
         const result = await postcss([
           reactStrictDomPostcssPlugin({
             cwd: root,
             include: strictDomCssInclude,
+            exclude: strictDomCssExclude,
             babelConfig: strictDomBabelConfig,
             useCSSLayers: true
           })

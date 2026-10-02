@@ -6,11 +6,10 @@ blockExoticSubdeps: false
 
 overrides:
   "lockwright-lib-constants": "git+https://github.com/Dexterity-Works/lockwright-lib-constants.git#f6142c9554e9f972519dd8115b2b73f02b73d5fb"
-  "lockwright-lib-ui-react-native-components": "git+https://github.com/Dexterity-Works/lockwright-lib-ui-react-native-components.git#design-system-v2"
+  "lockwright-lib-ui-react-native-components": "git+https://github.com/Dexterity-Works/lockwright-lib-ui-react-native-components.git#5a4ed69feda9b76c0de6f40cb12df72569beb9b4"
   "kdbxweb>@xmldom/xmldom": "0.8.15"
 
 allowBuilds:
-  "lockwright-lib-ui-react-native-components@https://codeload.github.com/Dexterity-Works/lockwright-lib-ui-react-native-components/tar.gz/82167746355a4d1b931dae2c3d4abe10a7e10b7e": true
   "lockwright-lib-vault-core@file:../pearpass-lib-vault-core": true
   "lockwright-lib-vault@file:../pearpass-lib-vault": true
   "electron-winstaller@5.4.0": true

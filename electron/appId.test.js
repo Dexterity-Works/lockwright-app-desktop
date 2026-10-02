@@ -38,8 +38,8 @@ describe('Lockwright app id', () => {
     const pkg = JSON.parse(
       fs.readFileSync(path.join(root, 'package.json'), 'utf8')
     )
-    expect(pkg.dependencies['lockwright-lib-ui-react-native-components']).toBe(
-      'git+https://github.com/Dexterity-Works/lockwright-lib-ui-react-native-components.git#design-system-v2'
+    expect(pkg.dependencies['lockwright-lib-ui-react-native-components']).toMatch(
+      /^git\+https:\/\/github\.com\/Dexterity-Works\/lockwright-lib-ui-react-native-components\.git#[0-9a-f]{40}$/
     )
   })
 

@@ -146,7 +146,7 @@
     "lockwright-lib-constants": "git+https://github.com/Dexterity-Works/lockwright-lib-constants.git#f6142c9554e9f972519dd8115b2b73f02b73d5fb",
     "lockwright-lib-data-export": "git+https://github.com/Dexterity-Works/lockwright-lib-data-export.git#9fe6af5fcf740fe8a52eb05a09bb188d6dcd7de1",
     "lockwright-lib-data-import": "git+https://github.com/Dexterity-Works/lockwright-lib-data-import.git#6a872f3c2d618a3e2b16e425c2b6c6e2fed693dc",
-    "lockwright-lib-ui-react-native-components": "git+https://github.com/Dexterity-Works/lockwright-lib-ui-react-native-components.git#design-system-v2",
+    "lockwright-lib-ui-react-native-components": "git+https://github.com/Dexterity-Works/lockwright-lib-ui-react-native-components.git#5a4ed69feda9b76c0de6f40cb12df72569beb9b4",
     "lockwright-lib-vault": "file:../pearpass-lib-vault",
     "lockwright-lib-vault-core": "file:../pearpass-lib-vault-core",
     "lockwright-utils-password-check": "git+https://github.com/Dexterity-Works/lockwright-utils-password-check.git#dc56473c03d574ddb80a98f2560cea69d01b1cca",

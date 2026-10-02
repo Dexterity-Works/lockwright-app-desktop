@@ -23,13 +23,14 @@ assert.equal(
 )
 assert.equal(
   fs.existsSync(
-    path.join(root, 'node_modules', 'lockwright-lib-ui-react-native-components', 'dist')
+    path.join(root, 'node_modules', 'lockwright-lib-ui-react-native-components', 'src')
   ),
   true
 )
 assert.equal(
-  renderer.includes('lockwright-lib-ui-react-native-components'),
-  true
+  renderer.includes('lockwright-lib-ui-react-native-components/src/'),
+  true,
+  'bundle-renderer must compile the UI kit from src/'
 )
 
 console.log('ok')
