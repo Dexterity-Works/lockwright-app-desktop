@@ -86,12 +86,13 @@ The vault worklet lives in `lockwright-lib-vault-core` (Git dependency) under `s
 
 ### 5.1 macOS (electron-builder)
 
-- **Tooling:** `electron-builder@23.6.0`.
-- **Build commands:** `npm run dist:mac` (local) and `npm run dist:mac:ci` (CI).
+- **Tooling:** electron-builder with `electron-builder.mac.json` (`dmg` target). Like Windows and Linux it sets `extraMetadata.upgrade: null`, so the app runs without Pear OTA and keeps the vault under `app-storage/local`.
+- **Build commands:** `pnpm run dist:mac:arm64` and `pnpm run dist:mac:x64` (`:dev` variants skip signing and notarization) → `out/Lockwright-<version>[-arm64].dmg`.
+- **CI:** `.github/workflows/mac-build.yml` on GitHub `macos-14`, dispatched by the Forgejo superproject. It builds arm64 and x64 and uploads them as the `lockwright-mac` artifact. Without the `CSC_LINK` secret the DMGs are ad-hoc signed and named `*-unsigned.dmg`.
 - **Pipeline:**
-  - `npm run build` → worklet bundle + `tsc` + renderer bundle (`dist/renderer.bundle.js`).
-  - `npx electron-builder --mac` → `dist/mac-arm64/Lockwright.app` + DMG.
-  - CI uses `scripts/notarize.cjs` as an `afterSign` hook (`@electron/notarize` + `notarytool`) to sign and notarize the app.
+  - `pnpm run build:prod` → worklet bundle + `tsc` + renderer bundle (`dist/renderer.bundle.js`).
+  - `electron-builder --mac --<arch> -c electron-builder.mac.json` → `out/mac-arm64/Lockwright.app` (or `out/mac/` for x64) + DMG.
+  - `scripts/notarize.cjs` runs as the `afterSign` hook (`@electron/notarize` + `notarytool`, keychain profile `notary`). `SKIP_NOTARIZE=true` skips it.
 
 ### 5.2 Windows (electron-builder, NSIS)
 

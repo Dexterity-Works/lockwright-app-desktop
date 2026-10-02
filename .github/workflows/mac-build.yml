@@ -1,0 +1,207 @@
+# macOS DMGs (arm64 + x64) for one desktop / vault / vault-core commit set.
+#
+# Triggered by the Forgejo superproject's manual_mac.yml through
+# workflow_dispatch. Forgejo finds this run by request_id in the run name and
+# downloads the lockwright-mac artifact. The run never gets a Forgejo token.
+#
+# Signing: with no CSC_LINK secret the DMGs are ad-hoc signed and named
+# *-unsigned.dmg. Set these repository secrets to sign and notarize:
+#   CSC_LINK          base64 Developer ID Application .p12
+#   CSC_KEY_PASSWORD  password for that .p12
+#   APPLE_API_KEY     base64 App Store Connect API key (.p8)
+#   APPLE_API_KEY_ID  key id of that .p8
+#   APPLE_API_ISSUER  issuer id of that .p8
+#
+# Inputs reach scripts through env only, after the validate step.
+name: Mac build
+
+on:
+  workflow_dispatch:
+    inputs:
+      request_id:
+        description: Forgejo request id, echoed into the run name
+        required: true
+        type: string
+      display:
+        description: Display version X.Y.Z-sha6
+        required: true
+        type: string
+      desktop_sha:
+        description: lockwright-app-desktop commit (40 hex)
+        required: true
+        type: string
+      vault_sha:
+        description: lockwright-lib-vault commit (40 hex)
+        required: true
+        type: string
+      vault_core_sha:
+        description: lockwright-lib-vault-core commit (40 hex)
+        required: true
+        type: string
+
+run-name: mac ${{ inputs.display }} ${{ inputs.request_id }}
+
+permissions:
+  contents: read
+
+jobs:
+  mac:
+    runs-on: macos-14
+    timeout-minutes: 90
+    env:
+      HUSKY: "0"
+      NPM_CONFIG_LEGACY_PEER_DEPS: "true"
+      # pnpm 11 verify-deps-before-run re-enters install on nested `pnpm run`.
+      PNPM_CONFIG_VERIFY_DEPS_BEFORE_RUN: "false"
+
+    steps:
+      - name: Validate inputs
+        env:
+          REQUEST_ID: ${{ inputs.request_id }}
+          DISPLAY_VERSION: ${{ inputs.display }}
+          DESKTOP_SHA: ${{ inputs.desktop_sha }}
+          VAULT_SHA: ${{ inputs.vault_sha }}
+          VAULT_CORE_SHA: ${{ inputs.vault_core_sha }}
+        run: |
+          set -euo pipefail
+          sha_re='^[0-9a-f]{40}$'
+          display_re='^[0-9]+\.[0-9]+\.[0-9]+-[0-9a-f]{6}$'
+          request_re='^[A-Za-z0-9._-]{1,64}$'
+          fail=0
+          [[ "$REQUEST_ID" =~ $request_re ]] || { echo "bad request_id" >&2; fail=1; }
+          [[ "$DISPLAY_VERSION" =~ $display_re ]] || { echo "bad display" >&2; fail=1; }
+          [[ "$DESKTOP_SHA" =~ $sha_re ]] || { echo "bad desktop_sha" >&2; fail=1; }
+          [[ "$VAULT_SHA" =~ $sha_re ]] || { echo "bad vault_sha" >&2; fail=1; }
+          [[ "$VAULT_CORE_SHA" =~ $sha_re ]] || { echo "bad vault_core_sha" >&2; fail=1; }
+          exit "$fail"
+
+      - name: Checkout desktop
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
+        with:
+          ref: ${{ inputs.desktop_sha }}
+          path: lockwright-app-desktop
+          persist-credentials: false
+
+      # package.json depends on file:../pearpass-lib-vault{,-core}.
+      - name: Clone vault libraries
+        env:
+          VAULT_SHA: ${{ inputs.vault_sha }}
+          VAULT_CORE_SHA: ${{ inputs.vault_core_sha }}
+        run: |
+          set -euo pipefail
+          clone() {
+            local url="$1" sha="$2" dest="$3"
+            git init -q "$dest"
+            git -C "$dest" remote add origin "$url"
+            git -C "$dest" fetch -q --depth 1 origin "$sha"
+            git -C "$dest" checkout -q --detach FETCH_HEAD
+            test "$(git -C "$dest" rev-parse HEAD)" = "$sha"
+          }
+          clone https://github.com/Dexterity-Works/lockwright-lib-vault.git "$VAULT_SHA" pearpass-lib-vault
+          clone https://github.com/Dexterity-Works/lockwright-lib-vault-core.git "$VAULT_CORE_SHA" pearpass-lib-vault-core
+
+      # Not .nvmrc (22.12.0): pnpm 11.10.0 needs Node >=22.13 and
+      # corepack 0.36.0 needs ^22.22.2. Same Node as Forgejo manual_desktop.yml.
+      - name: Setup Node
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version: "22.23.2"
+
+      # The corepack bundled with Node lacks the keys that sign pnpm 11.
+      - name: Enable pnpm
+        run: |
+          set -euo pipefail
+          npm install -g corepack@0.36.0
+          corepack enable
+          corepack prepare pnpm@11.10.0 --activate
+
+      - name: Install dependencies
+        working-directory: lockwright-app-desktop
+        run: pnpm install --frozen-lockfile
+
+      - name: Build app
+        working-directory: lockwright-app-desktop
+        timeout-minutes: 20
+        run: pnpm run build:prod
+
+      - name: Signing mode
+        id: mode
+        env:
+          CSC_LINK: ${{ secrets.CSC_LINK }}
+        run: |
+          set -euo pipefail
+          if [[ -n "$CSC_LINK" ]]; then
+            echo "signed=true" >> "$GITHUB_OUTPUT"
+            echo "suffix=" >> "$GITHUB_OUTPUT"
+            echo "Signing with CSC_LINK and notarizing"
+          else
+            echo "signed=false" >> "$GITHUB_OUTPUT"
+            echo "suffix=-unsigned" >> "$GITHUB_OUTPUT"
+            echo "No CSC_LINK: ad-hoc signature, no notarization"
+          fi
+
+      # scripts/notarize.cjs notarizes with keychainProfile 'notary'.
+      - name: Store notary credentials
+        if: steps.mode.outputs.signed == 'true'
+        env:
+          APPLE_API_KEY: ${{ secrets.APPLE_API_KEY }}
+          APPLE_API_KEY_ID: ${{ secrets.APPLE_API_KEY_ID }}
+          APPLE_API_ISSUER: ${{ secrets.APPLE_API_ISSUER }}
+        run: |
+          set -euo pipefail
+          umask 077
+          key="$RUNNER_TEMP/notary-key.p8"
+          trap 'rm -f "$key"' EXIT
+          printf '%s' "$APPLE_API_KEY" | base64 --decode > "$key"
+          xcrun notarytool store-credentials notary \
+            --key "$key" \
+            --key-id "$APPLE_API_KEY_ID" \
+            --issuer "$APPLE_API_ISSUER"
+
+      # APPLE_API_* stay out of this step: electron-builder would read them
+      # as its own notarize config and notarize a second time.
+      - name: Build DMGs
+        working-directory: lockwright-app-desktop
+        timeout-minutes: 50
+        env:
+          SIGNED: ${{ steps.mode.outputs.signed }}
+          SUFFIX: ${{ steps.mode.outputs.suffix }}
+          DISPLAY_VERSION: ${{ inputs.display }}
+          CSC_LINK: ${{ secrets.CSC_LINK }}
+          CSC_KEY_PASSWORD: ${{ secrets.CSC_KEY_PASSWORD }}
+        run: |
+          set -euo pipefail
+          args=(-c electron-builder.mac.json --publish never)
+          if [[ "$SIGNED" != "true" ]]; then
+            unset CSC_LINK CSC_KEY_PASSWORD
+            export CSC_IDENTITY_AUTO_DISCOVERY=false SKIP_NOTARIZE=true
+            # Apple Silicon will not run unsigned arm64 code; "-" is
+            # electron-builder's ad-hoc identity. Hardened runtime adds
+            # nothing without a Developer ID, so it stays off here.
+            args+=(-c.mac.identity=- -c.mac.hardenedRuntime=false)
+          fi
+          stage="$RUNNER_TEMP/lockwright-mac"
+          mkdir -p "$stage"
+          for arch in arm64 x64; do
+            rm -rf out
+            node scripts/run-electron-builder.cjs --mac "--${arch}" "${args[@]}"
+            shopt -s nullglob
+            dmgs=(out/*.dmg)
+            shopt -u nullglob
+            if [[ ${#dmgs[@]} -ne 1 ]]; then
+              echo "expected one DMG for ${arch}, found ${#dmgs[@]}" >&2
+              ls -la out >&2 || true
+              exit 1
+            fi
+            mv "${dmgs[0]}" "$stage/Lockwright-${DISPLAY_VERSION}-mac-${arch}${SUFFIX}.dmg"
+          done
+          cd "$stage"
+          shasum -a 256 ./*.dmg
+
+      - name: Upload DMGs
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: lockwright-mac
+          path: ${{ runner.temp }}/lockwright-mac/*.dmg
+          retention-days: 7
+          if-no-files-found: error

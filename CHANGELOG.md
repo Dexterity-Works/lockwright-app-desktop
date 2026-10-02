@@ -9,6 +9,10 @@ Starts at 0.0.17, after the Lockwright package rename. Earlier history is git.
 
 ## [Unreleased]
 
+### Added
+
+- A GitHub Actions workflow builds macOS DMGs for arm64 and x64 on dispatch. Without signing secrets it ad-hoc signs them and names them `-unsigned`.
+
 ### Fixed
 
 - macOS builds null the upgrade link like Windows and Linux. They no longer follow PearPass's Pear update link or keep the vault in a storage folder keyed by it.
