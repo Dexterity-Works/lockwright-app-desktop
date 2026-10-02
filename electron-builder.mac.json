@@ -1,5 +1,6 @@
 {
   "appId": "works.dexterity.lockwright",
+  "productName": "Lockwright",
   "icon": "assets/darwin/icon.png",
   "asar": false,
   "directories": {
@@ -35,5 +36,8 @@
   },
   "afterSign": "scripts/notarize.cjs",
   "afterPack": "scripts/afterPack.cjs",
+  "extraMetadata": {
+    "upgrade": null
+  },
   "dmg": {}
 }

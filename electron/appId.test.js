@@ -92,11 +92,19 @@ describe('Lockwright app id', () => {
     expect(src).toMatch(/\/contact\//)
   })
 
-  it('nulls the pear upgrade link for Linux AppImage like Windows', () => {
+  it('nulls the pear upgrade link for Linux and macOS like Windows', () => {
     const linux = JSON.parse(
       fs.readFileSync(path.join(root, 'electron-builder.linux.json'), 'utf8')
     )
     expect(linux.extraMetadata.upgrade).toBeNull()
+
+    // Mac too: package.json upgrade is PearPass's Pear key. Left on, a mac
+    // build would OTA from PearPass's drive and key vault storage by it.
+    const mac = JSON.parse(
+      fs.readFileSync(path.join(root, 'electron-builder.mac.json'), 'utf8')
+    )
+    expect(mac.extraMetadata?.upgrade).toBeNull()
+    expect(mac.productName).toBe('Lockwright')
 
     const pkg = JSON.parse(
       fs.readFileSync(path.join(root, 'package.json'), 'utf8')
