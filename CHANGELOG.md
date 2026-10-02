@@ -9,6 +9,8 @@ Starts at 0.0.17, after the Lockwright package rename. Earlier history is git.
 
 ## [Unreleased]
 
+## [0.0.29] - 2026-10-02
+
 ### Added
 
 - A GitHub Actions workflow builds macOS DMGs for arm64 and x64 on dispatch. Without signing secrets it ad-hoc signs them and names them `-unsigned`.

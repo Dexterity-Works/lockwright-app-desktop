@@ -1,7 +1,7 @@
 {
   "name": "lockwright-app-desktop",
   "productName": "Lockwright",
-  "version": "0.0.28",
+  "version": "0.0.29",
   "description": "Lockwright password manager",
   "author": "Lockwright",
   "main": "electron/main.cjs",
