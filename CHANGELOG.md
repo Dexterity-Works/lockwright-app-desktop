@@ -9,6 +9,8 @@ Starts at 0.0.17, after the Lockwright package rename. Earlier history is git.
 
 ## [Unreleased]
 
+## [0.0.30] - 2026-10-03
+
 ### Changed
 
 - Build the UI kit from source; pnpm no longer runs the kit's install script.
