@@ -184,6 +184,20 @@ describe('passwordGeneratorHistory', () => {
       expect(historyKeys()).toHaveLength(PASSWORD_GENERATOR_HISTORY_MAX)
     })
 
+    it('keeps a new password first when this clock is behind the stored entries', async () => {
+      seed(...filled())
+      const now = jest.spyOn(Date, 'now').mockReturnValue(0)
+      try {
+        const next = await appendHistory('brand-new')
+
+        expect(next[0]).toMatchObject({ id: 'id-1', value: 'brand-new' })
+        expect(historyKeys()).toContain(entryKey('id-1'))
+        expect((await loadHistory())[0].value).toBe('brand-new')
+      } finally {
+        now.mockRestore()
+      }
+    })
+
     it('does not persist empty values', async () => {
       await appendHistory('')
       expect(mockVault.activeVaultAdd).not.toHaveBeenCalled()
