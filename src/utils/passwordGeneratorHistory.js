@@ -13,6 +13,12 @@ import { generateUniqueId } from 'lockwright-utils-generate-unique-id'
  * longer overwrite another device's history.
  * Legacy key: `app/password-generator-history` → `{ entries: HistoryEntry[] }`.
  * loadHistory moves it into per-entry keys and removes it.
+ * Tombstone per cleared id: `app/password-generator-history/cleared/<id>` →
+ * `{ cleared: id }`. Reads hide that id and remove its entry key, and the
+ * legacy move skips it, so a device that is behind cannot bring it back.
+ * Ids, not clocks, so clock skew never hides a new password.
+ * Writes from one process run one at a time, so a generate and a use of the
+ * same password cannot both insert a row.
  *
  * Entry shape (additive optional fields for labeled use):
  * `{ id, value, createdAt, contextLabel?, contextKind?: 'site'|'entry', usedAt?, uses? }`
@@ -35,6 +41,8 @@ export const PASSWORD_GENERATOR_HISTORY_MAX = 500
 const ENTRY_PREFIX = `${PASSWORD_GENERATOR_HISTORY_KEY}/`
 
 const entryKey = (id) => `${ENTRY_PREFIX}${id}`
+// Same prefix, so the one entry listing also returns the tombstones.
+const clearedKey = (id) => `${ENTRY_PREFIX}cleared/${id}`
 
 const normalizeEntries = (raw) => {
   if (Array.isArray(raw?.entries)) return raw.entries
@@ -50,25 +58,57 @@ const newestFirst = (a, b) =>
   (b.createdAt ?? 0) - (a.createdAt ?? 0) ||
   (a.id < b.id ? -1 : a.id > b.id ? 1 : 0)
 
-const listEntries = async () => {
+const isCleared = (value) =>
+  typeof value?.cleared === 'string' && !!value.cleared
+
+// Serializes this process's history writes so concurrent callers see each other.
+let tail = Promise.resolve()
+const serial =
+  (fn) =>
+  (...args) => {
+    const run = tail.then(() => fn(...args))
+    tail = run.catch(() => {})
+    return run
+  }
+
+const listHistory = async () => {
   // ponytail: activeVaultList scans the whole view and loads all history. Upgrade when history load gets slow on large vaults: range scan API.
   const listed = await pearpassVaultClient.activeVaultList(ENTRY_PREFIX)
-  return Array.isArray(listed) ? listed.filter(isEntry) : []
+  const values = Array.isArray(listed) ? listed : []
+  return {
+    entries: values.filter(isEntry),
+    cleared: new Set(values.filter(isCleared).map((value) => value.cleared))
+  }
 }
+
+const readLegacy = async () =>
+  normalizeEntries(
+    await pearpassVaultClient.activeVaultGet(PASSWORD_GENERATOR_HISTORY_KEY)
+  ).filter(isEntry)
 
 /**
  * Every entry, newest first, uncapped. Moves the legacy array into per-entry
  * keys, then removes it. Ids are stable, so repeat or concurrent runs converge.
+ * Drops cleared ids and removes their keys if a device that was behind wrote
+ * them back.
  */
 const readEntries = async () => {
+  const { entries, cleared } = await listHistory()
   const byId = new Map()
-  for (const entry of await listEntries()) byId.set(entry.id, entry)
+  const revived = []
+  for (const entry of entries) {
+    if (cleared.has(entry.id)) revived.push(entry.id)
+    else byId.set(entry.id, entry)
+  }
+  await Promise.all(
+    revived.map((id) => pearpassVaultClient.activeVaultRemove(entryKey(id)))
+  )
 
-  const legacy = normalizeEntries(
-    await pearpassVaultClient.activeVaultGet(PASSWORD_GENERATOR_HISTORY_KEY)
-  ).filter(isEntry)
+  const legacy = await readLegacy()
   if (legacy.length) {
-    const missing = legacy.filter((entry) => !byId.has(entry.id))
+    const missing = legacy.filter(
+      (entry) => !byId.has(entry.id) && !cleared.has(entry.id)
+    )
     await Promise.all(
       missing.map((entry) =>
         pearpassVaultClient.activeVaultAdd(entryKey(entry.id), entry)
@@ -108,8 +148,10 @@ const addEntry = async (entry, current) => {
 /**
  * @returns {Promise<Array<{ id: string, value: string, createdAt: number, contextLabel?: string, contextKind?: 'site'|'entry', usedAt?: number }>>}
  */
-export const loadHistory = async () =>
+const load = async () =>
   (await readEntriesOrEmpty()).slice(0, PASSWORD_GENERATOR_HISTORY_MAX)
+
+export const loadHistory = serial(load)
 
 /**
  * Add a generated password. Skips when newest entry has the same value.
@@ -118,9 +160,9 @@ export const loadHistory = async () =>
  * @param {string} value
  * @returns {Promise<Array>}
  */
-export const appendHistory = async (value) => {
+export const appendHistory = serial(async (value) => {
   if (typeof value !== 'string' || !value) {
-    return loadHistory()
+    return load()
   }
 
   const current = await readEntriesOrEmpty()
@@ -132,7 +174,7 @@ export const appendHistory = async (value) => {
     { id: generateUniqueId(), value, createdAt: Date.now() },
     current
   )
-}
+})
 
 const asUse = (use) => {
   const contextLabel =
@@ -276,14 +318,14 @@ const stampEntry = (entry, uses, usedAt) => {
  * @param {{ contextLabel?: string, contextKind?: 'site'|'entry', uses?: Array<{ contextLabel: string, contextKind: 'site'|'entry' }>, onlyExisting?: boolean }} [context]
  * @returns {Promise<Array>}
  */
-export const markHistoryUsed = async (value, context = {}) => {
+export const markHistoryUsed = serial(async (value, context = {}) => {
   if (typeof value !== 'string' || !value) {
-    return loadHistory()
+    return load()
   }
 
   const uses = incomingUses(context)
   if (!uses.length) {
-    return loadHistory()
+    return load()
   }
 
   const current = await readEntriesOrEmpty()
@@ -317,20 +359,28 @@ export const markHistoryUsed = async (value, context = {}) => {
   return current
     .map((entry) => (entry === match ? stamped : entry))
     .slice(0, PASSWORD_GENERATOR_HISTORY_MAX)
-}
+})
 
 /**
- * Removes every listed entry key and the legacy key.
+ * Tombstones every listed and legacy id, then removes their entry keys and
+ * the legacy key.
  *
  * @returns {Promise<Array>}
  */
-export const clearHistory = async () => {
-  const entries = await listEntries()
+export const clearHistory = serial(async () => {
+  const { entries } = await listHistory()
+  const ids = new Set(
+    [...entries, ...(await readLegacy())].map((entry) => entry.id)
+  )
+  // ponytail: tombstones are never pruned. Prune them once the legacy key is retired (every device on per-entry keys).
   await Promise.all(
-    entries.map((entry) =>
-      pearpassVaultClient.activeVaultRemove(entryKey(entry.id))
+    [...ids].map((id) =>
+      pearpassVaultClient.activeVaultAdd(clearedKey(id), { cleared: id })
     )
+  )
+  await Promise.all(
+    [...ids].map((id) => pearpassVaultClient.activeVaultRemove(entryKey(id)))
   )
   await pearpassVaultClient.activeVaultRemove(PASSWORD_GENERATOR_HISTORY_KEY)
   return []
-}
+})

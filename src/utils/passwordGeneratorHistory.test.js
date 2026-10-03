@@ -42,6 +42,7 @@ jest.mock('lockwright-utils-generate-unique-id', () => ({
 }))
 const ENTRY_PREFIX = `${PASSWORD_GENERATOR_HISTORY_KEY}/`
 const entryKey = (id) => `${ENTRY_PREFIX}${id}`
+const clearedKey = (id) => `${ENTRY_PREFIX}cleared/${id}`
 const seed = (...entries) => {
   for (const entry of entries) mockStore.set(entryKey(entry.id), entry)
 }
@@ -303,6 +304,22 @@ describe('passwordGeneratorHistory', () => {
       expect(mockVault.activeVaultAdd).not.toHaveBeenCalled()
     })
 
+    it('stamps the generated entry when generate and use run at once', async () => {
+      await Promise.all([
+        appendHistory('pw'),
+        markHistoryUsed('pw', {
+          uses: [{ contextLabel: 'example.com', contextKind: 'site' }]
+        })
+      ])
+
+      const history = await loadHistory()
+      expect(history).toHaveLength(1)
+      expect(history[0]).toMatchObject({
+        value: 'pw',
+        contextLabel: 'example.com'
+      })
+    })
+
     it('does not persist when label or kind is invalid', async () => {
       await markHistoryUsed('pw', {
         contextLabel: '   ',
@@ -359,6 +376,39 @@ describe('passwordGeneratorHistory', () => {
   })
 
   describe('clearHistory', () => {
+    it('keeps cleared ids gone when a device that is behind migrates the legacy list', async () => {
+      const legacy = {
+        entries: [
+          { id: 'a', value: 'pw-a', createdAt: 2 },
+          { id: 'b', value: 'pw-b', createdAt: 1 }
+        ]
+      }
+      mockStore.set(PASSWORD_GENERATOR_HISTORY_KEY, legacy)
+      await loadHistory()
+      await clearHistory()
+
+      // The stale device writes the legacy list back and migrates one entry.
+      mockStore.set(PASSWORD_GENERATOR_HISTORY_KEY, legacy)
+      seed(legacy.entries[0])
+
+      await expect(loadHistory()).resolves.toEqual([])
+      expect(historyKeys()).toEqual([clearedKey('a'), clearedKey('b')])
+    })
+
+    it('hides only cleared ids, not a new entry with the same value', async () => {
+      seed({ id: 'a', value: 'pw', createdAt: 5 })
+      await clearHistory()
+      mockStore.set(PASSWORD_GENERATOR_HISTORY_KEY, {
+        entries: [{ id: 'a', value: 'pw', createdAt: 5 }]
+      })
+      // Older clock than the cleared entry: clock skew must not hide it.
+      seed({ id: 'n', value: 'pw', createdAt: 1 })
+
+      await expect(loadHistory()).resolves.toEqual([
+        { id: 'n', value: 'pw', createdAt: 1 }
+      ])
+    })
+
     it('removes every entry key and the legacy key', async () => {
       seed(
         { id: 'a', value: 'x', createdAt: 1 },
@@ -370,7 +420,12 @@ describe('passwordGeneratorHistory', () => {
       mockStore.set('app/other', { keep: true })
 
       await expect(clearHistory()).resolves.toEqual([])
-      expect([...mockStore.keys()]).toEqual(['app/other'])
+      expect([...mockStore.keys()].sort()).toEqual([
+        'app/other',
+        clearedKey('a'),
+        clearedKey('b'),
+        clearedKey('c')
+      ])
     })
   })
 })
