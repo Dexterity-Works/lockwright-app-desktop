@@ -9,6 +9,14 @@ Starts at 0.0.17, after the Lockwright package rename. Earlier history is git.
 
 ## [Unreleased]
 
+### Changed
+
+- The unique-ID, password check, password generator, QR, and validator utils now come from one package, `lockwright-lib-utils`.
+
+### Fixed
+
+- Website fields accept localhost and other hosts without a dot, like the extension.
+
 ## [0.0.30] - 2026-10-03
 
 `c75daa893ad2c6f2d624a029bd3e1ac9e8b97037`

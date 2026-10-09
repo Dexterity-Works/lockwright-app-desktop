@@ -33,7 +33,7 @@ jest.mock('lockwright-lib-vault/src/utils/buffer', () => ({
   clearBuffer: (value: unknown) => mockClearBuffer(value)
 }))
 
-jest.mock('lockwright-utils-password-check', () => ({
+jest.mock('lockwright-lib-utils/password-check', () => ({
   checkPasswordStrength: (value: string) =>
     value.length > 0 ? { strengthType: 'success' } : { strengthType: 'error' },
   validatePasswordChange: () => ({ success: true })

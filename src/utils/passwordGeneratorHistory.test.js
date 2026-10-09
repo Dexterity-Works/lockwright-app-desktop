@@ -37,7 +37,7 @@ jest.mock('lockwright-lib-vault/src/instances', () => ({
   }
 }))
 
-jest.mock('lockwright-utils-generate-unique-id', () => ({
+jest.mock('lockwright-lib-utils/generate-unique-id', () => ({
   generateUniqueId: () => `id-${++mockIdCounter}`
 }))
 const ENTRY_PREFIX = `${PASSWORD_GENERATOR_HISTORY_KEY}/`

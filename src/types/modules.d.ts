@@ -308,7 +308,7 @@ declare module 'lockwright-lib-vault' {
   }
 }
 
-declare module 'lockwright-utils-password-check' {
+declare module 'lockwright-lib-utils/password-check' {
   export type PasswordStrengthType = 'error' | 'warning' | 'success'
 
   export function checkPasswordStrength(password: string): {
@@ -341,11 +341,11 @@ declare module 'lockwright-lib-ui-react-hooks' {
   export const useForm: any
 }
 
-declare module 'lockwright-utils-qr' {
+declare module 'lockwright-lib-utils/qr' {
   export const generateQRCodeSVG: any
 }
 
-declare module 'lockwright-utils-validator' {
+declare module 'lockwright-lib-utils/validator' {
   export const Validator: any
 }
 
@@ -426,7 +426,7 @@ declare module 'lockwright-lib-constants' {
   export const VALID_WORD_COUNTS: number[]
 }
 
-declare module 'lockwright-utils-password-generator' {
+declare module 'lockwright-lib-utils/password-generator' {
   export function generatePassword(
     length: number,
     rulesConfig?: {

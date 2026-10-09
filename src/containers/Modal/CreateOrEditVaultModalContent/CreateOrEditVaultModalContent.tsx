@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react'
 
 import { useForm } from 'lockwright-lib-ui-react-hooks'
-import { Validator } from 'lockwright-utils-validator'
+import { Validator } from 'lockwright-lib-utils/validator'
 import { Button, Dialog, Form, InputField } from 'lockwright-lib-ui-react-native-components'
 import { useCreateVault, useVault, type Vault } from 'lockwright-lib-vault'
 

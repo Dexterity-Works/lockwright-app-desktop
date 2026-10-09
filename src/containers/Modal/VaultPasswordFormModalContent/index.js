@@ -4,7 +4,7 @@ import { useLingui } from '@lingui/react'
 import { html } from 'htm/react'
 import { useForm } from 'lockwright-lib-ui-react-hooks'
 import { Button, InputField } from 'lockwright-lib-ui-react-native-components'
-import { Validator } from 'lockwright-utils-validator'
+import { Validator } from 'lockwright-lib-utils/validator'
 
 import { Description, Header, Title, UnlockVaultContainer } from './styles'
 import { FormModalHeaderWrapper } from '../../../components/FormModalHeaderWrapper'

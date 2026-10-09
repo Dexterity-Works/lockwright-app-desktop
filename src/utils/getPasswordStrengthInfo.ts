@@ -1,7 +1,7 @@
 import {
   checkPassphraseStrength,
   checkPasswordStrength
-} from 'lockwright-utils-password-check'
+} from 'lockwright-lib-utils/password-check'
 import { PassType } from '../shared/types'
 
 type StrengthResult = {

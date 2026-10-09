@@ -9,7 +9,7 @@ import {
 } from 'react'
 
 import { html } from 'htm/react'
-import { generateUniqueId } from 'lockwright-utils-generate-unique-id'
+import { generateUniqueId } from 'lockwright-lib-utils/generate-unique-id'
 
 import { Overlay } from '../components/Overlay'
 import { BASE_TRANSITION_DURATION } from '../constants/transitions'

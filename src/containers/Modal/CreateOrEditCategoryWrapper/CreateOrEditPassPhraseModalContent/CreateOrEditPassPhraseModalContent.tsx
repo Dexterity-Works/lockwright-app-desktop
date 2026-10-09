@@ -1,7 +1,7 @@
 import React from 'react'
 
 import { useForm } from 'lockwright-lib-ui-react-hooks'
-import { Validator } from 'lockwright-utils-validator'
+import { Validator } from 'lockwright-lib-utils/validator'
 import { VALID_WORD_COUNTS } from 'lockwright-lib-constants'
 import {
   AttachmentField as UiKitAttachmentField,

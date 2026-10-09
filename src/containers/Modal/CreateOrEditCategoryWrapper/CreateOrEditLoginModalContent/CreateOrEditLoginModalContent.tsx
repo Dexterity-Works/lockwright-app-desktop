@@ -1,7 +1,7 @@
 import React, { useState } from 'react'
 
 import { useForm } from 'lockwright-lib-ui-react-hooks'
-import { Validator } from 'lockwright-utils-validator'
+import { Validator } from 'lockwright-lib-utils/validator'
 // @ts-ignore - declaration file is incomplete
 import { AUTHENTICATOR_ENABLED } from 'lockwright-lib-constants'
 import {

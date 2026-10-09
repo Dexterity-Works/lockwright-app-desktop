@@ -1,7 +1,7 @@
 import React, { useRef, useState } from 'react'
 
 import { useForm } from 'lockwright-lib-ui-react-hooks'
-import { Validator } from 'lockwright-utils-validator'
+import { Validator } from 'lockwright-lib-utils/validator'
 import { PRIVACY_POLICY } from 'lockwright-lib-constants'
 import {
   useCreateVault,
@@ -13,7 +13,7 @@ import {
   stringToBuffer,
   clearBuffer
 } from 'lockwright-lib-vault/src/utils/buffer'
-import { checkPasswordStrength } from 'lockwright-utils-password-check'
+import { checkPasswordStrength } from 'lockwright-lib-utils/password-check'
 import {
   AlertMessage,
   Button,

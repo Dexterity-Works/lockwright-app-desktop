@@ -151,17 +151,13 @@ Package names match the repo names. Vault and vault-core are `file:../pearpass-l
 - [`lockwright-lib-ui-react-hooks`](https://github.com/Dexterity-Works/lockwright-lib-ui-react-hooks)
 - [`lockwright-utils-avatar-initials`](https://github.com/Dexterity-Works/lockwright-utils-avatar-initials)
 - [`lockwright-utils-date`](https://github.com/Dexterity-Works/lockwright-utils-date)
-- [`lockwright-utils-generate-unique-id`](https://github.com/Dexterity-Works/lockwright-utils-generate-unique-id)
-- [`lockwright-utils-qr`](https://github.com/Dexterity-Works/lockwright-utils-qr)
-- [`lockwright-utils-validator`](https://github.com/Dexterity-Works/lockwright-utils-validator)
 - [`lockwright-lib-constants`](https://github.com/Dexterity-Works/lockwright-lib-constants)
 - [`lockwright-lib-data-export`](https://github.com/Dexterity-Works/lockwright-lib-data-export)
 - [`lockwright-lib-data-import`](https://github.com/Dexterity-Works/lockwright-lib-data-import)
+- [`lockwright-lib-utils`](https://github.com/Dexterity-Works/lockwright-lib-utils)
 - [`lockwright-lib-ui-theme-provider`](https://github.com/Dexterity-Works/lockwright-lib-ui-theme-provider)
 - [`lockwright-lib-vault`](https://github.com/Dexterity-Works/lockwright-lib-vault)
 - [`lockwright-lib-vault-core`](https://github.com/Dexterity-Works/lockwright-lib-vault-core)
-- [`lockwright-utils-password-check`](https://github.com/Dexterity-Works/lockwright-utils-password-check)
-- [`lockwright-utils-password-generator`](https://github.com/Dexterity-Works/lockwright-utils-password-generator)
 
 ---
 

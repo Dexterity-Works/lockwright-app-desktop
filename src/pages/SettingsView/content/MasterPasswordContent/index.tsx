@@ -1,7 +1,7 @@
 import { useState } from 'react'
 
 import { useForm } from 'lockwright-lib-ui-react-hooks'
-import { Validator } from 'lockwright-utils-validator'
+import { Validator } from 'lockwright-lib-utils/validator'
 import { useUserData } from 'lockwright-lib-vault'
 import {
   clearBuffer,
@@ -19,7 +19,7 @@ import {
 import {
   checkPasswordStrength,
   validatePasswordChange
-} from 'lockwright-utils-password-check'
+} from 'lockwright-lib-utils/password-check'
 
 import { useGlobalLoading } from '../../../../context/LoadingContext'
 import { useTranslation } from '../../../../hooks/useTranslation'

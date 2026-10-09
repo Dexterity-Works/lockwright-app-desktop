@@ -41,7 +41,7 @@ jest.mock('../context/ModalContext', () => ({
   useModal: jest.fn()
 }))
 
-jest.mock('lockwright-utils-generate-unique-id', () => ({
+jest.mock('lockwright-lib-utils/generate-unique-id', () => ({
   generateUniqueId: jest.fn(() => 'mocked-unique-id')
 }))
 

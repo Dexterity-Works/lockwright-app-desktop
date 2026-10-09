@@ -3,11 +3,11 @@ import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import {
   checkPassphraseStrength,
   checkPasswordStrength
-} from 'lockwright-utils-password-check'
+} from 'lockwright-lib-utils/password-check'
 import {
   generatePassphrase,
   generatePassword
-} from 'lockwright-utils-password-generator'
+} from 'lockwright-lib-utils/password-generator'
 import {
   Button,
   InputField,

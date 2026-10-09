@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 
-import { generateQRCodeSVG } from 'lockwright-utils-qr'
+import { generateQRCodeSVG } from 'lockwright-lib-utils/qr'
 import { rawTokens, Text, useTheme } from 'lockwright-lib-ui-react-native-components'
 
 import { useTranslation } from '../../hooks/useTranslation'

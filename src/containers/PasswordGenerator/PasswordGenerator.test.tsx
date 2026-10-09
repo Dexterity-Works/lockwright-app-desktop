@@ -24,13 +24,13 @@ const mockGeneratePassword = jest.fn(
   (_length?: number, _rules?: Record<string, boolean>) => 'Abcdef1!'
 )
 
-jest.mock('lockwright-utils-password-generator', () => ({
+jest.mock('lockwright-lib-utils/password-generator', () => ({
   generatePassword: (length: number, rules?: Record<string, boolean>) =>
     mockGeneratePassword(length, rules),
   generatePassphrase: () => ['word', 'list', 'here']
 }))
 
-jest.mock('lockwright-utils-password-check', () => ({
+jest.mock('lockwright-lib-utils/password-check', () => ({
   checkPasswordStrength: () => ({ type: 'safe' }),
   checkPassphraseStrength: () => ({ type: 'safe' })
 }))
