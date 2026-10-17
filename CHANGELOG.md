@@ -22,6 +22,7 @@ Starts at 0.0.17, after the Lockwright package rename. Earlier history is git.
 ### Fixed
 
 - A desktop removed from a vault by a key rotation wipes that vault, as it already does when it is kicked.
+- A password generated on a device whose clock is behind another device's stays at the top of generator history instead of dropping out.
 
 ## [0.0.30] - 2026-10-03
 
@@ -37,7 +38,6 @@ Starts at 0.0.17, after the Lockwright package rename. Earlier history is git.
 - Generator history shows vault entries whose password matches, including ones saved before labels were stamped.
 - Generator history shows as soon as the Generator opens.
 - Generator history no longer loses entries when another device writes at the same time or has not synced yet.
-- A password generated on a device whose clock is behind another device's stays at the top of generator history instead of dropping out.
 - Cleared generator history stays cleared when another device or an older app version has not caught up. Generating and using a password at once no longer adds it twice.
 
 ## [0.0.29] - 2026-10-02
