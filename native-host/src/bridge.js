@@ -448,7 +448,9 @@ class NativeMessagingHost {
             error.message.includes('timed out') ||
             error.message.includes('RPC destroyed')
           ) {
-            if (this.ipcClient === client) {
+            // Null: the desktop dropped the pipe and our close handler ran
+            // just before this rejection. Reconnect and retry as before.
+            if (this.ipcClient === client || this.ipcClient === null) {
               log('INFO', 'IPC call failed, desktop app may have been closed')
               this.desktopAppStatus = DESKTOP_APP_STATUS.NOT_RUNNING
               this.closeIpcClient()

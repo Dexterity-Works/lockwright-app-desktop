@@ -290,6 +290,33 @@ describe('native messaging host IPC path', () => {
     const [response] = handler.send.mock.calls.find(([msg]) => msg.id === '17')
     expect(response).toMatchObject({ success: false, error: 'RPC destroyed' })
   })
+
+  it('retries once on a new client when the desktop drops the pipe mid-call', async () => {
+    getIpcPath.mockReturnValue({ pipe: 'published-pipe', secret })
+    answerProof = prove
+    expect(await checkAvailability('19')).toMatchObject({ available: true })
+    const dropped = IPC.Client.mock.instances.at(-1)
+    let destroy = () => {}
+    dropped.nmGetAppIdentity.mockReturnValueOnce(
+      new Promise((_, reject) => {
+        destroy = () => reject(new Error('RPC destroyed'))
+      })
+    )
+    handler.emit('message', { id: '20', command: 'nmGetAppIdentity', params: {} })
+    await flush()
+
+    // pear-ipc emits close one microtask before the call rejects
+    const [, onClose] = dropped.on.mock.calls.find(([e]) => e === 'close')
+    onClose()
+    destroy()
+    for (let i = 0; i < 6; i++) await flush()
+
+    const retried = IPC.Client.mock.instances.at(-1)
+    expect(retried).not.toBe(dropped)
+    expect(retried.nmGetAppIdentity).toHaveBeenCalledTimes(1)
+    const [response] = handler.send.mock.calls.find(([msg]) => msg.id === '20')
+    expect(response).toMatchObject({ success: true })
+  })
 })
 
 describe('NativeMessagingHost connect', () => {
