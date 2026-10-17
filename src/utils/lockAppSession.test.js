@@ -34,7 +34,9 @@ describe('lockAppSession', () => {
     })
 
     expect(closeAllInstances).toHaveBeenCalledTimes(1)
-    expect(closeModal).toHaveBeenCalledTimes(1)
+    // Forced: a busy modal such as a running revoke must not stay on top
+    // of the lock screen.
+    expect(closeModal.mock.calls).toEqual([[{ force: true }]])
     expect(navigate).toHaveBeenCalledWith('welcome', {
       state: NAVIGATION_ROUTES.MASTER_PASSWORD
     })

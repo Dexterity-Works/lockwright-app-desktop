@@ -326,6 +326,37 @@ describe('ModalProvider', () => {
     expect(screen.queryByText('Start work')).not.toBeInTheDocument()
   })
 
+  test('a forced close shuts a busy modal', () => {
+    const Busy = () => {
+      const { setClosable } = useModal()
+      const id = useModalEntryId()
+      return <button onClick={() => setClosable(id, false)}>Start work</button>
+    }
+    const Locker = () => {
+      const { setModal, closeModal } = useModal()
+      return (
+        <div>
+          <button onClick={() => setModal(<Busy />)}>Open Busy</button>
+          <button onClick={() => closeModal({ force: true })}>Lock</button>
+        </div>
+      )
+    }
+    render(
+      <ModalProvider>
+        <Locker />
+      </ModalProvider>
+    )
+
+    fireEvent.click(screen.getByText('Open Busy'))
+    fireEvent.click(screen.getByText('Start work'))
+    fireEvent.click(screen.getByText('Lock'))
+    act(() => {
+      jest.advanceTimersByTime(CLOSE_DURATION)
+    })
+
+    expect(screen.queryByText('Start work')).not.toBeInTheDocument()
+  })
+
   test('a modal opened as not closable can still close itself by id', () => {
     const Update = () => {
       const { closeModal } = useModal()

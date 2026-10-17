@@ -93,9 +93,13 @@ export const ModalProvider = ({ children }) => {
       }
       // Skip entries already closing so a rapid second close hits the modal
       // beneath one mid-transition. A busy entry stays open: only
-      // closeModal(id) from the entry itself closes it.
+      // closeModal(id) from the entry itself, or closeModal({ force: true })
+      // when the app locks, closes it.
+      const force = id?.force === true
       const i = getTopOpenIndex(prevState)
-      if (i === -1 || prevState[i].params.closable === false) return prevState
+      if (i === -1 || (!force && prevState[i].params.closable === false)) {
+        return prevState
+      }
       const next = [...prevState]
       next[i] = { ...next[i], isOpen: false }
       return next
@@ -182,7 +186,7 @@ export const ModalProvider = ({ children }) => {
  * @returns {{
  *   isOpen: boolean,
  *   setModal: (content: any, params?: any) => void,
- *   closeModal: (id?: unknown) => void,
+ *   closeModal: (id?: string | { force?: boolean } | unknown) => void,
  *   setClosable: (id: string | undefined, closable: boolean) => void
  * }}
  */
