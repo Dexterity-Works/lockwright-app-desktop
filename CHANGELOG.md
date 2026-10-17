@@ -25,6 +25,7 @@ Starts at 0.0.17, after the Lockwright package rename. Earlier history is git.
 - A desktop removed from a vault by a key rotation wipes that vault, as it already does when it is kicked.
 - A password generated on a device whose clock is behind another device's stays at the top of generator history instead of dropping out.
 - If revoking a device has not finished after 50 seconds, the revoke dialog can be closed again and says the result is unknown until the next sync.
+- When the vault key did not rotate, the revoke dialog says why in a plain sentence instead of showing an internal reason code.
 
 ## [0.0.30] - 2026-10-03
 

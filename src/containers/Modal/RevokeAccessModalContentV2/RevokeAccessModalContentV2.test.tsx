@@ -8,6 +8,7 @@ import { RevokeAccessModalContentV2 } from './RevokeAccessModalContentV2'
 import { useModal } from '../../../context/ModalContext'
 import { useToast } from '../../../context/ToastContext'
 import { useTranslation } from '../../../hooks/useTranslation'
+import { logger } from '../../../utils/logger'
 
 jest.mock('lockwright-lib-vault', () => ({
   kickDevice: jest.fn(),
@@ -28,7 +29,7 @@ jest.mock('../../../hooks/useTranslation', () => ({
 }))
 
 jest.mock('../../../utils/logger', () => ({
-  logger: { error: jest.fn() }
+  logger: { error: jest.fn(), warn: jest.fn() }
 }))
 
 jest.mock('lockwright-lib-ui-react-native-components', () => ({
@@ -212,16 +213,54 @@ describe('RevokeAccessModalContentV2', () => {
     expect(messages).toEqual([UNREACHED, uncoveredToast('Old Phone')])
   })
 
-  it('shows the revoke result, then warns with the reason when the key did not rotate', async () => {
+  const KNOWN_REASONS: Array<[string, string]> = [
+    [
+      'not-writable',
+      "This device can't write to the vault. The revoked device can still read new items."
+    ],
+    [
+      'self-not-in-roster',
+      "This device isn't on the vault's member list. The revoked device can still read new items."
+    ],
+    [
+      'legacy',
+      "The vault doesn't use rotating keys yet. The revoked device can still read new items."
+    ]
+  ]
+  for (const [reason, text] of KNOWN_REASONS) {
+    it(`shows the revoke result, then explains a ${reason} rotation failure`, async () => {
+      const messages = await revoke({
+        results: outbox,
+        failures: [epochFailure(reason)],
+        epoch: { rotated: false, reason, uncovered: [] }
+      })
+      expect(messages).toEqual([SUCCESS])
+      expect(screen.getByRole('alert').textContent).not.toContain(reason)
+      expect(logger.warn).toHaveBeenCalledWith(
+        'RevokeAccessModalContentV2',
+        expect.any(String),
+        reason
+      )
+      expectInlineWarning(text)
+    })
+  }
+
+  it('warns without the token when the reason is unknown', async () => {
     const messages = await revoke({
       results: outbox,
-      failures: [epochFailure('not-writable')],
-      epoch: { rotated: false, reason: 'not-writable', uncovered: [] }
+      failures: [epochFailure('quota-exceeded')],
+      epoch: { rotated: false, reason: 'quota-exceeded', uncovered: [] }
     })
     expect(messages).toEqual([SUCCESS])
-    expectInlineWarning(
-      "Couldn't rotate the vault key (not-writable). The revoked device can still read new items."
+    const warning = screen.getByRole('alert').textContent
+    expect(warning).not.toContain('quota-exceeded')
+    expect(warning).not.toContain('(')
+    expect(logger.warn).toHaveBeenCalledWith(
+      'RevokeAccessModalContentV2',
+      expect.any(String),
+      'quota-exceeded'
     )
+    expectInlineWarning(ROTATION_FAILED)
   })
 
   it('warns without a reason when the rotation result gives none', async () => {
@@ -339,7 +378,7 @@ describe('RevokeAccessModalContentV2', () => {
     expect(closeModal).not.toHaveBeenCalled()
     expect(setToast.mock.calls.map(([toast]) => toast.message)).toEqual([
       SUCCESS,
-      "Couldn't rotate the vault key (not-writable). The revoked device can still read new items."
+      "This device can't write to the vault. The revoked device can still read new items."
     ])
   })
 

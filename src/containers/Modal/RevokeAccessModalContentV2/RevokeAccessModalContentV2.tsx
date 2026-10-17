@@ -145,14 +145,34 @@ export const RevokeAccessModalContentV2 = ({
         epoch.reason !== 'current' &&
         epoch.reason !== 'pending')
     ) {
-      const rotationWarning = epoch?.reason
-        ? t(
-            "Couldn't rotate the vault key ({reason}). The revoked device can still read new items.",
-            { reason: epoch.reason }
+      const reason: string | undefined = epoch?.reason
+      logger.warn(
+        'RevokeAccessModalContentV2',
+        'vault key did not rotate:',
+        reason
+      )
+      let rotationWarning: string
+      switch (reason) {
+        case 'not-writable':
+          rotationWarning = t(
+            "This device can't write to the vault. The revoked device can still read new items."
           )
-        : t(
+          break
+        case 'self-not-in-roster':
+          rotationWarning = t(
+            "This device isn't on the vault's member list. The revoked device can still read new items."
+          )
+          break
+        case 'legacy':
+          rotationWarning = t(
+            "The vault doesn't use rotating keys yet. The revoked device can still read new items."
+          )
+          break
+        default:
+          rotationWarning = t(
             "Couldn't rotate the vault key. The revoked device can still read new items."
           )
+      }
       if (mounted.current) setWarning(rotationWarning)
       else setToast({ message: rotationWarning })
       return
