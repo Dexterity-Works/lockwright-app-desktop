@@ -568,6 +568,26 @@ describe('nativeMessagingIPCServer', () => {
         ])
       })
 
+      it('pushes an epoch status from a core that does not stamp vaultId yet', async () => {
+        await serverInstance.start()
+        const client = { id: 'A', onEpochStatus: jest.fn() }
+        serverInstance.server.clients = [client]
+        const handler = mockPearpassClient.on.mock.calls.find(
+          ([event]) => event === 'epoch-status'
+        )[1]
+
+        // Until the core puts vaultId on the status, the push has no vault
+        // to name; the extension then cannot match it to a vault.
+        expect(() =>
+          handler({ epoch: 'e1', revoked: true, members: [], uncovered: [] })
+        ).not.toThrow()
+
+        const [push] = client.onEpochStatus.mock.calls[0]
+        expect(Object.keys(push)).toEqual(['vaultId', 'revoked'])
+        expect(push.vaultId).toBeUndefined()
+        expect(push.revoked).toBe(true)
+      })
+
       it('should subscribe to vault-access-revoked on the pearpass client', async () => {
         await serverInstance.start()
 
