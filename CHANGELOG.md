@@ -11,6 +11,8 @@ Starts at 0.0.17, after the Lockwright package rename. Earlier history is git.
 
 ## [0.0.31] - 2026-10-17
 
+`6e22c86a437f4c698870868ace4d7593ce4102ae`
+
 ### Changed
 
 - The unique-ID, password check, password generator, QR, and validator utils now come from one package, `lockwright-lib-utils`.
