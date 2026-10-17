@@ -119,6 +119,21 @@ describe('VaultHandlers epoch commands', () => {
     expect(client.activeVaultEnsureEpoch).toHaveBeenCalledWith({ start: true })
   })
 
+  it('starts the first epoch only for start === true', async () => {
+    const client = {
+      activeVaultEnsureEpoch: jest.fn().mockResolvedValue({ rotated: false })
+    }
+    const handlers = new VaultHandlers(client, { emit: jest.fn() })
+
+    await handlers.activeVaultEnsureEpoch({ start: 'false' })
+    await handlers.activeVaultEnsureEpoch({})
+
+    expect(client.activeVaultEnsureEpoch.mock.calls).toEqual([
+      [{ start: false }],
+      [{ start: false }]
+    ])
+  })
+
   it('returns activeVaultGetEpochStatus unchanged', async () => {
     const status = {
       epoch: 'e1',

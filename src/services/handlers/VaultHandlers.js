@@ -124,7 +124,9 @@ export class VaultHandlers {
   }
 
   async activeVaultEnsureEpoch(params) {
-    return await this.client.activeVaultEnsureEpoch({ start: params?.start })
+    return await this.client.activeVaultEnsureEpoch({
+      start: params?.start === true
+    })
   }
 
   async activeVaultGetEpochStatus() {
