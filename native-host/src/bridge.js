@@ -446,7 +446,9 @@ class NativeMessagingHost {
           ) {
             log('INFO', 'IPC call failed, desktop app may have been closed')
             this.desktopAppStatus = DESKTOP_APP_STATUS.NOT_RUNNING
-            this.ipcClient = null
+            this.closeIpcClient()
+            // Reconnect now so desktop pushes have a proven client to ride.
+            this.connectToIPC()
           }
           throw error
         }

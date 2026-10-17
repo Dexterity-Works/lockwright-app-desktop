@@ -214,6 +214,31 @@ describe('native messaging host IPC path', () => {
       data: { vaultId: 'v-2', actor: 'd-1' }
     })
   })
+
+  it('closes a timed-out client and carries pushes on the reconnected one', async () => {
+    getIpcPath.mockReturnValue({ pipe: 'published-pipe', secret })
+    answerProof = prove
+    expect(await checkAvailability('10')).toMatchObject({ available: true })
+    const timedOut = IPC.Client.mock.instances.at(-1)
+    timedOut.nmGetAppIdentity.mockReturnValueOnce(new Promise(() => {}))
+    const clientsBefore = IPC.Client.mock.instances.length
+
+    handler.emit('message', { id: '11', command: 'nmGetAppIdentity', params: {} })
+    await flush()
+    jest.runOnlyPendingTimers()
+    for (let i = 0; i < 5; i++) await flush()
+
+    expect(timedOut.close).toHaveBeenCalled()
+    expect(IPC.Client.mock.instances.length).toBe(clientsBefore + 1)
+    const { api } = IPC.Client.mock.calls.at(-1)[0]
+    const method = {}
+    api.onEpochStatus(method)
+    method._onrequest({ vaultId: 'v-3', revoked: true })
+    expect(handler.send).toHaveBeenLastCalledWith({
+      event: 'epoch-status',
+      data: { vaultId: 'v-3', revoked: true }
+    })
+  })
 })
 
 describe('NativeMessagingHost connect', () => {
