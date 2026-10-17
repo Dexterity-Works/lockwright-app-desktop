@@ -512,11 +512,14 @@ export class NativeMessagingIPCServer {
     }
     this.client.on('vault-access-revoked', this.vaultAccessRevokedListener)
 
+    // Sessions are not bound to sockets, so every peer gets this push.
+    // Send only what the extension acts on: no epoch id, no device ids.
     this.epochStatusListener = (status) => {
       if (!this.server) return
+      const push = { vaultId: status?.vaultId, revoked: status?.revoked }
       for (const client of this.server.clients) {
         try {
-          client.onEpochStatus?.(status ?? {})
+          client.onEpochStatus?.(push)
         } catch (err) {
           logger.error(
             'IPC-SERVER',

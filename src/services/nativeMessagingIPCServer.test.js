@@ -496,6 +496,20 @@ describe('nativeMessagingIPCServer', () => {
         expect(deps.emit).toHaveBeenCalledWith('ipc-activity')
       })
 
+      it('keeps the epoch commands off the unauthenticated socket', async () => {
+        await serverInstance.start()
+        const handlers = IPC.Server.mock.calls[0][0].handlers
+
+        expect(handlers.activeVaultEnsureEpoch).toBeUndefined()
+        expect(handlers.activeVaultGetEpochStatus).toBeUndefined()
+        expect(serverInstance.methodRegistry.getMethodNames()).not.toContain(
+          'activeVaultEnsureEpoch'
+        )
+        expect(serverInstance.methodRegistry.getMethodNames()).not.toContain(
+          'activeVaultGetEpochStatus'
+        )
+      })
+
       it('relays the epoch commands through the secure channel', async () => {
         await serverInstance.start()
         const vaultHandlers = VaultHandlers.mock.instances.at(-1)
@@ -533,11 +547,25 @@ describe('nativeMessagingIPCServer', () => {
         )?.[1]
         expect(handler).toBeDefined()
 
-        const status = { epoch: 'e1', revoked: true }
-        handler(status)
+        handler({
+          vaultId: 'v-1',
+          revoked: true,
+          epoch: 'e1',
+          seq: 3,
+          legacy: false,
+          canRead: false,
+          members: ['d-1', 'd-2'],
+          uncovered: ['d-3']
+        })
 
-        expect(clientA.onEpochStatus).toHaveBeenCalledWith(status)
-        expect(clientB.onEpochStatus).toHaveBeenCalledWith(status)
+        // Any local process can sit on the socket: send only what the
+        // extension acts on, never the epoch id or device ids.
+        expect(clientA.onEpochStatus.mock.calls).toEqual([
+          [{ vaultId: 'v-1', revoked: true }]
+        ])
+        expect(clientB.onEpochStatus.mock.calls).toEqual([
+          [{ vaultId: 'v-1', revoked: true }]
+        ])
       })
 
       it('should subscribe to vault-access-revoked on the pearpass client', async () => {
