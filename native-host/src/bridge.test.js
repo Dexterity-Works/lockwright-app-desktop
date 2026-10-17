@@ -164,4 +164,32 @@ describe('native messaging host IPC path', () => {
       pairingToken: 'secret-token'
     })
   })
+
+  it('drops desktop pushes until the pipe owner has proved itself', async () => {
+    dropConnection()
+    getIpcPath.mockReturnValue({ pipe: 'published-pipe', secret })
+    let releaseProof = () => {}
+    answerProof = (nonceHex) =>
+      new Promise((resolve) => {
+        releaseProof = () => resolve(prove(nonceHex))
+      })
+
+    handler.emit('message', { id: '8', command: 'checkAvailability' })
+    await flush()
+    const { api } = IPC.Client.mock.calls.at(-1)[0]
+    const method = {}
+    api.onEpochStatus(method)
+    const pushes = () =>
+      handler.send.mock.calls.filter(([msg]) => msg.event === 'epoch-status')
+
+    method._onrequest({ vaultId: 'v-1', revoked: true })
+    expect(pushes()).toHaveLength(0)
+
+    releaseProof()
+    await flush()
+    method._onrequest({ vaultId: 'v-1', revoked: true })
+    expect(pushes()).toEqual([
+      [{ event: 'epoch-status', data: { vaultId: 'v-1', revoked: true } }]
+    ])
+  })
 })

@@ -139,6 +139,11 @@ class NativeMessagingHost {
    */
   createIpcInboundApi() {
     const forward = (event, data) => {
+      // Until proveServer passes, the pipe owner may be a squatter.
+      if (this.desktopAppStatus !== DESKTOP_APP_STATUS.CONNECTED) {
+        log('INFO', `Dropped ${event} from an unproven pipe owner`)
+        return
+      }
       try {
         this.handler.send({ event, data })
       } catch (err) {
