@@ -16,7 +16,7 @@ Starts at 0.0.17, after the Lockwright package rename. Earlier history is git.
 ### Changed
 
 - The unique-ID, password check, password generator, QR, and validator utils now come from one package, `lockwright-lib-utils`.
-- The revoke dialog says revoking rotates the vault key, so the device cannot read items added or changed afterwards. Items it already synced stay on it. If the key did not rotate, the dialog stays open with a warning and a Done button. A toast names devices that cannot read new items yet.
+- The revoke dialog says revoking rotates the vault key, so the device cannot read items added or changed afterwards. Items it already synced stay on it. If the key did not rotate, the dialog stays open with a warning and a Done button. A toast names devices that cannot read new items yet. The warning says in a plain sentence why the key did not rotate. If revoking has not finished after 50 seconds, the dialog can be closed and says the result is unknown.
 - The browser extension can rotate the vault key and read the key status through this app, so revoking a device from the extension rotates the key too.
 - A native-messaging bridge process started before this update exits once when the first epoch-status push arrives; the extension then reconnects to the new bridge.
 
@@ -24,8 +24,6 @@ Starts at 0.0.17, after the Lockwright package rename. Earlier history is git.
 
 - A desktop removed from a vault by a key rotation wipes that vault, as it already does when it is kicked.
 - A password generated on a device whose clock is behind another device's stays at the top of generator history instead of dropping out.
-- If revoking a device has not finished after 50 seconds, the revoke dialog can be closed again and says the result is unknown until the next sync.
-- When the vault key did not rotate, the revoke dialog says why in a plain sentence instead of showing an internal reason code.
 
 ## [0.0.30] - 2026-10-03
 
