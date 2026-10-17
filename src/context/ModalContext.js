@@ -20,6 +20,9 @@ import { SideDrawer } from '../containers/Modal/SideDrawer'
 export const STACK_CLEANUP_BUFFER = 100
 
 const ModalContext = createContext()
+// The id of the modal entry a component renders in, so it can close or
+// lock its own entry rather than whichever modal is on top.
+const ModalEntryContext = createContext(undefined)
 
 const getTopModal = (modalStack) => modalStack[modalStack.length - 1]
 
@@ -71,8 +74,17 @@ export const ModalProvider = ({ children }) => {
     })
   }, [])
 
-  const closeModal = useCallback(() => {
+  const closeModal = useCallback((id) => {
     setModalStack((prevState) => {
+      // closeModal(id) closes that entry only, and does nothing once it is
+      // gone. Handlers passed as onClick get an event, not an id.
+      if (typeof id === 'string') {
+        const i = prevState.findIndex((m) => m.id === id)
+        if (i === -1 || !prevState[i].isOpen) return prevState
+        const next = [...prevState]
+        next[i] = { ...next[i], isOpen: false }
+        return next
+      }
       // Skip entries already closing so a rapid second close hits the modal
       // beneath one mid-transition.
       for (let i = prevState.length - 1; i >= 0; i--) {
@@ -86,15 +98,15 @@ export const ModalProvider = ({ children }) => {
     })
   }, [])
 
-  // Lets the open modal block Escape and overlay clicks while it is busy.
-  const setClosable = useCallback((closable) => {
+  // Lets a modal block Escape and overlay clicks on its own entry while it
+  // is busy. Does nothing once the entry is gone.
+  const setClosable = useCallback((id, closable) => {
     setModalStack((prev) => {
-      const topModal = getTopModal(prev)
-      if (!topModal || topModal.params.closable === closable) return prev
-      return [
-        ...prev.slice(0, -1),
-        { ...topModal, params: { ...topModal.params, closable } }
-      ]
+      const i = prev.findIndex((m) => m.id === id)
+      if (i === -1 || prev[i].params.closable === closable) return prev
+      const next = [...prev]
+      next[i] = { ...next[i], params: { ...next[i].params, closable } }
+      return next
     })
   }, [])
 
@@ -149,9 +161,11 @@ export const ModalProvider = ({ children }) => {
               type=${params.overlayType}
               isOpen=${isOpen}
             /> `}
-            ${params.modalType === 'sideDrawer' &&
-            html`<${SideDrawer} isOpen=${isOpen}> ${content} <//>`}
-            ${params.modalType === 'default' && isOpen && content}
+            <${ModalEntryContext.Provider} value=${id}>
+              ${params.modalType === 'sideDrawer' &&
+              html`<${SideDrawer} isOpen=${isOpen}> ${content} <//>`}
+              ${params.modalType === 'default' && isOpen && content}
+            <//>
           <//>
         `
       )}
@@ -163,8 +177,13 @@ export const ModalProvider = ({ children }) => {
  * @returns {{
  *   isOpen: boolean,
  *   setModal: (content: any, params?: any) => void,
- *   closeModal: () => void,
- *   setClosable: (closable: boolean) => void
+ *   closeModal: (id?: unknown) => void,
+ *   setClosable: (id: string | undefined, closable: boolean) => void
  * }}
  */
 export const useModal = () => useContext(ModalContext)
+
+/**
+ * @returns {string | undefined} id of the modal entry this renders in
+ */
+export const useModalEntryId = () => useContext(ModalEntryContext)

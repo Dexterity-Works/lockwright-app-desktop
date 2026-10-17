@@ -2,7 +2,12 @@ import React from 'react'
 
 import { render, screen, fireEvent, act } from '@testing-library/react'
 
-import { ModalProvider, STACK_CLEANUP_BUFFER, useModal } from './ModalContext'
+import {
+  ModalProvider,
+  STACK_CLEANUP_BUFFER,
+  useModal,
+  useModalEntryId
+} from './ModalContext'
 import { BASE_TRANSITION_DURATION } from '../constants/transitions'
 import '@testing-library/jest-dom'
 
@@ -151,10 +156,11 @@ describe('ModalProvider', () => {
   test('ignores Escape and overlay clicks while the open modal is busy', () => {
     const Busy = () => {
       const { setClosable } = useModal()
+      const id = useModalEntryId()
       return (
         <div>
-          <button onClick={() => setClosable(false)}>Start work</button>
-          <button onClick={() => setClosable(true)}>Finish work</button>
+          <button onClick={() => setClosable(id, false)}>Start work</button>
+          <button onClick={() => setClosable(id, true)}>Finish work</button>
         </div>
       )
     }
@@ -183,6 +189,80 @@ describe('ModalProvider', () => {
       jest.advanceTimersByTime(CLOSE_DURATION)
     })
     expect(screen.queryByText('Start work')).not.toBeInTheDocument()
+  })
+
+  describe('when a modal opens on top of a busy one', () => {
+    const Notice = () => <div>Access removed</div>
+    const Busy = () => {
+      const { setModal, closeModal, setClosable } = useModal()
+      const id = useModalEntryId()
+      return (
+        <div>
+          <button onClick={() => setClosable(id, false)}>Start work</button>
+          <button onClick={() => setModal(<Notice />)}>Open notice</button>
+          <button
+            onClick={() => {
+              setClosable(id, true)
+              closeModal(id)
+            }}
+          >
+            Finish work
+          </button>
+        </div>
+      )
+    }
+    const Opener = () => {
+      const { setModal } = useModal()
+      return <button onClick={() => setModal(<Busy />)}>Open Busy</button>
+    }
+    const settle = () =>
+      act(() => {
+        jest.advanceTimersByTime(CLOSE_DURATION)
+      })
+
+    beforeEach(() => {
+      render(
+        <ModalProvider>
+          <Opener />
+        </ModalProvider>
+      )
+      fireEvent.click(screen.getByText('Open Busy'))
+    })
+
+    test('closing by id closes only the busy modal', () => {
+      fireEvent.click(screen.getByText('Start work'))
+      fireEvent.click(screen.getByText('Open notice'))
+
+      fireEvent.click(screen.getByText('Finish work'))
+      settle()
+
+      expect(screen.queryByText('Start work')).not.toBeInTheDocument()
+      expect(screen.getByText('Access removed')).toBeInTheDocument()
+    })
+
+    test('the closable flag lands on the busy modal, not the top one', () => {
+      fireEvent.click(screen.getByText('Open notice'))
+      fireEvent.click(screen.getByText('Start work'))
+
+      fireEvent.keyDown(window, { key: 'Escape', code: 'Escape' })
+      settle()
+      expect(screen.queryByText('Access removed')).not.toBeInTheDocument()
+
+      fireEvent.keyDown(window, { key: 'Escape', code: 'Escape' })
+      settle()
+      expect(screen.getByText('Start work')).toBeInTheDocument()
+    })
+
+    test('closing a modal that is already gone does nothing', () => {
+      fireEvent.click(screen.getByText('Open notice'))
+      const finish = screen.getByText('Finish work')
+      fireEvent.click(finish)
+      settle()
+      fireEvent.click(finish)
+      settle()
+
+      expect(screen.getByText('Access removed')).toBeInTheDocument()
+    })
   })
 
   test('closes modal on overlay click', () => {

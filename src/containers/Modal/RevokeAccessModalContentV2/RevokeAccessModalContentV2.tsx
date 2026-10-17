@@ -4,7 +4,7 @@ import { Button, Dialog, Text, useTheme } from 'lockwright-lib-ui-react-native-c
 import { kickDevice, useVault } from 'lockwright-lib-vault'
 
 import { createStyles } from './RevokeAccessModalContentV2.styles'
-import { useModal } from '../../../context/ModalContext'
+import { useModal, useModalEntryId } from '../../../context/ModalContext'
 import { useToast } from '../../../context/ToastContext'
 import { useTranslation } from '../../../hooks/useTranslation'
 import { getDeviceDisplayName } from '../../../utils/getDeviceDisplayName'
@@ -28,7 +28,11 @@ export const RevokeAccessModalContentV2 = ({
   const { t } = useTranslation()
   const { theme } = useTheme()
   const styles = createStyles()
-  const { closeModal, setClosable } = useModal()
+  const { closeModal: closeModals, setClosable } = useModal()
+  // Act on this dialog's own entry: another modal may open on top while
+  // the revoke runs.
+  const entryId = useModalEntryId()
+  const closeModal = () => closeModals(entryId)
   const { setToast } = useToast()
   const { data: vaultData } = useVault()
 
@@ -57,13 +61,13 @@ export const RevokeAccessModalContentV2 = ({
   const onRevoke = async () => {
     if (isLoading) return
     setIsLoading(true)
-    setClosable(false)
+    setClosable(entryId, false)
     try {
       await revoke()
     } finally {
       if (mounted.current) {
         setIsLoading(false)
-        setClosable(true)
+        setClosable(entryId, true)
       }
     }
   }

@@ -15,7 +15,8 @@ jest.mock('lockwright-lib-vault', () => ({
 }))
 
 jest.mock('../../../context/ModalContext', () => ({
-  useModal: jest.fn()
+  useModal: jest.fn(),
+  useModalEntryId: () => 'revoke-entry'
 }))
 
 jest.mock('../../../context/ToastContext', () => ({
@@ -148,7 +149,7 @@ describe('RevokeAccessModalContentV2', () => {
     expect(document.activeElement).toBe(done)
     expect(closeModal).not.toHaveBeenCalled()
     fireEvent.click(done)
-    expect(closeModal).toHaveBeenCalledTimes(1)
+    expect(closeModal.mock.calls).toEqual([['revoke-entry']])
     expect(mockedKickDevice).toHaveBeenCalledTimes(1)
   }
   const UNREACHED =
@@ -256,7 +257,7 @@ describe('RevokeAccessModalContentV2', () => {
       epoch: { rotated: false, reason: 'current', uncovered: [] }
     })
     expect(messages).toEqual([SUCCESS])
-    expect(closeModal).toHaveBeenCalledTimes(1)
+    expect(closeModal.mock.calls).toEqual([['revoke-entry']])
     expect(screen.queryByRole('alert')).toBeNull()
   })
 
@@ -308,7 +309,7 @@ describe('RevokeAccessModalContentV2', () => {
   it('cannot be closed while the revoke runs', async () => {
     const { resolve } = pendingKick()
 
-    expect(setClosable).toHaveBeenLastCalledWith(false)
+    expect(setClosable).toHaveBeenLastCalledWith('revoke-entry', false)
     expect(screen.queryByTestId('dialog-close')).toBeNull()
 
     await act(async () => {
@@ -319,7 +320,7 @@ describe('RevokeAccessModalContentV2', () => {
       })
     })
 
-    expect(setClosable).toHaveBeenLastCalledWith(true)
+    expect(setClosable).toHaveBeenLastCalledWith('revoke-entry', true)
     expect(screen.getByTestId('dialog-close')).toBeTruthy()
   })
 
