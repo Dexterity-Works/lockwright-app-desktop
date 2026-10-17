@@ -42,6 +42,9 @@ export const ModalProvider = ({ children }) => {
   const scheduledIdsRef = useRef(new Set())
 
   const isOpen = !!modalStack.length
+  // Escape reads the latest stack, so a modal can block it while busy.
+  const modalStackRef = useRef(modalStack)
+  modalStackRef.current = modalStack
 
   const setModal = useCallback((content, params) => {
     setModalStack((prevState) => {
@@ -83,6 +86,18 @@ export const ModalProvider = ({ children }) => {
     })
   }, [])
 
+  // Lets the open modal block Escape and overlay clicks while it is busy.
+  const setClosable = useCallback((closable) => {
+    setModalStack((prev) => {
+      const topModal = getTopModal(prev)
+      if (!topModal || topModal.params.closable === closable) return prev
+      return [
+        ...prev.slice(0, -1),
+        { ...topModal, params: { ...topModal.params, closable } }
+      ]
+    })
+  }, [])
+
   // Drops closing entries after their fade. Runs as an effect because the
   // state closeModal flips isn't visible until the next render.
   useEffect(() => {
@@ -103,7 +118,7 @@ export const ModalProvider = ({ children }) => {
   useEffect(() => {
     const handleKeydown = (event) => {
       if (event.key === 'Escape' && isOpen) {
-        const topModal = getTopModal(modalStack)
+        const topModal = getTopModal(modalStackRef.current)
         if (topModal?.params?.closable !== false) {
           void closeModal()
         }
@@ -118,8 +133,8 @@ export const ModalProvider = ({ children }) => {
   }, [isOpen])
 
   const contextValue = useMemo(
-    () => ({ isOpen, setModal, closeModal }),
-    [isOpen, setModal, closeModal]
+    () => ({ isOpen, setModal, closeModal, setClosable }),
+    [isOpen, setModal, closeModal, setClosable]
   )
 
   return html`
@@ -148,7 +163,8 @@ export const ModalProvider = ({ children }) => {
  * @returns {{
  *   isOpen: boolean,
  *   setModal: (content: any, params?: any) => void,
- *   closeModal: () => void
+ *   closeModal: () => void,
+ *   setClosable: (closable: boolean) => void
  * }}
  */
 export const useModal = () => useContext(ModalContext)

@@ -46,8 +46,11 @@ jest.mock('lockwright-lib-ui-react-native-components', () => ({
       </button>
     )
   ),
-  Dialog: ({ children, footer }: any) => (
+  Dialog: ({ children, footer, onClose }: any) => (
     <div>
+      {onClose && (
+        <button type="button" data-testid="dialog-close" onClick={onClose} />
+      )}
       {children}
       {footer}
     </div>
@@ -59,6 +62,7 @@ const mockedKickDevice = jest.mocked(kickDevice)
 
 describe('RevokeAccessModalContentV2', () => {
   const closeModal = jest.fn()
+  const setClosable = jest.fn()
   const setToast = jest.fn<(toast: { message: string }) => void>()
   const t = (s: string, values?: Record<string, unknown>) =>
     s.replace(/\{(\w+)\}/g, (_, k) => String(values?.[k] ?? `{${k}}`))
@@ -78,7 +82,8 @@ describe('RevokeAccessModalContentV2', () => {
       }
     } as unknown as ReturnType<typeof useVault>)
     jest.mocked(useModal).mockReturnValue({
-      closeModal
+      closeModal,
+      setClosable
     } as unknown as ReturnType<typeof useModal>)
     jest.mocked(useToast).mockReturnValue({
       setToast
@@ -282,5 +287,76 @@ describe('RevokeAccessModalContentV2', () => {
     })
     expect(closeModal).not.toHaveBeenCalled()
     expect(messages).toEqual(["Couldn't revoke access. Please try again."])
+  })
+
+  const pendingKick = () => {
+    let resolve: (value: unknown) => void = () => {}
+    mockedKickDevice.mockReturnValue(
+      new Promise((r) => (resolve = r)) as never
+    )
+    const view = render(
+      <RevokeAccessModalContentV2
+        vaultId="v1"
+        targetDeviceId="d9"
+        deviceName="Lost Laptop"
+      />
+    )
+    fireEvent.click(screen.getByTestId('revoke-access-submit-v2'))
+    return { view, resolve: (value: unknown) => resolve(value) }
+  }
+
+  it('cannot be closed while the revoke runs', async () => {
+    const { resolve } = pendingKick()
+
+    expect(setClosable).toHaveBeenLastCalledWith(false)
+    expect(screen.queryByTestId('dialog-close')).toBeNull()
+
+    await act(async () => {
+      resolve({
+        results: outbox,
+        failures: [epochFailure('not-writable')],
+        epoch: { rotated: false, reason: 'not-writable', uncovered: [] }
+      })
+    })
+
+    expect(setClosable).toHaveBeenLastCalledWith(true)
+    expect(screen.getByTestId('dialog-close')).toBeTruthy()
+  })
+
+  it('toasts the warning and leaves other modals alone when the dialog is gone', async () => {
+    const { view, resolve } = pendingKick()
+    view.unmount()
+
+    await act(async () => {
+      resolve({
+        results: outbox,
+        failures: [epochFailure('not-writable')],
+        epoch: { rotated: false, reason: 'not-writable', uncovered: [] }
+      })
+    })
+
+    expect(closeModal).not.toHaveBeenCalled()
+    expect(setToast.mock.calls.map(([toast]) => toast.message)).toEqual([
+      SUCCESS,
+      "Couldn't rotate the vault key (not-writable). The revoked device can still read new items."
+    ])
+  })
+
+  it('does not close another modal when the dialog is gone after a rotation', async () => {
+    const { view, resolve } = pendingKick()
+    view.unmount()
+
+    await act(async () => {
+      resolve({
+        results: outbox,
+        failures: [],
+        epoch: { rotated: true, uncovered: [] }
+      })
+    })
+
+    expect(closeModal).not.toHaveBeenCalled()
+    expect(setToast.mock.calls.map(([toast]) => toast.message)).toEqual([
+      SUCCESS
+    ])
   })
 })

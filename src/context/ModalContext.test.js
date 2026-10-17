@@ -148,6 +148,43 @@ describe('ModalProvider', () => {
     expect(screen.queryByTestId('modal-content')).not.toBeInTheDocument()
   })
 
+  test('ignores Escape and overlay clicks while the open modal is busy', () => {
+    const Busy = () => {
+      const { setClosable } = useModal()
+      return (
+        <div>
+          <button onClick={() => setClosable(false)}>Start work</button>
+          <button onClick={() => setClosable(true)}>Finish work</button>
+        </div>
+      )
+    }
+    const Opener = () => {
+      const { setModal } = useModal()
+      return <button onClick={() => setModal(<Busy />)}>Open Busy</button>
+    }
+    render(
+      <ModalProvider>
+        <Opener />
+      </ModalProvider>
+    )
+
+    fireEvent.click(screen.getByText('Open Busy'))
+    fireEvent.click(screen.getByText('Start work'))
+    fireEvent.keyDown(window, { key: 'Escape', code: 'Escape' })
+    fireEvent.click(screen.getByTestId('overlay'))
+    act(() => {
+      jest.advanceTimersByTime(CLOSE_DURATION)
+    })
+    expect(screen.getByText('Start work')).toBeInTheDocument()
+
+    fireEvent.click(screen.getByText('Finish work'))
+    fireEvent.keyDown(window, { key: 'Escape', code: 'Escape' })
+    act(() => {
+      jest.advanceTimersByTime(CLOSE_DURATION)
+    })
+    expect(screen.queryByText('Start work')).not.toBeInTheDocument()
+  })
+
   test('closes modal on overlay click', () => {
     render(
       <ModalProvider>
