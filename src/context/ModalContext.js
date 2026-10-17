@@ -24,7 +24,13 @@ const ModalContext = createContext()
 // lock its own entry rather than whichever modal is on top.
 const ModalEntryContext = createContext(undefined)
 
-const getTopModal = (modalStack) => modalStack[modalStack.length - 1]
+// The topmost entry that is not already fading out.
+const getTopOpenIndex = (modalStack) => {
+  for (let i = modalStack.length - 1; i >= 0; i--) {
+    if (modalStack[i].isOpen) return i
+  }
+  return -1
+}
 
 const DEFAULT_MODAL_PARAMS = {
   hasOverlay: true,
@@ -86,15 +92,13 @@ export const ModalProvider = ({ children }) => {
         return next
       }
       // Skip entries already closing so a rapid second close hits the modal
-      // beneath one mid-transition.
-      for (let i = prevState.length - 1; i >= 0; i--) {
-        if (prevState[i].isOpen) {
-          const next = [...prevState]
-          next[i] = { ...next[i], isOpen: false }
-          return next
-        }
-      }
-      return prevState
+      // beneath one mid-transition. A busy entry stays open: only
+      // closeModal(id) from the entry itself closes it.
+      const i = getTopOpenIndex(prevState)
+      if (i === -1 || prevState[i].params.closable === false) return prevState
+      const next = [...prevState]
+      next[i] = { ...next[i], isOpen: false }
+      return next
     })
   }, [])
 
@@ -130,8 +134,9 @@ export const ModalProvider = ({ children }) => {
   useEffect(() => {
     const handleKeydown = (event) => {
       if (event.key === 'Escape' && isOpen) {
-        const topModal = getTopModal(modalStackRef.current)
-        if (topModal?.params?.closable !== false) {
+        const stack = modalStackRef.current
+        const topOpen = stack[getTopOpenIndex(stack)]
+        if (topOpen && topOpen.params?.closable !== false) {
           void closeModal()
         }
       }
