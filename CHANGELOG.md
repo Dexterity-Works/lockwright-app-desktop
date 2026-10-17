@@ -12,6 +12,7 @@ Starts at 0.0.17, after the Lockwright package rename. Earlier history is git.
 ### Changed
 
 - The unique-ID, password check, password generator, QR, and validator utils now come from one package, `lockwright-lib-utils`.
+- The revoke dialog says revoking rotates the vault key, so the device cannot read items added or changed afterwards. Items it already synced stay on it. A toast names devices that cannot read new items yet, or says the key did not rotate.
 
 ## [0.0.30] - 2026-10-03
 

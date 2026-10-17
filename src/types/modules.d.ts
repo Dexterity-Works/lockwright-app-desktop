@@ -67,6 +67,14 @@ declare module 'lockwright-lib-vault' {
   }): Promise<{
     results: Array<{ targetDeviceId: string; channel: 'outbox' }>
     failures: Array<{ targetDeviceId: string; error: Error }>
+    epoch: {
+      rotated: boolean
+      id?: string
+      seq?: number
+      members?: string[]
+      reason?: string
+      uncovered: string[]
+    } | null
   }>
   export const VaultProvider: any
   export function useVaults(options?: {

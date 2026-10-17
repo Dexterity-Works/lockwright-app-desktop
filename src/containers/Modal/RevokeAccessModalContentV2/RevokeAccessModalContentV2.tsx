@@ -1,7 +1,7 @@
 import React, { useState } from 'react'
 
 import { Button, Dialog, Text, useTheme } from 'lockwright-lib-ui-react-native-components'
-import { kickDevice } from 'lockwright-lib-vault'
+import { kickDevice, useVault } from 'lockwright-lib-vault'
 
 import { createStyles } from './RevokeAccessModalContentV2.styles'
 import { useModal } from '../../../context/ModalContext'
@@ -16,6 +16,8 @@ export type RevokeAccessModalContentV2Props = {
   onClose?: () => void
 }
 
+type KickEpoch = Awaited<ReturnType<typeof kickDevice>>['epoch']
+
 export const RevokeAccessModalContentV2 = ({
   vaultId,
   targetDeviceId,
@@ -27,6 +29,7 @@ export const RevokeAccessModalContentV2 = ({
   const styles = createStyles()
   const { closeModal } = useModal()
   const { setToast } = useToast()
+  const { data: vaultData } = useVault()
 
   const handleClose = onClose ?? closeModal
 
@@ -36,8 +39,9 @@ export const RevokeAccessModalContentV2 = ({
     if (isLoading) return
     setIsLoading(true)
     let failures: unknown[] = []
+    let epoch: KickEpoch = null
     try {
-      ;({ failures } = await kickDevice({ vaultId, targetDeviceId }))
+      ;({ failures, epoch } = await kickDevice({ vaultId, targetDeviceId }))
     } catch (error) {
       logger.error('RevokeAccessModalContentV2', 'kickDevice failed:', error)
       setToast({
@@ -48,6 +52,19 @@ export const RevokeAccessModalContentV2 = ({
     }
 
     closeModal()
+    if (!epoch?.rotated) {
+      setToast({
+        message: epoch?.reason
+          ? t(
+              "Couldn't rotate the vault key ({reason}). The revoked device can still read new items.",
+              { reason: epoch.reason }
+            )
+          : t(
+              "Couldn't rotate the vault key. The revoked device can still read new items."
+            )
+      })
+      return
+    }
     setToast({
       message: failures?.length
         ? t(
@@ -55,6 +72,22 @@ export const RevokeAccessModalContentV2 = ({
           )
         : t('Device can no longer edit this vault')
     })
+    if (epoch.uncovered?.length) {
+      const devices: Array<{ id?: string; name?: string }> = Array.isArray(
+        vaultData?.devices
+      )
+        ? vaultData.devices
+        : []
+      const deviceNames = epoch.uncovered
+        .map((id) => devices.find((device) => device.id === id)?.name ?? id)
+        .join(', ')
+      setToast({
+        message: t(
+          "{deviceNames} can't read new items until they open this vault once on a current Lockwright version.",
+          { deviceNames }
+        )
+      })
+    }
   }
 
   return (
@@ -96,7 +129,7 @@ export const RevokeAccessModalContentV2 = ({
             color={theme.colors.colorTextSecondary}
           >
             {t(
-              'Revoking stops this device from making changes. It can still read what has already synced, and anything synced later, until you move your items to a new vault.'
+              'Revoking removes this device from the vault and rotates the vault key. It can no longer read items added or changed from now on.'
             )}
           </Text>
           <Text
@@ -111,14 +144,14 @@ export const RevokeAccessModalContentV2 = ({
           <li style={styles.bulletItem}>
             <Text as="span" variant="caption">
               {t(
-                'For Your Security: We recommend moving your items to a new vault and updating your passwords. This is especially important if the device was lost or stolen, as it ensures your data remains protected even if a local copy exists on the revoked device.'
+                'Items already on the device: anything it synced before now stays there. Revoking cannot delete it. Change passwords the device could see, especially if it was lost or stolen.'
               )}
             </Text>
           </li>
           <li style={styles.bulletItem}>
             <Text as="span" variant="caption">
               {t(
-                'Offline Data: Revoking access cannot remotely delete data that is already on the device or was exported.'
+                'Older versions: devices still on an older Lockwright version must update before they can read new items.'
               )}
             </Text>
           </li>
