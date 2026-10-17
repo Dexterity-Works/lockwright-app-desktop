@@ -195,6 +195,20 @@ describe('RevokeAccessModalContentV2', () => {
     ])
   })
 
+  it('warns without a reason when the rotation result gives none', async () => {
+    const messages = await revoke({
+      results: outbox,
+      failures: [epochFailure('unknown')],
+      epoch: { rotated: false, uncovered: [] }
+    })
+    expect(messages).toEqual([
+      SUCCESS,
+      "Couldn't rotate the vault key. The revoked device can still read new items."
+    ])
+    expect(messages.join(' ')).not.toContain('undefined')
+    expect(messages.join(' ')).not.toContain('(')
+  })
+
   it('says another device will rotate when the reason is pending', async () => {
     const messages = await revoke({
       results: outbox,
@@ -203,7 +217,8 @@ describe('RevokeAccessModalContentV2', () => {
     })
     expect(messages).toEqual([
       SUCCESS,
-      'Another device will rotate the vault key when it next syncs.'
+      'Another device will rotate the vault key when it next syncs.',
+      uncoveredToast('Old Phone')
     ])
   })
 

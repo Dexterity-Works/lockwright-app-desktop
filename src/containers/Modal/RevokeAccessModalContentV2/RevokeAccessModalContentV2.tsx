@@ -86,10 +86,8 @@ export const RevokeAccessModalContentV2 = ({
       setToast({
         message: t('Another device will rotate the vault key when it next syncs.')
       })
-      return
-    }
-    // 'current': another device already rotated the key past this one.
-    if (!epoch.rotated && epoch.reason !== 'current') {
+    } else if (!epoch.rotated && epoch.reason !== 'current') {
+      // 'current': another device already rotated the key past this one.
       setToast({
         message: epoch.reason
           ? t(
