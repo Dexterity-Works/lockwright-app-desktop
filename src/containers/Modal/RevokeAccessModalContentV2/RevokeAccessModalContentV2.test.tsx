@@ -159,6 +159,27 @@ describe('RevokeAccessModalContentV2', () => {
     ])
   })
 
+  it('shows the success toast when another device already rotated the key', async () => {
+    const messages = await revoke({
+      results: [{ targetDeviceId: 'd9', channel: 'outbox' }],
+      failures: [],
+      epoch: { rotated: false, reason: 'current', uncovered: [] }
+    })
+    expect(messages).toEqual(['Device can no longer edit this vault'])
+  })
+
+  it('still names uncovered devices when the key was already current', async () => {
+    const messages = await revoke({
+      results: [{ targetDeviceId: 'd9', channel: 'outbox' }],
+      failures: [],
+      epoch: { rotated: false, reason: 'current', uncovered: ['d2'] }
+    })
+    expect(messages).toEqual([
+      'Device can no longer edit this vault',
+      "Old Phone can't read new items until they open this vault once on a current Lockwright version."
+    ])
+  })
+
   it('warns when kickDevice returns no rotation result', async () => {
     const messages = await revoke({
       results: [{ targetDeviceId: 'd9', channel: 'outbox' }],

@@ -52,7 +52,8 @@ export const RevokeAccessModalContentV2 = ({
     }
 
     closeModal()
-    if (!epoch?.rotated) {
+    // 'current': another device already rotated the key past this one.
+    if (!epoch || (!epoch.rotated && epoch.reason !== 'current')) {
       setToast({
         message: epoch?.reason
           ? t(
