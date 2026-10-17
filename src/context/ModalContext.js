@@ -51,9 +51,6 @@ export const ModalProvider = ({ children }) => {
   const scheduledIdsRef = useRef(new Set())
 
   const isOpen = !!modalStack.length
-  // Escape reads the latest stack, so a modal can block it while busy.
-  const modalStackRef = useRef(modalStack)
-  modalStackRef.current = modalStack
 
   const setModal = useCallback((content, params) => {
     setModalStack((prevState) => {
@@ -138,11 +135,8 @@ export const ModalProvider = ({ children }) => {
   useEffect(() => {
     const handleKeydown = (event) => {
       if (event.key === 'Escape' && isOpen) {
-        const stack = modalStackRef.current
-        const topOpen = stack[getTopOpenIndex(stack)]
-        if (topOpen && topOpen.params?.closable !== false) {
-          void closeModal()
-        }
+        // closeModal() itself leaves a busy modal open.
+        void closeModal()
       }
     }
 
