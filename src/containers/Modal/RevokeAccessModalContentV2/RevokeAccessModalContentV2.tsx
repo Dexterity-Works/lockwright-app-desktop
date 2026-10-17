@@ -7,6 +7,7 @@ import { createStyles } from './RevokeAccessModalContentV2.styles'
 import { useModal } from '../../../context/ModalContext'
 import { useToast } from '../../../context/ToastContext'
 import { useTranslation } from '../../../hooks/useTranslation'
+import { getDeviceDisplayName } from '../../../utils/getDeviceDisplayName'
 import { logger } from '../../../utils/logger'
 
 export type RevokeAccessModalContentV2Props = {
@@ -16,7 +17,7 @@ export type RevokeAccessModalContentV2Props = {
   onClose?: () => void
 }
 
-type KickEpoch = Awaited<ReturnType<typeof kickDevice>>['epoch']
+type KickResult = Awaited<ReturnType<typeof kickDevice>>
 
 export const RevokeAccessModalContentV2 = ({
   vaultId,
@@ -38,10 +39,9 @@ export const RevokeAccessModalContentV2 = ({
   const onRevoke = async () => {
     if (isLoading) return
     setIsLoading(true)
-    let failures: unknown[] = []
-    let epoch: KickEpoch = null
+    let result: KickResult
     try {
-      ;({ failures, epoch } = await kickDevice({ vaultId, targetDeviceId }))
+      result = await kickDevice({ vaultId, targetDeviceId })
     } catch (error) {
       logger.error('RevokeAccessModalContentV2', 'kickDevice failed:', error)
       setToast({
@@ -51,11 +51,47 @@ export const RevokeAccessModalContentV2 = ({
       return
     }
 
-    closeModal()
-    // 'current': another device already rotated the key past this one.
-    if (!epoch || (!epoch.rotated && epoch.reason !== 'current')) {
+    const failures = result?.failures ?? []
+    const epoch = result?.epoch ?? null
+    const rotationFailed = failures.some((failure) => failure?.kind === 'epoch')
+
+    // No rotation result and no rotation failure: kickDevice stopped before
+    // the rotation step, so the device is still in the roster.
+    if (!epoch && !rotationFailed) {
       setToast({
-        message: epoch?.reason
+        message: t("Couldn't revoke access. Please try again.")
+      })
+      setIsLoading(false)
+      return
+    }
+
+    closeModal()
+    setToast({
+      message: failures.some((failure) => !failure?.kind)
+        ? t(
+            "Couldn't reach the device. It will stop editing next time it comes online."
+          )
+        : t('Device can no longer edit this vault')
+    })
+
+    if (!epoch) {
+      setToast({
+        message: t(
+          "Couldn't rotate the vault key. The revoked device can still read new items."
+        )
+      })
+      return
+    }
+    if (epoch.reason === 'pending') {
+      setToast({
+        message: t('Another device will rotate the vault key when it next syncs.')
+      })
+      return
+    }
+    // 'current': another device already rotated the key past this one.
+    if (!epoch.rotated && epoch.reason !== 'current') {
+      setToast({
+        message: epoch.reason
           ? t(
               "Couldn't rotate the vault key ({reason}). The revoked device can still read new items.",
               { reason: epoch.reason }
@@ -66,22 +102,22 @@ export const RevokeAccessModalContentV2 = ({
       })
       return
     }
-    setToast({
-      message: failures?.length
-        ? t(
-            "Couldn't reach the device. It will stop editing next time it comes online."
-          )
-        : t('Device can no longer edit this vault')
-    })
     if (epoch.uncovered?.length) {
       const devices: Array<{ id?: string; name?: string }> = Array.isArray(
         vaultData?.devices
       )
         ? vaultData.devices
         : []
-      const deviceNames = epoch.uncovered
-        .map((id) => devices.find((device) => device.id === id)?.name ?? id)
-        .join(', ')
+      const deviceNames = [
+        ...new Set(
+          epoch.uncovered.map((id) =>
+            getDeviceDisplayName(
+              devices.find((device) => device.id === id)?.name,
+              t
+            )
+          )
+        )
+      ].join(', ')
       setToast({
         message: t(
           "{deviceNames} can't read new items until they open this vault once on a current Lockwright version.",

@@ -63,7 +63,9 @@ describe('RevokeAccessModalContentV2', () => {
         devices: [
           { id: 'd1', name: 'Laptop' },
           { id: 'd2', name: 'Old Phone' },
-          { id: 'd3' }
+          { id: 'd3' },
+          { id: 'd4', name: 'Old Phone' },
+          { id: 'd5', name: 'ios-17' }
         ]
       }
     } as unknown as ReturnType<typeof useVault>)
@@ -120,74 +122,128 @@ describe('RevokeAccessModalContentV2', () => {
     expect(body).not.toContain('new vault')
   })
 
+  const SUCCESS = 'Device can no longer edit this vault'
+  const UNREACHED =
+    "Couldn't reach the device. It will stop editing next time it comes online."
+  const outbox = [{ targetDeviceId: 'd9', channel: 'outbox' }]
+  const epochFailure = (reason: string) => ({
+    targetDeviceId: 'd9',
+    kind: 'epoch',
+    error: new Error(`epoch rotation failed: ${reason}`)
+  })
+  const uncoveredToast = (names: string) =>
+    `${names} can't read new items until they open this vault once on a current Lockwright version.`
+
   it('shows only the success toast when the key rotated to every device', async () => {
     const messages = await revoke({
-      results: [{ targetDeviceId: 'd9', channel: 'outbox' }],
+      results: outbox,
       failures: [],
       epoch: { rotated: true, id: 'e1', seq: 2, members: ['d1'], uncovered: [] }
     })
     expect(closeModal).toHaveBeenCalled()
-    expect(messages).toEqual(['Device can no longer edit this vault'])
+    expect(messages).toEqual([SUCCESS])
   })
 
   it('names the uncovered devices after a rotation', async () => {
     const messages = await revoke({
-      results: [{ targetDeviceId: 'd9', channel: 'outbox' }],
+      results: outbox,
       failures: [],
       epoch: {
         rotated: true,
         id: 'e1',
         seq: 2,
         members: ['d1'],
-        uncovered: ['d2', 'd3']
+        uncovered: ['d2', 'd3', 'd5']
       }
     })
     expect(messages).toEqual([
-      'Device can no longer edit this vault',
-      "Old Phone, d3 can't read new items until they open this vault once on a current Lockwright version."
+      SUCCESS,
+      uncoveredToast('Old Phone, Unknown Device, iPhone')
     ])
   })
 
-  it('warns with the reason when the key did not rotate', async () => {
+  it('names each uncovered device name once', async () => {
     const messages = await revoke({
-      results: [{ targetDeviceId: 'd9', channel: 'outbox' }],
-      failures: [{ targetDeviceId: 'd9', error: new Error('not-writable') }],
+      results: outbox,
+      failures: [],
+      epoch: { rotated: true, uncovered: ['d2', 'd4', 'd3', 'd-gone'] }
+    })
+    expect(messages).toEqual([
+      SUCCESS,
+      uncoveredToast('Old Phone, Unknown Device')
+    ])
+  })
+
+  it('shows the reach failure and the uncovered warning after a rotation', async () => {
+    const messages = await revoke({
+      results: [],
+      failures: [{ targetDeviceId: 'd9', error: new Error('offline') }],
+      epoch: { rotated: true, uncovered: ['d2'] }
+    })
+    expect(messages).toEqual([UNREACHED, uncoveredToast('Old Phone')])
+  })
+
+  it('shows the revoke result, then warns with the reason when the key did not rotate', async () => {
+    const messages = await revoke({
+      results: outbox,
+      failures: [epochFailure('not-writable')],
       epoch: { rotated: false, reason: 'not-writable', uncovered: [] }
     })
     expect(messages).toEqual([
+      SUCCESS,
       "Couldn't rotate the vault key (not-writable). The revoked device can still read new items."
+    ])
+  })
+
+  it('says another device will rotate when the reason is pending', async () => {
+    const messages = await revoke({
+      results: outbox,
+      failures: [],
+      epoch: { rotated: false, reason: 'pending', uncovered: ['d2'] }
+    })
+    expect(messages).toEqual([
+      SUCCESS,
+      'Another device will rotate the vault key when it next syncs.'
     ])
   })
 
   it('shows the success toast when another device already rotated the key', async () => {
     const messages = await revoke({
-      results: [{ targetDeviceId: 'd9', channel: 'outbox' }],
+      results: outbox,
       failures: [],
       epoch: { rotated: false, reason: 'current', uncovered: [] }
     })
-    expect(messages).toEqual(['Device can no longer edit this vault'])
+    expect(messages).toEqual([SUCCESS])
   })
 
   it('still names uncovered devices when the key was already current', async () => {
     const messages = await revoke({
-      results: [{ targetDeviceId: 'd9', channel: 'outbox' }],
+      results: outbox,
       failures: [],
       epoch: { rotated: false, reason: 'current', uncovered: ['d2'] }
     })
-    expect(messages).toEqual([
-      'Device can no longer edit this vault',
-      "Old Phone can't read new items until they open this vault once on a current Lockwright version."
-    ])
+    expect(messages).toEqual([SUCCESS, uncoveredToast('Old Phone')])
   })
 
-  it('warns when kickDevice returns no rotation result', async () => {
+  it('warns when the rotation threw and left no result', async () => {
     const messages = await revoke({
-      results: [{ targetDeviceId: 'd9', channel: 'outbox' }],
-      failures: [],
+      results: outbox,
+      failures: [epochFailure('worklet gone')],
       epoch: null
     })
     expect(messages).toEqual([
+      SUCCESS,
       "Couldn't rotate the vault key. The revoked device can still read new items."
     ])
+  })
+
+  it('says the revoke did not complete when the roster removal failed', async () => {
+    const messages = await revoke({
+      results: outbox,
+      failures: [{ targetDeviceId: 'd9', error: new Error('removal failed') }],
+      epoch: null
+    })
+    expect(closeModal).not.toHaveBeenCalled()
+    expect(messages).toEqual(["Couldn't revoke access. Please try again."])
   })
 })

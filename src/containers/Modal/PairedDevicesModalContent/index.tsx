@@ -24,22 +24,9 @@ import { getMyDeviceId, useVault } from 'lockwright-lib-vault'
 import { createStyles, DEVICE_ACTIONS_MENU_WIDTH } from './styles'
 import { useModal } from '../../../context/ModalContext'
 import { useTranslation } from '../../../hooks/useTranslation'
+import { getDeviceDisplayName } from '../../../utils/getDeviceDisplayName'
 import { logger } from '../../../utils/logger'
 import { RevokeAccessModalContentV2 } from '../RevokeAccessModalContentV2'
-
-const getDeviceDisplayName = (
-  deviceName: string | undefined,
-  t: (value: string) => string
-): string => {
-  if (!deviceName) return t('Unknown Device')
-
-  const lowerName = deviceName.toLowerCase()
-
-  if (lowerName.startsWith('ios')) return t('iPhone')
-  if (lowerName.startsWith('android')) return t('Android')
-
-  return deviceName
-}
 
 const getDeviceIcon = (deviceName?: string) => {
   if (!deviceName) return Devices

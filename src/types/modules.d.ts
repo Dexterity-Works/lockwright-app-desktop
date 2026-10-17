@@ -66,7 +66,7 @@ declare module 'lockwright-lib-vault' {
     targetDeviceId: string
   }): Promise<{
     results: Array<{ targetDeviceId: string; channel: 'outbox' }>
-    failures: Array<{ targetDeviceId: string; error: Error }>
+    failures: Array<{ targetDeviceId: string; error: Error; kind?: 'epoch' }>
     epoch: {
       rotated: boolean
       id?: string
