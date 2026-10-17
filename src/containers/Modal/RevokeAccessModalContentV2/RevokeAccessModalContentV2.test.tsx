@@ -33,10 +33,18 @@ jest.mock('../../../utils/logger', () => ({
 jest.mock('lockwright-lib-ui-react-native-components', () => ({
   rawTokens: new Proxy({}, { get: () => 0 }),
   useTheme: () => ({ theme: { colors: {} } }),
-  Button: ({ children, onClick, disabled, ...rest }: any) => (
-    <button type="button" onClick={onClick} disabled={disabled} {...rest}>
-      {children}
-    </button>
+  Button: jest.requireActual<typeof React>('react').forwardRef(
+    ({ children, onClick, disabled, ...rest }: any, ref: any) => (
+      <button
+        ref={ref}
+        type="button"
+        onClick={onClick}
+        disabled={disabled}
+        {...rest}
+      >
+        {children}
+      </button>
+    )
   ),
   Dialog: ({ children, footer }: any) => (
     <div>
@@ -123,6 +131,21 @@ describe('RevokeAccessModalContentV2', () => {
   })
 
   const SUCCESS = 'Device can no longer edit this vault'
+  const ROTATION_FAILED =
+    "Couldn't rotate the vault key. The revoked device can still read new items."
+  // The device is out but the key did not rotate: the dialog stays open with
+  // the warning inline and offers only Done.
+  const expectInlineWarning = (text: string) => {
+    expect(screen.getByRole('alert').textContent).toContain(text)
+    expect(screen.queryByTestId('revoke-access-submit-v2')).toBeNull()
+    expect(screen.queryByTestId('revoke-access-cancel-v2')).toBeNull()
+    const done = screen.getByTestId('revoke-access-done-v2')
+    expect(document.activeElement).toBe(done)
+    expect(closeModal).not.toHaveBeenCalled()
+    fireEvent.click(done)
+    expect(closeModal).toHaveBeenCalledTimes(1)
+    expect(mockedKickDevice).toHaveBeenCalledTimes(1)
+  }
   const UNREACHED =
     "Couldn't reach the device. It will stop editing next time it comes online."
   const outbox = [{ targetDeviceId: 'd9', channel: 'outbox' }]
@@ -189,10 +212,10 @@ describe('RevokeAccessModalContentV2', () => {
       failures: [epochFailure('not-writable')],
       epoch: { rotated: false, reason: 'not-writable', uncovered: [] }
     })
-    expect(messages).toEqual([
-      SUCCESS,
+    expect(messages).toEqual([SUCCESS])
+    expectInlineWarning(
       "Couldn't rotate the vault key (not-writable). The revoked device can still read new items."
-    ])
+    )
   })
 
   it('warns without a reason when the rotation result gives none', async () => {
@@ -201,12 +224,11 @@ describe('RevokeAccessModalContentV2', () => {
       failures: [epochFailure('unknown')],
       epoch: { rotated: false, uncovered: [] }
     })
-    expect(messages).toEqual([
-      SUCCESS,
-      "Couldn't rotate the vault key. The revoked device can still read new items."
-    ])
-    expect(messages.join(' ')).not.toContain('undefined')
-    expect(messages.join(' ')).not.toContain('(')
+    expect(messages).toEqual([SUCCESS])
+    const warning = screen.getByRole('alert').textContent
+    expect(warning).not.toContain('undefined')
+    expect(warning).not.toContain('(')
+    expectInlineWarning(ROTATION_FAILED)
   })
 
   it('says another device will rotate when the reason is pending', async () => {
@@ -229,6 +251,8 @@ describe('RevokeAccessModalContentV2', () => {
       epoch: { rotated: false, reason: 'current', uncovered: [] }
     })
     expect(messages).toEqual([SUCCESS])
+    expect(closeModal).toHaveBeenCalledTimes(1)
+    expect(screen.queryByRole('alert')).toBeNull()
   })
 
   it('still names uncovered devices when the key was already current', async () => {
@@ -246,10 +270,8 @@ describe('RevokeAccessModalContentV2', () => {
       failures: [epochFailure('worklet gone')],
       epoch: null
     })
-    expect(messages).toEqual([
-      SUCCESS,
-      "Couldn't rotate the vault key. The revoked device can still read new items."
-    ])
+    expect(messages).toEqual([SUCCESS])
+    expectInlineWarning(ROTATION_FAILED)
   })
 
   it('says the revoke did not complete when the roster removal failed', async () => {

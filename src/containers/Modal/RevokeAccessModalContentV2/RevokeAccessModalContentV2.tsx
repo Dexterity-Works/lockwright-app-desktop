@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 
 import { Button, Dialog, Text, useTheme } from 'lockwright-lib-ui-react-native-components'
 import { kickDevice, useVault } from 'lockwright-lib-vault'
@@ -35,6 +35,14 @@ export const RevokeAccessModalContentV2 = ({
   const handleClose = onClose ?? closeModal
 
   const [isLoading, setIsLoading] = useState(false)
+  // Set once the device is removed but the key did not rotate. The dialog
+  // stays open with this warning and only offers Done.
+  const [rotationWarning, setRotationWarning] = useState<string | null>(null)
+  const doneRef = useRef<HTMLButtonElement>(null)
+
+  useEffect(() => {
+    if (rotationWarning) doneRef.current?.focus()
+  }, [rotationWarning])
 
   const onRevoke = async () => {
     if (isLoading) return
@@ -65,7 +73,6 @@ export const RevokeAccessModalContentV2 = ({
       return
     }
 
-    closeModal()
     setToast({
       message: failures.some((failure) => !failure?.kind)
         ? t(
@@ -74,22 +81,16 @@ export const RevokeAccessModalContentV2 = ({
         : t('Device can no longer edit this vault')
     })
 
-    if (!epoch) {
-      setToast({
-        message: t(
-          "Couldn't rotate the vault key. The revoked device can still read new items."
-        )
-      })
-      return
-    }
-    if (epoch.reason === 'pending') {
-      setToast({
-        message: t('Another device will rotate the vault key when it next syncs.')
-      })
-    } else if (!epoch.rotated && epoch.reason !== 'current') {
-      // 'current': another device already rotated the key past this one.
-      setToast({
-        message: epoch.reason
+    // 'current': the latest key already leaves this device out.
+    // 'pending': another member rotates when it syncs.
+    if (
+      !epoch ||
+      (!epoch.rotated &&
+        epoch.reason !== 'current' &&
+        epoch.reason !== 'pending')
+    ) {
+      setRotationWarning(
+        epoch?.reason
           ? t(
               "Couldn't rotate the vault key ({reason}). The revoked device can still read new items.",
               { reason: epoch.reason }
@@ -97,8 +98,17 @@ export const RevokeAccessModalContentV2 = ({
           : t(
               "Couldn't rotate the vault key. The revoked device can still read new items."
             )
-      })
+      )
+      setIsLoading(false)
       return
+    }
+
+    closeModal()
+
+    if (epoch.reason === 'pending') {
+      setToast({
+        message: t('Another device will rotate the vault key when it next syncs.')
+      })
     }
     if (epoch.uncovered?.length) {
       const devices: Array<{ id?: string; name?: string }> = Array.isArray(
@@ -132,6 +142,18 @@ export const RevokeAccessModalContentV2 = ({
       testID="revoke-access-dialog-v2"
       closeButtonTestID="revoke-access-close-v2"
       footer={
+        rotationWarning ? (
+          <Button
+            ref={doneRef}
+            variant="primary"
+            size="small"
+            type="button"
+            onClick={handleClose}
+            data-testid="revoke-access-done-v2"
+          >
+            {t('Done')}
+          </Button>
+        ) : (
         <>
           <Button
             variant="secondary"
@@ -154,9 +176,17 @@ export const RevokeAccessModalContentV2 = ({
             {t('Revoke Access')}
           </Button>
         </>
+        )
       }
     >
       <div style={styles.body} data-testid="revoke-access-body-v2">
+        {rotationWarning && (
+          <div role="alert" data-testid="revoke-access-warning-v2">
+            <Text as="p" variant="caption">
+              {rotationWarning}
+            </Text>
+          </div>
+        )}
         <div style={styles.intro}>
           <Text
             as="p"
