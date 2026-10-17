@@ -153,6 +153,12 @@ class NativeMessagingHost {
         }
         // Inbound-only; expose a no-op so any accidental caller doesn't crash.
         return () => {}
+      },
+      onEpochStatus: (method) => {
+        method._onrequest = (data) => {
+          forward('epoch-status', data)
+        }
+        return () => {}
       }
     }
   }

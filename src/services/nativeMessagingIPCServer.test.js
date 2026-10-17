@@ -12,6 +12,7 @@ jest.mock('lockwright-lib-constants', () => ({
 
 import { SecureRequestHandler } from './handlers/SecureRequestHandler'
 import { SecurityHandlers } from './handlers/SecurityHandlers'
+import { VaultHandlers } from './handlers/VaultHandlers'
 import { getIpcPath } from './ipc/SocketManager'
 import { NativeMessagingIPCServer } from './nativeMessagingIPCServer.js'
 import { SecurityErrorCodes } from '../constants/securityErrors.js'
@@ -169,6 +170,12 @@ jest.mock('./handlers/VaultHandlers', () => ({
     this.activeVaultGetWriterKey = jest
       .fn()
       .mockResolvedValue('mock-writer-key-hex')
+    this.activeVaultEnsureEpoch = jest
+      .fn()
+      .mockResolvedValue({ rotated: true, uncovered: [] })
+    this.activeVaultGetEpochStatus = jest
+      .fn()
+      .mockResolvedValue({ epoch: 'e1', revoked: false })
     this.pairActiveVault = jest.fn().mockResolvedValue({ success: true })
     this.initListener = jest.fn().mockResolvedValue({ success: true })
     this.closeAllInstances = jest.fn().mockResolvedValue({ success: true })
@@ -489,6 +496,50 @@ describe('nativeMessagingIPCServer', () => {
         expect(deps.emit).toHaveBeenCalledWith('ipc-activity')
       })
 
+      it('relays the epoch commands through the secure channel', async () => {
+        await serverInstance.start()
+        const vaultHandlers = VaultHandlers.mock.instances.at(-1)
+        const signedIn = {
+          ...mockPearpassClient,
+          vaultsGetStatus: async () => ({ status: true })
+        }
+        const secure = (method, params) =>
+          serverInstance.secureMethodRegistry.execute(method, params, {
+            client: signedIn
+          })
+
+        expect(await secure('activeVaultEnsureEpoch', { start: true })).toEqual(
+          { rotated: true, uncovered: [] }
+        )
+        expect(vaultHandlers.activeVaultEnsureEpoch).toHaveBeenCalledWith({
+          start: true
+        })
+        expect(await secure('activeVaultGetEpochStatus')).toEqual({
+          epoch: 'e1',
+          revoked: false
+        })
+        expect(vaultHandlers.activeVaultGetEpochStatus).toHaveBeenCalled()
+      })
+
+      it('should forward epoch-status to every connected IPC client', async () => {
+        await serverInstance.start()
+
+        const clientA = { id: 'A', onEpochStatus: jest.fn() }
+        const clientB = { id: 'B', onEpochStatus: jest.fn() }
+        serverInstance.server.clients = [clientA, clientB]
+
+        const handler = mockPearpassClient.on.mock.calls.find(
+          ([event]) => event === 'epoch-status'
+        )?.[1]
+        expect(handler).toBeDefined()
+
+        const status = { epoch: 'e1', revoked: true }
+        handler(status)
+
+        expect(clientA.onEpochStatus).toHaveBeenCalledWith(status)
+        expect(clientB.onEpochStatus).toHaveBeenCalledWith(status)
+      })
+
       it('should subscribe to vault-access-revoked on the pearpass client', async () => {
         await serverInstance.start()
 
@@ -579,6 +630,21 @@ describe('nativeMessagingIPCServer', () => {
 
         expect(mockPearpassClient.off).toHaveBeenCalledWith(
           'vault-access-revoked',
+          handler
+        )
+      })
+
+      it('should detach the epoch-status listener', async () => {
+        await serverInstance.start()
+        const handler = mockPearpassClient.on.mock.calls.find(
+          ([event]) => event === 'epoch-status'
+        )?.[1]
+
+        await serverInstance.stop()
+
+        expect(handler).toBeDefined()
+        expect(mockPearpassClient.off).toHaveBeenCalledWith(
+          'epoch-status',
           handler
         )
       })

@@ -98,3 +98,43 @@ describe('VaultHandlers closeAllInstances', () => {
     expect(emit).toHaveBeenCalledWith('extension-exit')
   })
 })
+
+describe('VaultHandlers epoch commands', () => {
+  it('passes start to activeVaultEnsureEpoch and returns the result unchanged', async () => {
+    const rotation = {
+      rotated: true,
+      id: 'e1',
+      seq: 2,
+      members: ['d1'],
+      uncovered: []
+    }
+    const client = {
+      activeVaultEnsureEpoch: jest.fn().mockResolvedValue(rotation)
+    }
+    const handlers = new VaultHandlers(client, { emit: jest.fn() })
+
+    await expect(
+      handlers.activeVaultEnsureEpoch({ start: true })
+    ).resolves.toBe(rotation)
+    expect(client.activeVaultEnsureEpoch).toHaveBeenCalledWith({ start: true })
+  })
+
+  it('returns activeVaultGetEpochStatus unchanged', async () => {
+    const status = {
+      epoch: 'e1',
+      seq: 2,
+      legacy: false,
+      canRead: true,
+      revoked: false,
+      members: ['d1'],
+      uncovered: []
+    }
+    const client = {
+      activeVaultGetEpochStatus: jest.fn().mockResolvedValue(status)
+    }
+    const handlers = new VaultHandlers(client, { emit: jest.fn() })
+
+    await expect(handlers.activeVaultGetEpochStatus()).resolves.toBe(status)
+    expect(client.activeVaultGetEpochStatus).toHaveBeenCalledWith()
+  })
+})

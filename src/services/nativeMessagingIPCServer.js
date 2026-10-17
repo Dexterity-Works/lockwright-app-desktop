@@ -313,6 +313,16 @@ export class NativeMessagingIPCServer {
       { requiresStatus: ['encryption', 'vaults', 'activeVault'] }
     )
     this.secureMethodRegistry.register(
+      'activeVaultEnsureEpoch',
+      vaultHandlers.activeVaultEnsureEpoch.bind(vaultHandlers),
+      { requiresStatus: ['encryption', 'vaults', 'activeVault'] }
+    )
+    this.secureMethodRegistry.register(
+      'activeVaultGetEpochStatus',
+      vaultHandlers.activeVaultGetEpochStatus.bind(vaultHandlers),
+      { requiresStatus: ['encryption', 'vaults', 'activeVault'] }
+    )
+    this.secureMethodRegistry.register(
       'activeVaultClose',
       vaultHandlers.activeVaultClose.bind(vaultHandlers)
     )
@@ -501,12 +511,29 @@ export class NativeMessagingIPCServer {
       }
     }
     this.client.on('vault-access-revoked', this.vaultAccessRevokedListener)
+
+    this.epochStatusListener = (status) => {
+      if (!this.server) return
+      for (const client of this.server.clients) {
+        try {
+          client.onEpochStatus?.(status ?? {})
+        } catch (err) {
+          logger.error(
+            'IPC-SERVER',
+            `Failed to push epoch-status to client ${client.id}: ${err.message}`
+          )
+        }
+      }
+    }
+    this.client.on('epoch-status', this.epochStatusListener)
   }
 
   detachEventForwarders() {
     if (!this.client?.off || !this.vaultAccessRevokedListener) return
     this.client.off('vault-access-revoked', this.vaultAccessRevokedListener)
     this.vaultAccessRevokedListener = null
+    this.client.off('epoch-status', this.epochStatusListener)
+    this.epochStatusListener = null
   }
 
   /**
