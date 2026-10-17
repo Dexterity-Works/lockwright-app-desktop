@@ -239,6 +239,57 @@ describe('native messaging host IPC path', () => {
       data: { vaultId: 'v-3', revoked: true }
     })
   })
+
+  it('reconnects once when two calls time out together', async () => {
+    getIpcPath.mockReturnValue({ pipe: 'published-pipe', secret })
+    answerProof = prove
+    expect(await checkAvailability('12')).toMatchObject({ available: true })
+    const first = IPC.Client.mock.instances.at(-1)
+    first.nmGetAppIdentity.mockReturnValue(new Promise(() => {}))
+    const clientsBefore = IPC.Client.mock.instances.length
+
+    handler.emit('message', { id: '13', command: 'nmGetAppIdentity', params: {} })
+    handler.emit('message', { id: '14', command: 'nmGetAppIdentity', params: {} })
+    await flush()
+    jest.runOnlyPendingTimers()
+    for (let i = 0; i < 5; i++) await flush()
+
+    expect(first.close).toHaveBeenCalled()
+    expect(IPC.Client.mock.instances.length).toBe(clientsBefore + 1)
+    const live = IPC.Client.mock.instances.at(-1)
+    expect(live.close).not.toHaveBeenCalled()
+    expect(await checkAvailability('15')).toMatchObject({ available: true })
+    expect(IPC.Client.mock.instances.length).toBe(clientsBefore + 1)
+  })
+
+  it('leaves the live client alone when an old client fails late', async () => {
+    getIpcPath.mockReturnValue({ pipe: 'published-pipe', secret })
+    answerProof = prove
+    expect(await checkAvailability('16')).toMatchObject({ available: true })
+    const old = IPC.Client.mock.instances.at(-1)
+    let failLate = () => {}
+    old.nmGetAppIdentity.mockReturnValueOnce(
+      new Promise((_, reject) => {
+        failLate = () => reject(new Error('RPC destroyed'))
+      })
+    )
+    handler.emit('message', { id: '17', command: 'nmGetAppIdentity', params: {} })
+    await flush()
+
+    dropConnection()
+    expect(await checkAvailability('18')).toMatchObject({ available: true })
+    const live = IPC.Client.mock.instances.at(-1)
+    const clientsBefore = IPC.Client.mock.instances.length
+
+    failLate()
+    for (let i = 0; i < 5; i++) await flush()
+
+    expect(live.close).not.toHaveBeenCalled()
+    expect(live.nmGetAppIdentity).not.toHaveBeenCalled()
+    expect(IPC.Client.mock.instances.length).toBe(clientsBefore)
+    const [response] = handler.send.mock.calls.find(([msg]) => msg.id === '17')
+    expect(response).toMatchObject({ success: false, error: 'RPC destroyed' })
+  })
 })
 
 describe('NativeMessagingHost connect', () => {

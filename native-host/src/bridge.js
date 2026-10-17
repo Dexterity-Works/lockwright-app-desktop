@@ -346,6 +346,9 @@ class NativeMessagingHost {
   async handleMessage(message) {
     const { id, method, command, params } = message
     const methodName = method || command
+    // Set when the call failed on a client that has since been replaced:
+    // the live client is fine and the desktop may already have run the call.
+    let failedOnOldClient = false
 
     try {
       // Remove any padding added to work around Chrome 255-byte bug
@@ -432,10 +435,11 @@ class NativeMessagingHost {
           }, TIMEOUTS.IPC_CALL)
         })
 
+        const client = this.ipcClient
         try {
           // Race between the IPC call and timeout
           result = await Promise.race([
-            this.ipcClient[methodName](cleanParams),
+            client[methodName](cleanParams),
             timeoutPromise
           ])
         } catch (error) {
@@ -444,11 +448,15 @@ class NativeMessagingHost {
             error.message.includes('timed out') ||
             error.message.includes('RPC destroyed')
           ) {
-            log('INFO', 'IPC call failed, desktop app may have been closed')
-            this.desktopAppStatus = DESKTOP_APP_STATUS.NOT_RUNNING
-            this.closeIpcClient()
-            // Reconnect now so desktop pushes have a proven client to ride.
-            this.connectToIPC()
+            if (this.ipcClient === client) {
+              log('INFO', 'IPC call failed, desktop app may have been closed')
+              this.desktopAppStatus = DESKTOP_APP_STATUS.NOT_RUNNING
+              this.closeIpcClient()
+              // Reconnect now so desktop pushes have a proven client to ride.
+              this.connectToIPC()
+            } else {
+              failedOnOldClient = true
+            }
           }
           throw error
         }
@@ -468,7 +476,7 @@ class NativeMessagingHost {
       log('INFO', `Error handling message: ${error.message}`)
 
       // If it's an RPC destroyed error, try to reconnect
-      if (error.message.includes('RPC destroyed')) {
+      if (error.message.includes('RPC destroyed') && !failedOnOldClient) {
         log('INFO', 'RPC destroyed detected, attempting to reconnect...')
         try {
           await this.reconnectIPC()
