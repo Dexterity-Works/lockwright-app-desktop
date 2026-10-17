@@ -135,13 +135,17 @@ class NativeMessagingHost {
    * extension as a `{ event, data }` native-messaging push, which the
    * extension background already routes into pearpassVaultClient.emit().
    *
+   * Pushes are dropped unless `link.client` is the current client and
+   * `link.proven` is set: until proveServer passes, the pipe owner may be a
+   * squatter, and a replaced client must not speak for the live one.
+   *
+   * @param {{ client: Object|null, proven: boolean }} link
    * @returns {Object}
    */
-  createIpcInboundApi() {
+  createIpcInboundApi(link) {
     const forward = (event, data) => {
-      // Until proveServer passes, the pipe owner may be a squatter.
-      if (this.desktopAppStatus !== DESKTOP_APP_STATUS.CONNECTED) {
-        log('INFO', `Dropped ${event} from an unproven pipe owner`)
+      if (!link.proven || link.client !== this.ipcClient) {
+        log('INFO', `Dropped ${event} from an unproven or replaced pipe owner`)
         return
       }
       try {
@@ -187,13 +191,16 @@ class NativeMessagingHost {
       log('INFO', `Attempting to connect to IPC server at: ${this.socketPath}`)
 
       // Create new IPC client connection
+      const link = { client: null, proven: false }
       this.ipcClient = new IPC.Client({
         socketPath: this.socketPath,
         connect: true,
         connectTimeout: TIMEOUTS.IPC_CONNECTION,
         methods: COMMAND_DEFINITIONS,
-        api: this.createIpcInboundApi()
+        api: this.createIpcInboundApi(link)
       })
+      const client = this.ipcClient
+      link.client = client
 
       // Wait for connection with timeout
       const timeoutPromise = new Promise((_, reject) => {
@@ -222,11 +229,14 @@ class NativeMessagingHost {
 
       log('INFO', 'Successfully connected to IPC server')
 
+      link.proven = true
       // Update status
       this.desktopAppStatus = DESKTOP_APP_STATUS.CONNECTED
 
-      // Set up disconnect handler
-      this.ipcClient.on('close', () => {
+      // Set up disconnect handler. A replaced client's late close must not
+      // reset the live one.
+      client.on('close', () => {
+        if (this.ipcClient !== client) return
         log('INFO', 'IPC client disconnected')
         this.desktopAppStatus = DESKTOP_APP_STATUS.NOT_RUNNING
         this.ipcClient = null

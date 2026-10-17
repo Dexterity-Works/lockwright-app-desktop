@@ -192,4 +192,26 @@ describe('native messaging host IPC path', () => {
       [{ event: 'epoch-status', data: { vaultId: 'v-1', revoked: true } }]
     ])
   })
+
+  it('forwards pushes on the live client after a stale client closes late', async () => {
+    getIpcPath.mockReturnValue({ pipe: 'published-pipe', secret })
+    answerProof = prove
+    const stale = IPC.Client.mock.instances.at(-1)
+    const [, staleClose] = stale.on.mock.calls.find(([e]) => e === 'close')
+    staleClose()
+
+    expect(await checkAvailability('9')).toMatchObject({ available: true })
+    const { api } = IPC.Client.mock.calls.at(-1)[0]
+    const method = {}
+    api.onVaultAccessRevoked(method)
+
+    // The stale client's close event arrives again after the live one is up.
+    staleClose()
+    method._onrequest({ vaultId: 'v-2', actor: 'd-1' })
+
+    expect(handler.send).toHaveBeenLastCalledWith({
+      event: 'vault-access-revoked',
+      data: { vaultId: 'v-2', actor: 'd-1' }
+    })
+  })
 })
