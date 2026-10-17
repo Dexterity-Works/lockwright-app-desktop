@@ -25,6 +25,7 @@ declare global {
       vaultOnPersonalSwarmEnvelope: (
         cb: (payload: { envelope: string }) => void
       ) => () => void
+      vaultOnEpochStatus: (cb: (status: unknown) => void) => () => void
       clearStaleVaultsDir: () => Promise<void>
       openExternal: (url: string) => Promise<void>
       openLogsFolder: () => Promise<void>
