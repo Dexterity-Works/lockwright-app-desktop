@@ -64,6 +64,8 @@ class NativeMessagingHost {
     this.handler = new NativeMessagingHandler()
     /** @type {import('pear-ipc').Client|null} */
     this.ipcClient = null
+    /** @type {Promise<void>|null} connect attempt in flight */
+    this.connecting = null
     /** @type {boolean} */
     this.isRunning = false
     /** @type {string|null} */
@@ -173,9 +175,35 @@ class NativeMessagingHost {
   }
 
   /**
+   * One connect at a time: concurrent callers share the attempt in flight.
    * @returns {Promise<void>}
    */
-  async connectToIPC() {
+  connectToIPC() {
+    if (!this.connecting) {
+      this.connecting = this.connectOnce().finally(() => {
+        this.connecting = null
+      })
+    }
+    return this.connecting
+  }
+
+  /**
+   * @returns {Promise<void>}
+   */
+  async connectOnce() {
+    let client = null
+    // Someone replaced or dropped this client while we awaited: close it
+    // and leave the status to whoever owns the current one.
+    const replaced = () => {
+      if (this.ipcClient === client) return false
+      try {
+        client.close()
+      } catch {
+        // Ignore close errors
+      }
+      return true
+    }
+
     try {
       // Resolve per attempt: on Windows each desktop start publishes a
       // fresh pipe name, so a path cached at host start goes stale.
@@ -192,14 +220,14 @@ class NativeMessagingHost {
 
       // Create new IPC client connection
       const link = { client: null, proven: false }
-      this.ipcClient = new IPC.Client({
+      client = new IPC.Client({
         socketPath: this.socketPath,
         connect: true,
         connectTimeout: TIMEOUTS.IPC_CONNECTION,
         methods: COMMAND_DEFINITIONS,
         api: this.createIpcInboundApi(link)
       })
-      const client = this.ipcClient
+      this.ipcClient = client
       link.client = client
 
       // Wait for connection with timeout
@@ -209,22 +237,24 @@ class NativeMessagingHost {
         }, TIMEOUTS.IPC_CONNECTION)
       })
 
-      await Promise.race([this.ipcClient.ready(), timeoutPromise])
+      await Promise.race([client.ready(), timeoutPromise])
+      if (replaced()) return
 
       // A published pipe may be stale after a crash and squatted since.
       // Nothing, least of all the pairing token, goes to a pipe owner
       // that cannot prove it holds the secret from the pointer file.
-      if (
-        typeof target !== 'string' &&
-        !(await this.proveServer(target.secret))
-      ) {
-        log(
-          'INFO',
-          'Pipe owner failed the ownership proof; desktop app is not running'
-        )
-        this.desktopAppStatus = DESKTOP_APP_STATUS.NOT_RUNNING
-        this.closeIpcClient()
-        return
+      if (typeof target !== 'string') {
+        const proven = await this.proveServer(client, target.secret)
+        if (replaced()) return
+        if (!proven) {
+          log(
+            'INFO',
+            'Pipe owner failed the ownership proof; desktop app is not running'
+          )
+          this.desktopAppStatus = DESKTOP_APP_STATUS.NOT_RUNNING
+          this.closeIpcClient()
+          return
+        }
       }
 
       log('INFO', 'Successfully connected to IPC server')
@@ -243,6 +273,7 @@ class NativeMessagingHost {
       })
     } catch (error) {
       log('INFO', `Failed to connect to IPC server: ${error.message}`)
+      if (client && replaced()) return
       this.updateDesktopAppStatus(error)
 
       // Clean up client on failure
@@ -263,10 +294,11 @@ class NativeMessagingHost {
   /**
    * Challenge the pipe owner: it must answer a fresh nonce with
    * HMAC-SHA256(secret, nonce). Mismatch, error, or timeout all fail.
+   * @param {import('pear-ipc').Client} client
    * @param {string} secretHex
    * @returns {Promise<boolean>}
    */
-  async proveServer(secretHex) {
+  async proveServer(client, secretHex) {
     const nonce = randomBytes(16)
     const expected = createHmac('sha256', Buffer.from(secretHex, 'hex'))
       .update(nonce)
@@ -274,7 +306,7 @@ class NativeMessagingHost {
     let timer
     try {
       const reply = await Promise.race([
-        this.ipcClient.nmProveServer({ nonceHex: nonce.toString('hex') }),
+        client.nmProveServer({ nonceHex: nonce.toString('hex') }),
         new Promise((_, reject) => {
           timer = setTimeout(
             () => reject(new Error('Ownership proof timed out')),
@@ -460,15 +492,8 @@ class NativeMessagingHost {
    */
   async reconnectIPC() {
     try {
-      // Close existing client if any
-      if (this.ipcClient) {
-        try {
-          this.ipcClient.close()
-        } catch {
-          // Ignore close errors
-        }
-        this.ipcClient = null
-      }
+      // Close the existing client unless a connect is already replacing it
+      if (!this.connecting) this.closeIpcClient()
 
       // Use connectToIPC which handles status updates
       await this.connectToIPC()
@@ -506,6 +531,8 @@ class NativeMessagingHost {
 log('INFO', 'Native messaging host script started')
 
 // Create and start the host
+export { NativeMessagingHost }
+
 const host = new NativeMessagingHost()
 
 // Graceful shutdown

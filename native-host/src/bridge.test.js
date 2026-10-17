@@ -215,3 +215,51 @@ describe('native messaging host IPC path', () => {
     })
   })
 })
+
+describe('NativeMessagingHost connect', () => {
+  const host = () => {
+    const { NativeMessagingHost } = require('./bridge.js')
+    return new NativeMessagingHost()
+  }
+
+  beforeEach(() => {
+    getIpcPath.mockReturnValue({ pipe: 'published-pipe', secret })
+    answerProof = prove
+  })
+
+  it('shares one connect between concurrent callers', async () => {
+    const bridge = host()
+    const before = IPC.Client.mock.instances.length
+
+    await Promise.all([bridge.connectToIPC(), bridge.connectToIPC()])
+
+    expect(IPC.Client.mock.instances.length).toBe(before + 1)
+    expect(bridge.ipcClient).toBe(IPC.Client.mock.instances.at(-1))
+    expect(bridge.desktopAppStatus).toBe('connected')
+  })
+
+  it('closes a client replaced mid-proof and never marks it connected', async () => {
+    let releaseProof = () => {}
+    answerProof = (nonceHex) =>
+      new Promise((resolve) => {
+        releaseProof = () => resolve(prove(nonceHex))
+      })
+    const bridge = host()
+
+    const connecting = bridge.connectToIPC()
+    await flush()
+    const replaced = IPC.Client.mock.instances.at(-1)
+    expect(replaced.nmProveServer).toHaveBeenCalled()
+    const successor = { closed: false, on: jest.fn(), close: jest.fn() }
+    bridge.ipcClient = successor
+    bridge.desktopAppStatus = 'connecting'
+
+    releaseProof()
+    await connecting
+
+    expect(replaced.close).toHaveBeenCalled()
+    expect(successor.close).not.toHaveBeenCalled()
+    expect(bridge.ipcClient).toBe(successor)
+    expect(bridge.desktopAppStatus).toBe('connecting')
+  })
+})
