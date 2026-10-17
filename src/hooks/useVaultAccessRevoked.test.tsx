@@ -137,6 +137,24 @@ describe('useVaultAccessRevoked', () => {
     expect(setModal).not.toHaveBeenCalled()
   })
 
+  it('wipes a vault once when the kick and the epoch status both announce it', async () => {
+    const pending: Array<() => void> = []
+    deleteVaultLocal.mockImplementation(
+      () => new Promise<void>((resolve) => pending.push(resolve))
+    )
+    renderHook(() => useVaultAccessRevoked())
+
+    await act(async () => {
+      const kicked = revokedHandler({ vaultId: 'v-other', actor: 'd-2' })
+      const epoch = revokedHandler({ vaultId: 'v-other', actor: null })
+      pending.forEach((resolve) => resolve())
+      await Promise.all([kicked, epoch])
+    })
+
+    expect(deleteVaultLocal).toHaveBeenCalledTimes(1)
+    expect(setModal).toHaveBeenCalledTimes(1)
+  })
+
   it('wipes the active vault and switches to the next when one exists', async () => {
     renderHook(() => useVaultAccessRevoked())
     await act(async () => revokedHandler({ vaultId: 'v-active' }))
