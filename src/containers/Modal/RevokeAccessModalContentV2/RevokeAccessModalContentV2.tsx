@@ -19,6 +19,10 @@ export type RevokeAccessModalContentV2Props = {
 
 type KickResult = Awaited<ReturnType<typeof kickDevice>>
 
+// The native-messaging path caps a call at 45 s; the in-process path gets a
+// little more before the dialog hands control back.
+export const KICK_TIMEOUT_MS = 50_000
+
 export const RevokeAccessModalContentV2 = ({
   vaultId,
   targetDeviceId,
@@ -39,10 +43,19 @@ export const RevokeAccessModalContentV2 = ({
   const handleClose = onClose ?? closeModal
 
   const [isLoading, setIsLoading] = useState(false)
-  // Set once the device is removed but the key did not rotate. The dialog
-  // stays open with this warning and only offers Done.
-  const [rotationWarning, setRotationWarning] = useState<string | null>(null)
+  // Set once the device is removed but the key did not rotate, or when
+  // kickDevice has not settled by the deadline. The dialog stays open with
+  // this warning and only offers Done.
+  const [warning, setWarning] = useState<string | null>(null)
   const doneRef = useRef<HTMLButtonElement>(null)
+  const deadlineRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+
+  const clearDeadline = () => {
+    if (deadlineRef.current !== null) {
+      clearTimeout(deadlineRef.current)
+      deadlineRef.current = null
+    }
+  }
 
   // A late kickDevice result must not touch state or close whatever modal
   // is on top once this one is gone.
@@ -51,20 +64,35 @@ export const RevokeAccessModalContentV2 = ({
     mounted.current = true
     return () => {
       mounted.current = false
+      clearDeadline()
     }
   }, [])
 
   useEffect(() => {
-    if (rotationWarning) doneRef.current?.focus()
-  }, [rotationWarning])
+    if (warning) doneRef.current?.focus()
+  }, [warning])
 
   const onRevoke = async () => {
     if (isLoading) return
     setIsLoading(true)
     setClosable(entryId, false)
+    // A hung kickDevice would otherwise leave lock or restart as the only
+    // way out.
+    deadlineRef.current = setTimeout(() => {
+      deadlineRef.current = null
+      if (!mounted.current) return
+      setIsLoading(false)
+      setClosable(entryId, true)
+      setWarning(
+        t(
+          "The revoke didn't finish in time, so the result is unknown. Check the device list after the next sync."
+        )
+      )
+    }, KICK_TIMEOUT_MS)
     try {
       await revoke()
     } finally {
+      clearDeadline()
       if (mounted.current) {
         setIsLoading(false)
         setClosable(entryId, true)
@@ -78,11 +106,15 @@ export const RevokeAccessModalContentV2 = ({
       result = await kickDevice({ vaultId, targetDeviceId })
     } catch (error) {
       logger.error('RevokeAccessModalContentV2', 'kickDevice failed:', error)
+      if (mounted.current) setWarning(null)
       setToast({
         message: t("Couldn't revoke access. Please try again.")
       })
       return
     }
+
+    // A result after the deadline replaces the timeout warning.
+    if (mounted.current) setWarning(null)
 
     const failures = result?.failures ?? []
     const epoch = result?.epoch ?? null
@@ -113,7 +145,7 @@ export const RevokeAccessModalContentV2 = ({
         epoch.reason !== 'current' &&
         epoch.reason !== 'pending')
     ) {
-      const warning = epoch?.reason
+      const rotationWarning = epoch?.reason
         ? t(
             "Couldn't rotate the vault key ({reason}). The revoked device can still read new items.",
             { reason: epoch.reason }
@@ -121,8 +153,8 @@ export const RevokeAccessModalContentV2 = ({
         : t(
             "Couldn't rotate the vault key. The revoked device can still read new items."
           )
-      if (mounted.current) setRotationWarning(warning)
-      else setToast({ message: warning })
+      if (mounted.current) setWarning(rotationWarning)
+      else setToast({ message: rotationWarning })
       return
     }
 
@@ -165,7 +197,7 @@ export const RevokeAccessModalContentV2 = ({
       testID="revoke-access-dialog-v2"
       closeButtonTestID="revoke-access-close-v2"
       footer={
-        rotationWarning ? (
+        warning ? (
           <Button
             ref={doneRef}
             variant="primary"
@@ -203,10 +235,10 @@ export const RevokeAccessModalContentV2 = ({
       }
     >
       <div style={styles.body} data-testid="revoke-access-body-v2">
-        {rotationWarning && (
+        {warning && (
           <div role="alert" data-testid="revoke-access-warning-v2">
             <Text as="p" variant="caption">
-              {rotationWarning}
+              {warning}
             </Text>
           </div>
         )}

@@ -360,4 +360,103 @@ describe('RevokeAccessModalContentV2', () => {
       SUCCESS
     ])
   })
+
+  describe('when the revoke hangs', () => {
+    const TIMED_OUT =
+      "The revoke didn't finish in time, so the result is unknown. Check the device list after the next sync."
+
+    beforeEach(() => {
+      jest.useFakeTimers()
+    })
+
+    afterEach(() => {
+      jest.useRealTimers()
+    })
+
+    it('can be closed again with a warning after 50 s', () => {
+      pendingKick()
+
+      act(() => {
+        jest.advanceTimersByTime(49_999)
+      })
+      expect(screen.queryByRole('alert')).toBeNull()
+      expect(screen.queryByTestId('dialog-close')).toBeNull()
+      expect(setClosable).toHaveBeenLastCalledWith('revoke-entry', false)
+
+      act(() => {
+        jest.advanceTimersByTime(1)
+      })
+      expect(setClosable).toHaveBeenLastCalledWith('revoke-entry', true)
+      expect(screen.getByTestId('dialog-close')).toBeTruthy()
+      expect(setToast).not.toHaveBeenCalled()
+      expectInlineWarning(TIMED_OUT)
+    })
+
+    it('never warns when the revoke settles in time', async () => {
+      const { resolve } = pendingKick()
+
+      act(() => {
+        jest.advanceTimersByTime(49_000)
+      })
+      await act(async () => {
+        resolve({
+          results: outbox,
+          failures: [],
+          epoch: { rotated: true, uncovered: [] }
+        })
+      })
+
+      act(() => {
+        jest.advanceTimersByTime(10_000)
+      })
+      expect(screen.queryByRole('alert')).toBeNull()
+      expect(closeModal.mock.calls).toEqual([['revoke-entry']])
+      expect(setToast.mock.calls.map(([toast]) => toast.message)).toEqual([
+        SUCCESS
+      ])
+    })
+
+    it('replaces the warning with the outcome when the revoke settles late', async () => {
+      const { resolve } = pendingKick()
+
+      act(() => {
+        jest.advanceTimersByTime(50_000)
+      })
+      expect(screen.getByRole('alert').textContent).toContain(TIMED_OUT)
+
+      await act(async () => {
+        resolve({
+          results: outbox,
+          failures: [],
+          epoch: { rotated: true, uncovered: [] }
+        })
+      })
+      expect(screen.queryByRole('alert')).toBeNull()
+      expect(closeModal.mock.calls).toEqual([['revoke-entry']])
+      expect(setToast.mock.calls.map(([toast]) => toast.message)).toEqual([
+        SUCCESS
+      ])
+    })
+
+    it('drops the deadline when the dialog unmounts', async () => {
+      const { view, resolve } = pendingKick()
+      view.unmount()
+
+      act(() => {
+        jest.advanceTimersByTime(60_000)
+      })
+      await act(async () => {
+        resolve({
+          results: outbox,
+          failures: [],
+          epoch: { rotated: true, uncovered: [] }
+        })
+      })
+      expect(setClosable).toHaveBeenLastCalledWith('revoke-entry', false)
+      expect(closeModal).not.toHaveBeenCalled()
+      expect(setToast.mock.calls.map(([toast]) => toast.message)).toEqual([
+        SUCCESS
+      ])
+    })
+  })
 })
