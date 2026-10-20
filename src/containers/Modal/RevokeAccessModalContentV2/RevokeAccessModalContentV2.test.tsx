@@ -125,7 +125,7 @@ describe('RevokeAccessModalContentV2', () => {
     )
     const body = screen.getByTestId('revoke-access-body-v2').textContent
     expect(body).toContain(
-      'Revoking removes this device from the vault and rotates the vault key. It can no longer read items added or changed from now on.'
+      "Revoking removes this device from the vault and rotates the vault key. Once the key rotates, the device can't read items added or changed after that."
     )
     expect(body).toContain(
       'Items already on the device: anything it synced before now stays there. Revoking cannot delete it. Change passwords the device could see, especially if it was lost or stolen.'

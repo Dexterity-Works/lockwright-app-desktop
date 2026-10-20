@@ -269,7 +269,7 @@ export const RevokeAccessModalContentV2 = ({
             color={theme.colors.colorTextSecondary}
           >
             {t(
-              'Revoking removes this device from the vault and rotates the vault key. It can no longer read items added or changed from now on.'
+              "Revoking removes this device from the vault and rotates the vault key. Once the key rotates, the device can't read items added or changed after that."
             )}
           </Text>
           <Text
