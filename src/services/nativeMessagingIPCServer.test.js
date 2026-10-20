@@ -568,7 +568,7 @@ describe('nativeMessagingIPCServer', () => {
         ])
       })
 
-      it('pushes an epoch status from a core that does not stamp vaultId yet', async () => {
+      it('pushes an epoch status that has no vaultId', async () => {
         await serverInstance.start()
         const client = { id: 'A', onEpochStatus: jest.fn() }
         serverInstance.server.clients = [client]
@@ -576,8 +576,9 @@ describe('nativeMessagingIPCServer', () => {
           ([event]) => event === 'epoch-status'
         )[1]
 
-        // Until the core puts vaultId on the status, the push has no vault
-        // to name; the extension then cannot match it to a vault.
+        // The core always sets vaultId; this covers a status without one
+        // defensively. The push then names no vault and the extension
+        // cannot match it to one.
         expect(() =>
           handler({ epoch: 'e1', revoked: true, members: [], uncovered: [] })
         ).not.toThrow()
