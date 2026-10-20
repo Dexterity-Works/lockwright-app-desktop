@@ -291,7 +291,7 @@ describe('native messaging host IPC path', () => {
     expect(response).toMatchObject({ success: false, error: 'RPC destroyed' })
   })
 
-  it('retries once on a new client when the desktop drops the pipe mid-call', async () => {
+  it('retries on a new client when the desktop drops the pipe mid-call', async () => {
     getIpcPath.mockReturnValue({ pipe: 'published-pipe', secret })
     answerProof = prove
     expect(await checkAvailability('19')).toMatchObject({ available: true })
@@ -316,6 +316,48 @@ describe('native messaging host IPC path', () => {
     expect(retried.nmGetAppIdentity).toHaveBeenCalledTimes(1)
     const [response] = handler.send.mock.calls.find(([msg]) => msg.id === '20')
     expect(response).toMatchObject({ success: true })
+  })
+
+  it('sends the error when the retried call also finds the pipe destroyed', async () => {
+    getIpcPath.mockReturnValue({ pipe: 'published-pipe', secret })
+    answerProof = prove
+    expect(await checkAvailability('21')).toMatchObject({ available: true })
+    const identityCalls = () =>
+      IPC.Client.mock.instances.reduce(
+        (n, client) => n + client.nmGetAppIdentity.mock.calls.length,
+        0
+      )
+    const callsBefore = identityCalls()
+    IPC.Client.mock.instances
+      .at(-1)
+      .nmGetAppIdentity.mockRejectedValueOnce(new Error('RPC destroyed'))
+    // The clients the bridge reconnects to drop the pipe too. Capped so a
+    // retry loop fails this test instead of spinning forever.
+    let drops = 5
+    const impl = IPC.Client.getMockImplementation()
+    IPC.Client.mockImplementation(function (opts) {
+      impl.call(this, opts)
+      this.nmGetAppIdentity = jest.fn(async () => {
+        if (drops-- > 0) throw new Error('RPC destroyed')
+        return { ok: true }
+      })
+    })
+    try {
+      handler.emit('message', {
+        id: '22',
+        command: 'nmGetAppIdentity',
+        params: {}
+      })
+      for (let i = 0; i < 10; i++) await flush()
+    } finally {
+      IPC.Client.mockImplementation(impl)
+    }
+
+    expect(identityCalls() - callsBefore).toBe(2)
+    const responses = handler.send.mock.calls.filter(([msg]) => msg.id === '22')
+    expect(responses).toEqual([
+      [{ id: '22', success: false, error: 'RPC destroyed' }]
+    ])
   })
 })
 

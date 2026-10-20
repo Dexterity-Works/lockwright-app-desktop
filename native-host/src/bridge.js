@@ -341,9 +341,10 @@ class NativeMessagingHost {
 
   /**
    * @param {Message} message
+   * @param {boolean} [retried] set on the one retry after a reconnect
    * @returns {Promise<void>}
    */
-  async handleMessage(message) {
+  async handleMessage(message, retried = false) {
     const { id, method, command, params } = message
     const methodName = method || command
     // Set when the call failed on a client that has since been replaced:
@@ -477,13 +478,17 @@ class NativeMessagingHost {
     } catch (error) {
       log('INFO', `Error handling message: ${error.message}`)
 
-      // If it's an RPC destroyed error, try to reconnect
-      if (error.message.includes('RPC destroyed') && !failedOnOldClient) {
+      // If it's an RPC destroyed error, reconnect and retry once
+      if (
+        error.message.includes('RPC destroyed') &&
+        !failedOnOldClient &&
+        !retried
+      ) {
         log('INFO', 'RPC destroyed detected, attempting to reconnect...')
         try {
           await this.reconnectIPC()
           // Retry the message after reconnection
-          return this.handleMessage(message)
+          return this.handleMessage(message, true)
         } catch (reconnectError) {
           log('INFO', `Failed to reconnect: ${reconnectError.message}`)
           this.updateDesktopAppStatus(reconnectError)
