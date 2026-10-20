@@ -88,13 +88,17 @@ export const ModalProvider = ({ children }) => {
         next[i] = { ...next[i], isOpen: false }
         return next
       }
+      // closeModal({ force: true }) runs when the app locks and closes every
+      // open entry, busy ones included, so none stays over the lock screen.
+      if (id?.force === true) {
+        if (!prevState.some((m) => m.isOpen)) return prevState
+        return prevState.map((m) => (m.isOpen ? { ...m, isOpen: false } : m))
+      }
       // Skip entries already closing so a rapid second close hits the modal
       // beneath one mid-transition. A busy entry stays open: only
-      // closeModal(id) from the entry itself, or closeModal({ force: true })
-      // when the app locks, closes it.
-      const force = id?.force === true
+      // closeModal(id) from the entry itself, or a forced close, closes it.
       const i = getTopOpenIndex(prevState)
-      if (i === -1 || (!force && prevState[i].params.closable === false)) {
+      if (i === -1 || prevState[i].params.closable === false) {
         return prevState
       }
       const next = [...prevState]

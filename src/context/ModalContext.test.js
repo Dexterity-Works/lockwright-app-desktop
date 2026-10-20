@@ -212,8 +212,13 @@ describe('ModalProvider', () => {
       )
     }
     const Opener = () => {
-      const { setModal } = useModal()
-      return <button onClick={() => setModal(<Busy />)}>Open Busy</button>
+      const { setModal, closeModal } = useModal()
+      return (
+        <div>
+          <button onClick={() => setModal(<Busy />)}>Open Busy</button>
+          <button onClick={() => closeModal({ force: true })}>Lock</button>
+        </div>
+      )
     }
     const settle = () =>
       act(() => {
@@ -263,6 +268,18 @@ describe('ModalProvider', () => {
 
       expect(screen.queryByText('Access removed')).not.toBeInTheDocument()
       expect(screen.getByText('Start work')).toBeInTheDocument()
+    })
+
+    test('a forced close shuts the notice and the busy modal under it', () => {
+      fireEvent.click(screen.getByText('Start work'))
+      fireEvent.click(screen.getByText('Open notice'))
+
+      fireEvent.click(screen.getByText('Lock'))
+      settle()
+
+      expect(screen.queryByText('Access removed')).not.toBeInTheDocument()
+      expect(screen.queryByText('Start work')).not.toBeInTheDocument()
+      expect(screen.queryAllByTestId('modal-wrapper').length).toBe(0)
     })
 
     test('closing a modal that is already gone does nothing', () => {
