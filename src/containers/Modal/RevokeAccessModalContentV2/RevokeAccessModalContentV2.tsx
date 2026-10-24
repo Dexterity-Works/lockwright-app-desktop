@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState } from 'react'
 
 import { Button, Dialog, Text, useTheme } from 'lockwright-lib-ui-react-native-components'
 import { kickDevice, useVault, waitForKeyRotation } from 'lockwright-lib-vault'
+import { pearpassVaultClient } from 'lockwright-lib-vault/src/instances'
 
 import { createStyles } from './RevokeAccessModalContentV2.styles'
 import { useModal, useModalEntryId } from '../../../context/ModalContext'
@@ -136,7 +137,7 @@ export const RevokeAccessModalContentV2 = ({
     if (settled) doneRef.current?.focus()
   }, [settled])
 
-  const onRevoke = async () => {
+  const run = async (action: (signal: AbortSignal) => Promise<void>) => {
     if (isLoading) return
     setIsLoading(true)
     setClosable(entryId, false)
@@ -153,7 +154,7 @@ export const RevokeAccessModalContentV2 = ({
       setOutcome({ kind: outcomeRef.current ? 'pending' : 'unknown' })
     }, KICK_TIMEOUT_MS)
     try {
-      await revoke(wait.signal)
+      await action(wait.signal)
     } finally {
       clearDeadline()
       if (mounted.current) {
@@ -169,6 +170,63 @@ export const RevokeAccessModalContentV2 = ({
     else if (next.kind !== 'rotating' && next.kind !== 'rotated') {
       setToast({ message: detailFor(next.kind) as string })
     }
+  }
+
+  // The device is out of the roster; judge the rotation that followed.
+  // Returns false when the key did not rotate.
+  const settle = async (
+    epoch: KickResult['epoch'],
+    signal: AbortSignal
+  ): Promise<boolean> => {
+    // 'current': the latest key already leaves this device out.
+    // 'pending': another member rotates when it syncs.
+    if (
+      !epoch ||
+      (!epoch.rotated &&
+        epoch.reason !== 'current' &&
+        epoch.reason !== 'pending')
+    ) {
+      logger.warn(
+        'RevokeAccessModalContentV2',
+        'vault key did not rotate:',
+        epoch?.reason
+      )
+      show({ kind: 'failed' })
+      return false
+    }
+
+    // A late kick is past the deadline: the rotation is not confirmed.
+    if (epoch.reason === 'pending' || signal.aborted) {
+      show({ kind: 'pending' })
+      return true
+    }
+    show({ kind: 'rotating' })
+    const state = await waitForKeyRotation({
+      vaultId,
+      deviceId: targetDeviceId,
+      timeoutMs: KICK_TIMEOUT_MS,
+      signal
+    })
+    if (!state) {
+      show({ kind: 'pending' })
+      return true
+    }
+    show({ kind: 'rotated', at: state.rotatedAt ?? Date.now() })
+    setToast({
+      message: t('{deviceName} revoked. Vault key rotated.', { deviceName })
+    })
+    return true
+  }
+
+  const rotate = async (signal: AbortSignal) => {
+    show({ kind: 'rotating' })
+    let epoch: KickResult['epoch'] = null
+    try {
+      epoch = await pearpassVaultClient.activeVaultEnsureEpoch({ start: true })
+    } catch (error) {
+      logger.error('RevokeAccessModalContentV2', 'rotation failed:', error)
+    }
+    await settle(epoch, signal)
   }
 
   const revoke = async (signal: AbortSignal) => {
@@ -206,67 +264,29 @@ export const RevokeAccessModalContentV2 = ({
       })
     }
 
-    // 'current': the latest key already leaves this device out.
-    // 'pending': another member rotates when it syncs.
-    if (
-      !epoch ||
-      (!epoch.rotated &&
-        epoch.reason !== 'current' &&
-        epoch.reason !== 'pending')
-    ) {
-      logger.warn(
-        'RevokeAccessModalContentV2',
-        'vault key did not rotate:',
-        epoch?.reason
-      )
-      show({ kind: 'failed' })
-      return
-    }
+    if (!(await settle(epoch, signal)) || !epoch?.uncovered?.length) return
 
-    // A late kick is past the deadline: the rotation is not confirmed.
-    if (epoch.reason === 'pending' || signal.aborted) {
-      show({ kind: 'pending' })
-    } else {
-      show({ kind: 'rotating' })
-      const state = await waitForKeyRotation({
-        vaultId,
-        deviceId: targetDeviceId,
-        timeoutMs: KICK_TIMEOUT_MS,
-        signal
-      })
-      if (state) {
-        show({ kind: 'rotated', at: state.rotatedAt ?? Date.now() })
-        setToast({
-          message: t('{deviceName} revoked. Vault key rotated.', { deviceName })
-        })
-      } else {
-        show({ kind: 'pending' })
-      }
-    }
-
-    if (epoch.uncovered?.length) {
-      const devices: Array<{ id?: string; name?: string }> = Array.isArray(
-        vaultData?.devices
-      )
-        ? vaultData.devices
-        : []
-      const deviceNames = [
-        ...new Set(
-          epoch.uncovered.map((id) =>
-            getDeviceDisplayName(
-              devices.find((device) => device.id === id)?.name,
-              t
-            )
+    const devices: Array<{ id?: string; name?: string }> = Array.isArray(
+      vaultData?.devices
+    )
+      ? vaultData.devices
+      : []
+    const deviceNames = [
+      ...new Set(
+        epoch.uncovered.map((id) =>
+          getDeviceDisplayName(
+            devices.find((device) => device.id === id)?.name,
+            t
           )
         )
-      ].join(', ')
-      setToast({
-        message: t(
-          "{deviceNames} can't read new items until they open this vault once on a current Lockwright version.",
-          { deviceNames }
-        )
-      })
-    }
+      )
+    ].join(', ')
+    setToast({
+      message: t(
+        "{deviceNames} can't read new items until they open this vault once on a current Lockwright version.",
+        { deviceNames }
+      )
+    })
   }
 
   return (
@@ -277,6 +297,18 @@ export const RevokeAccessModalContentV2 = ({
       closeButtonTestID="revoke-access-close-v2"
       footer={
         settled ? (
+          <>
+          {outcome?.kind === 'failed' && (
+            <Button
+              variant="secondary"
+              size="small"
+              type="button"
+              onClick={() => run(rotate)}
+              data-testid="revoke-access-rotate-v2"
+            >
+              {t('Rotate key now')}
+            </Button>
+          )}
           <Button
             ref={doneRef}
             variant="primary"
@@ -287,6 +319,7 @@ export const RevokeAccessModalContentV2 = ({
           >
             {t('Done')}
           </Button>
+          </>
         ) : (
         <>
           <Button
@@ -304,7 +337,7 @@ export const RevokeAccessModalContentV2 = ({
             size="small"
             type="button"
             isLoading={isLoading}
-            onClick={onRevoke}
+            onClick={() => run(revoke)}
             data-testid="revoke-access-submit-v2"
           >
             {t('Revoke Access')}

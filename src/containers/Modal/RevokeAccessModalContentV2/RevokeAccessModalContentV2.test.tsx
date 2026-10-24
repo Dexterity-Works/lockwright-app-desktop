@@ -3,6 +3,7 @@ import React from 'react'
 import { act, fireEvent, render, screen } from '@testing-library/react'
 import '@testing-library/jest-dom'
 import { kickDevice, useVault, waitForKeyRotation } from 'lockwright-lib-vault'
+import { pearpassVaultClient } from 'lockwright-lib-vault/src/instances'
 
 import { RevokeAccessModalContentV2 } from './RevokeAccessModalContentV2'
 import { useModal } from '../../../context/ModalContext'
@@ -14,6 +15,10 @@ jest.mock('lockwright-lib-vault', () => ({
   kickDevice: jest.fn(),
   useVault: jest.fn(),
   waitForKeyRotation: jest.fn()
+}))
+
+jest.mock('lockwright-lib-vault/src/instances', () => ({
+  pearpassVaultClient: { activeVaultEnsureEpoch: jest.fn() }
 }))
 
 jest.mock('../../../context/ModalContext', () => ({
@@ -185,6 +190,7 @@ describe('RevokeAccessModalContentV2', () => {
     kind: 'epoch',
     error: new Error(`epoch rotation failed: ${reason}`)
   })
+  const toasts = () => setToast.mock.calls.map(([toast]) => toast.message)
   const uncoveredToast = (names: string) =>
     `${names} can't read new items until they open this vault once on a current Lockwright version.`
 
@@ -344,6 +350,80 @@ describe('RevokeAccessModalContentV2', () => {
     expect(messages).toEqual(["Couldn't revoke access. Please try again."])
   })
 
+  describe('Rotate key now', () => {
+    const ensureEpoch = jest.mocked(pearpassVaultClient.activeVaultEnsureEpoch)
+    const failRevoke = () =>
+      revoke({
+        results: outbox,
+        failures: [epochFailure('quota-exceeded')],
+        epoch: { rotated: false, reason: 'quota-exceeded', uncovered: [] }
+      })
+    const rotateNow = async () => {
+      await act(async () => {
+        fireEvent.click(screen.getByTestId('revoke-access-rotate-v2'))
+      })
+      expect(ensureEpoch).toHaveBeenCalledWith({ start: true })
+    }
+
+    it('is offered only when the key did not rotate', async () => {
+      await revoke({
+        results: outbox,
+        failures: [],
+        epoch: { rotated: false, reason: 'pending', uncovered: [] }
+      })
+      expect(screen.queryByTestId('revoke-access-rotate-v2')).toBeNull()
+    })
+
+    it('rotates the key and says revoked once the rotation is seen', async () => {
+      await failRevoke()
+      ensureEpoch.mockResolvedValue({ rotated: true, uncovered: [] } as never)
+
+      await rotateNow()
+
+      expect(mockedWait).toHaveBeenCalledWith(
+        expect.objectContaining({ vaultId: 'v1', deviceId: 'd9' })
+      )
+      expect(toasts()).toEqual([ROTATED])
+      expect(screen.queryByTestId('revoke-access-rotate-v2')).toBeNull()
+      expectOutcome(ROTATED_LABEL, 'status')
+    })
+
+    it('says the key is rotating when another device has to rotate it', async () => {
+      await failRevoke()
+      ensureEpoch.mockResolvedValue({
+        rotated: false,
+        reason: 'pending',
+        uncovered: []
+      } as never)
+
+      await rotateNow()
+
+      expect(mockedWait).not.toHaveBeenCalled()
+      expectOutcome(PENDING)
+    })
+
+    it('stays at key not rotated when the rotation fails again', async () => {
+      await failRevoke()
+      ensureEpoch.mockRejectedValue(new Error('worklet gone'))
+
+      await rotateNow()
+
+      expect(toasts()).toEqual([])
+      expect(screen.getByRole('alert').textContent).toBe(FAILED_LABEL + FAILED)
+      expect(screen.getByTestId('revoke-access-rotate-v2')).toBeTruthy()
+    })
+
+    it('cannot be closed while the rotation runs', async () => {
+      await failRevoke()
+      ensureEpoch.mockReturnValue(new Promise(() => {}) as never)
+
+      fireEvent.click(screen.getByTestId('revoke-access-rotate-v2'))
+
+      expect(setClosable).toHaveBeenLastCalledWith('revoke-entry', false)
+      expect(screen.getByRole('status').textContent).toBe(PENDING_LABEL)
+    })
+  })
+
   const pendingKick = () => {
     let resolve: (value: unknown) => void = () => {}
     mockedKickDevice.mockReturnValue(
@@ -359,7 +439,6 @@ describe('RevokeAccessModalContentV2', () => {
     fireEvent.click(screen.getByTestId('revoke-access-submit-v2'))
     return { view, resolve: (value: unknown) => resolve(value) }
   }
-  const toasts = () => setToast.mock.calls.map(([toast]) => toast.message)
 
   it('cannot be closed while the revoke runs', async () => {
     const { resolve } = pendingKick()
