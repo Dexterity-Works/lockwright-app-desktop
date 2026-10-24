@@ -271,7 +271,7 @@ export const RevokeAccessModalContentV2 = ({
 
   return (
     <Dialog
-      title={t('Revoke access for {deviceName}?', { deviceName })}
+      title={t('Revoke {deviceName}?', { deviceName })}
       onClose={isLoading ? undefined : dismiss}
       testID="revoke-access-dialog-v2"
       closeButtonTestID="revoke-access-close-v2"
@@ -331,40 +331,49 @@ export const RevokeAccessModalContentV2 = ({
             )}
           </div>
         )}
-        <div style={styles.intro}>
-          <Text
-            as="p"
-            variant="caption"
-            color={theme.colors.colorTextSecondary}
-          >
-            {t(
-              "Revoking removes this device from the vault and rotates the vault key. Once the key rotates, the device can't read items added or changed after that."
-            )}
-          </Text>
-          <Text
-            as="p"
-            variant="caption"
-            color={theme.colors.colorTextSecondary}
-          >
-            {t('Before you proceed, please note:')}
-          </Text>
-        </div>
-        <ul style={styles.bulletList}>
-          <li style={styles.bulletItem}>
-            <Text as="span" variant="caption">
-              {t(
-                'Items already on the device: anything it synced before now stays there. Revoking cannot delete it. Change passwords the device could see, especially if it was lost or stolen.'
-              )}
+        {[
+          {
+            intro: t('Revoking this device:'),
+            items: [
+              t("removes it from the vault, so it can't add or change items"),
+              t(
+                "rotates the vault key, so it can't read anything saved or changed after that"
+              )
+            ]
+          },
+          {
+            intro: t("It doesn't:"),
+            items: [
+              t(
+                "erase what's already on the device. It can still read every item it synced before the key rotated."
+              )
+            ]
+          }
+        ].map(({ intro, items }) => (
+          <div key={intro} style={styles.intro}>
+            <Text
+              as="p"
+              variant="caption"
+              color={theme.colors.colorTextSecondary}
+            >
+              {intro}
             </Text>
-          </li>
-          <li style={styles.bulletItem}>
-            <Text as="span" variant="caption">
-              {t(
-                'Older versions: devices still on an older Lockwright version must update before they can read new items.'
-              )}
-            </Text>
-          </li>
-        </ul>
+            <ul style={styles.bulletList}>
+              {items.map((item) => (
+                <li key={item} style={styles.bulletItem}>
+                  <Text as="span" variant="caption">
+                    {item}
+                  </Text>
+                </li>
+              ))}
+            </ul>
+          </div>
+        ))}
+        <Text as="p" variant="caption" color={theme.colors.colorTextSecondary}>
+          {t(
+            'If the device was lost or stolen, change the passwords it could see.'
+          )}
+        </Text>
       </div>
     </Dialog>
   )
