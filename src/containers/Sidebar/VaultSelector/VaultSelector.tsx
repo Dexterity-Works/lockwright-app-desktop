@@ -123,10 +123,13 @@ export const VaultSelector = ({ onClose }: VaultSelectorProps = {}) => {
     })
   }
 
+  // The dialog counts devices and erases through the active vault.
   const handleDelete = (vault: Vault) => {
-    setModal(
-      <DeleteVaultModalContent vaultId={vault.id} vaultName={vault.name} />
-    )
+    void switchVault(vault, () => {
+      setModal(
+        <DeleteVaultModalContent vaultId={vault.id} vaultName={vault.name} />
+      )
+    })
   }
 
   const handleViewDevices = () => {
