@@ -164,4 +164,247 @@ describe('native messaging host IPC path', () => {
       pairingToken: 'secret-token'
     })
   })
+
+  it('drops desktop pushes until the pipe owner has proved itself', async () => {
+    dropConnection()
+    getIpcPath.mockReturnValue({ pipe: 'published-pipe', secret })
+    let releaseProof = () => {}
+    answerProof = (nonceHex) =>
+      new Promise((resolve) => {
+        releaseProof = () => resolve(prove(nonceHex))
+      })
+
+    handler.emit('message', { id: '8', command: 'checkAvailability' })
+    await flush()
+    const { api } = IPC.Client.mock.calls.at(-1)[0]
+    const method = {}
+    api.onEpochStatus(method)
+    const pushes = () =>
+      handler.send.mock.calls.filter(([msg]) => msg.event === 'epoch-status')
+
+    method._onrequest({ vaultId: 'v-1', revoked: true })
+    expect(pushes()).toHaveLength(0)
+
+    releaseProof()
+    await flush()
+    method._onrequest({ vaultId: 'v-1', revoked: true })
+    expect(pushes()).toEqual([
+      [{ event: 'epoch-status', data: { vaultId: 'v-1', revoked: true } }]
+    ])
+  })
+
+  it('forwards pushes on the live client after a stale client closes late', async () => {
+    getIpcPath.mockReturnValue({ pipe: 'published-pipe', secret })
+    answerProof = prove
+    const stale = IPC.Client.mock.instances.at(-1)
+    const [, staleClose] = stale.on.mock.calls.find(([e]) => e === 'close')
+    staleClose()
+
+    expect(await checkAvailability('9')).toMatchObject({ available: true })
+    const { api } = IPC.Client.mock.calls.at(-1)[0]
+    const method = {}
+    api.onVaultAccessRevoked(method)
+
+    // The stale client's close event arrives again after the live one is up.
+    staleClose()
+    method._onrequest({ vaultId: 'v-2', actor: 'd-1' })
+
+    expect(handler.send).toHaveBeenLastCalledWith({
+      event: 'vault-access-revoked',
+      data: { vaultId: 'v-2', actor: 'd-1' }
+    })
+  })
+
+  it('closes a timed-out client and carries pushes on the reconnected one', async () => {
+    getIpcPath.mockReturnValue({ pipe: 'published-pipe', secret })
+    answerProof = prove
+    expect(await checkAvailability('10')).toMatchObject({ available: true })
+    const timedOut = IPC.Client.mock.instances.at(-1)
+    timedOut.nmGetAppIdentity.mockReturnValueOnce(new Promise(() => {}))
+    const clientsBefore = IPC.Client.mock.instances.length
+
+    handler.emit('message', { id: '11', command: 'nmGetAppIdentity', params: {} })
+    await flush()
+    jest.runOnlyPendingTimers()
+    for (let i = 0; i < 5; i++) await flush()
+
+    expect(timedOut.close).toHaveBeenCalled()
+    expect(IPC.Client.mock.instances.length).toBe(clientsBefore + 1)
+    const { api } = IPC.Client.mock.calls.at(-1)[0]
+    const method = {}
+    api.onEpochStatus(method)
+    method._onrequest({ vaultId: 'v-3', revoked: true })
+    expect(handler.send).toHaveBeenLastCalledWith({
+      event: 'epoch-status',
+      data: { vaultId: 'v-3', revoked: true }
+    })
+  })
+
+  it('reconnects once when two calls time out together', async () => {
+    getIpcPath.mockReturnValue({ pipe: 'published-pipe', secret })
+    answerProof = prove
+    expect(await checkAvailability('12')).toMatchObject({ available: true })
+    const first = IPC.Client.mock.instances.at(-1)
+    first.nmGetAppIdentity.mockReturnValue(new Promise(() => {}))
+    const clientsBefore = IPC.Client.mock.instances.length
+
+    handler.emit('message', { id: '13', command: 'nmGetAppIdentity', params: {} })
+    handler.emit('message', { id: '14', command: 'nmGetAppIdentity', params: {} })
+    await flush()
+    jest.runOnlyPendingTimers()
+    for (let i = 0; i < 5; i++) await flush()
+
+    expect(first.close).toHaveBeenCalled()
+    expect(IPC.Client.mock.instances.length).toBe(clientsBefore + 1)
+    const live = IPC.Client.mock.instances.at(-1)
+    expect(live.close).not.toHaveBeenCalled()
+    expect(await checkAvailability('15')).toMatchObject({ available: true })
+    expect(IPC.Client.mock.instances.length).toBe(clientsBefore + 1)
+  })
+
+  it('leaves the live client alone when an old client fails late', async () => {
+    getIpcPath.mockReturnValue({ pipe: 'published-pipe', secret })
+    answerProof = prove
+    expect(await checkAvailability('16')).toMatchObject({ available: true })
+    const old = IPC.Client.mock.instances.at(-1)
+    let failLate = () => {}
+    old.nmGetAppIdentity.mockReturnValueOnce(
+      new Promise((_, reject) => {
+        failLate = () => reject(new Error('RPC destroyed'))
+      })
+    )
+    handler.emit('message', { id: '17', command: 'nmGetAppIdentity', params: {} })
+    await flush()
+
+    dropConnection()
+    expect(await checkAvailability('18')).toMatchObject({ available: true })
+    const live = IPC.Client.mock.instances.at(-1)
+    const clientsBefore = IPC.Client.mock.instances.length
+
+    failLate()
+    for (let i = 0; i < 5; i++) await flush()
+
+    expect(live.close).not.toHaveBeenCalled()
+    expect(live.nmGetAppIdentity).not.toHaveBeenCalled()
+    expect(IPC.Client.mock.instances.length).toBe(clientsBefore)
+    const [response] = handler.send.mock.calls.find(([msg]) => msg.id === '17')
+    expect(response).toMatchObject({ success: false, error: 'RPC destroyed' })
+  })
+
+  it('retries on a new client when the desktop drops the pipe mid-call', async () => {
+    getIpcPath.mockReturnValue({ pipe: 'published-pipe', secret })
+    answerProof = prove
+    expect(await checkAvailability('19')).toMatchObject({ available: true })
+    const dropped = IPC.Client.mock.instances.at(-1)
+    let destroy = () => {}
+    dropped.nmGetAppIdentity.mockReturnValueOnce(
+      new Promise((_, reject) => {
+        destroy = () => reject(new Error('RPC destroyed'))
+      })
+    )
+    handler.emit('message', { id: '20', command: 'nmGetAppIdentity', params: {} })
+    await flush()
+
+    // pear-ipc emits close one microtask before the call rejects
+    const [, onClose] = dropped.on.mock.calls.find(([e]) => e === 'close')
+    onClose()
+    destroy()
+    for (let i = 0; i < 6; i++) await flush()
+
+    const retried = IPC.Client.mock.instances.at(-1)
+    expect(retried).not.toBe(dropped)
+    expect(retried.nmGetAppIdentity).toHaveBeenCalledTimes(1)
+    const [response] = handler.send.mock.calls.find(([msg]) => msg.id === '20')
+    expect(response).toMatchObject({ success: true })
+  })
+
+  it('sends the error when the retried call also finds the pipe destroyed', async () => {
+    getIpcPath.mockReturnValue({ pipe: 'published-pipe', secret })
+    answerProof = prove
+    expect(await checkAvailability('21')).toMatchObject({ available: true })
+    const identityCalls = () =>
+      IPC.Client.mock.instances.reduce(
+        (n, client) => n + client.nmGetAppIdentity.mock.calls.length,
+        0
+      )
+    const callsBefore = identityCalls()
+    IPC.Client.mock.instances
+      .at(-1)
+      .nmGetAppIdentity.mockRejectedValueOnce(new Error('RPC destroyed'))
+    // The clients the bridge reconnects to drop the pipe too. Capped so a
+    // retry loop fails this test instead of spinning forever.
+    let drops = 5
+    const impl = IPC.Client.getMockImplementation()
+    IPC.Client.mockImplementation(function (opts) {
+      impl.call(this, opts)
+      this.nmGetAppIdentity = jest.fn(async () => {
+        if (drops-- > 0) throw new Error('RPC destroyed')
+        return { ok: true }
+      })
+    })
+    try {
+      handler.emit('message', {
+        id: '22',
+        command: 'nmGetAppIdentity',
+        params: {}
+      })
+      for (let i = 0; i < 10; i++) await flush()
+    } finally {
+      IPC.Client.mockImplementation(impl)
+    }
+
+    expect(identityCalls() - callsBefore).toBe(2)
+    const responses = handler.send.mock.calls.filter(([msg]) => msg.id === '22')
+    expect(responses).toEqual([
+      [{ id: '22', success: false, error: 'RPC destroyed' }]
+    ])
+  })
+})
+
+describe('NativeMessagingHost connect', () => {
+  const host = () => {
+    const { NativeMessagingHost } = require('./bridge.js')
+    return new NativeMessagingHost()
+  }
+
+  beforeEach(() => {
+    getIpcPath.mockReturnValue({ pipe: 'published-pipe', secret })
+    answerProof = prove
+  })
+
+  it('shares one connect between concurrent callers', async () => {
+    const bridge = host()
+    const before = IPC.Client.mock.instances.length
+
+    await Promise.all([bridge.connectToIPC(), bridge.connectToIPC()])
+
+    expect(IPC.Client.mock.instances.length).toBe(before + 1)
+    expect(bridge.ipcClient).toBe(IPC.Client.mock.instances.at(-1))
+    expect(bridge.desktopAppStatus).toBe('connected')
+  })
+
+  it('closes a client replaced mid-proof and never marks it connected', async () => {
+    let releaseProof = () => {}
+    answerProof = (nonceHex) =>
+      new Promise((resolve) => {
+        releaseProof = () => resolve(prove(nonceHex))
+      })
+    const bridge = host()
+
+    const connecting = bridge.connectToIPC()
+    await flush()
+    const replaced = IPC.Client.mock.instances.at(-1)
+    expect(replaced.nmProveServer).toHaveBeenCalled()
+    const successor = { closed: false, on: jest.fn(), close: jest.fn() }
+    bridge.ipcClient = successor
+    bridge.desktopAppStatus = 'connecting'
+
+    releaseProof()
+    await connecting
+
+    expect(replaced.close).toHaveBeenCalled()
+    expect(successor.close).not.toHaveBeenCalled()
+    expect(bridge.ipcClient).toBe(successor)
+    expect(bridge.desktopAppStatus).toBe('connecting')
+  })
 })

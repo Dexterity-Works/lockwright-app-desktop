@@ -8,6 +8,7 @@ const { useOnExtensionExit } = require('./useOnExtensionExit')
 
 const mockNavigate = jest.fn()
 const mockResetState = jest.fn()
+const mockCloseModal = jest.fn()
 
 jest.mock('lockwright-lib-vault', () => ({
   useVaults: () => ({
@@ -18,6 +19,12 @@ jest.mock('lockwright-lib-vault', () => ({
 jest.mock('../../../context/RouterContext', () => ({
   useRouter: () => ({
     navigate: mockNavigate
+  })
+}))
+
+jest.mock('../../../context/ModalContext', () => ({
+  useModal: () => ({
+    closeModal: mockCloseModal
   })
 }))
 
@@ -55,7 +62,7 @@ describe('UseOnExtensionExit', () => {
     )
   })
 
-  it('should call navigate and resetState on extension-exit event', () => {
+  it('should close modals, navigate and resetState on extension-exit event', () => {
     let handler
     addEventListenerSpy.mockImplementation((event, cb) => {
       if (event === HANDLER_EVENTS.extensionExit) {
@@ -77,5 +84,6 @@ describe('UseOnExtensionExit', () => {
       state: 'masterPassword'
     })
     expect(mockResetState).toHaveBeenCalled()
+    expect(mockCloseModal).toHaveBeenCalledWith({ force: true })
   })
 })

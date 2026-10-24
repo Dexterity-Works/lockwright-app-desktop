@@ -2,7 +2,12 @@ import React from 'react'
 
 import { render, screen, fireEvent, act } from '@testing-library/react'
 
-import { ModalProvider, STACK_CLEANUP_BUFFER, useModal } from './ModalContext'
+import {
+  ModalProvider,
+  STACK_CLEANUP_BUFFER,
+  useModal,
+  useModalEntryId
+} from './ModalContext'
 import { BASE_TRANSITION_DURATION } from '../constants/transitions'
 import '@testing-library/jest-dom'
 
@@ -146,6 +151,304 @@ describe('ModalProvider', () => {
     })
 
     expect(screen.queryByTestId('modal-content')).not.toBeInTheDocument()
+  })
+
+  test('ignores Escape and overlay clicks while the open modal is busy', () => {
+    const Busy = () => {
+      const { setClosable } = useModal()
+      const id = useModalEntryId()
+      return (
+        <div>
+          <button onClick={() => setClosable(id, false)}>Start work</button>
+          <button onClick={() => setClosable(id, true)}>Finish work</button>
+        </div>
+      )
+    }
+    const Opener = () => {
+      const { setModal } = useModal()
+      return <button onClick={() => setModal(<Busy />)}>Open Busy</button>
+    }
+    render(
+      <ModalProvider>
+        <Opener />
+      </ModalProvider>
+    )
+
+    fireEvent.click(screen.getByText('Open Busy'))
+    fireEvent.click(screen.getByText('Start work'))
+    fireEvent.keyDown(window, { key: 'Escape', code: 'Escape' })
+    fireEvent.click(screen.getByTestId('overlay'))
+    act(() => {
+      jest.advanceTimersByTime(CLOSE_DURATION)
+    })
+    expect(screen.getByText('Start work')).toBeInTheDocument()
+
+    fireEvent.click(screen.getByText('Finish work'))
+    fireEvent.keyDown(window, { key: 'Escape', code: 'Escape' })
+    act(() => {
+      jest.advanceTimersByTime(CLOSE_DURATION)
+    })
+    expect(screen.queryByText('Start work')).not.toBeInTheDocument()
+  })
+
+  describe('when a modal opens on top of a busy one', () => {
+    const Notice = () => <div>Access removed</div>
+    const Busy = () => {
+      const { setModal, closeModal, setClosable } = useModal()
+      const id = useModalEntryId()
+      return (
+        <div>
+          <button onClick={() => setClosable(id, false)}>Start work</button>
+          <button onClick={() => setModal(<Notice />)}>Open notice</button>
+          <button
+            onClick={() => {
+              setClosable(id, true)
+              closeModal(id)
+            }}
+          >
+            Finish work
+          </button>
+        </div>
+      )
+    }
+    const Opener = () => {
+      const { setModal, closeModal } = useModal()
+      return (
+        <div>
+          <button onClick={() => setModal(<Busy />)}>Open Busy</button>
+          <button onClick={() => closeModal({ force: true })}>Lock</button>
+        </div>
+      )
+    }
+    const settle = () =>
+      act(() => {
+        jest.advanceTimersByTime(CLOSE_DURATION)
+      })
+
+    beforeEach(() => {
+      render(
+        <ModalProvider>
+          <Opener />
+        </ModalProvider>
+      )
+      fireEvent.click(screen.getByText('Open Busy'))
+    })
+
+    test('closing by id closes only the busy modal', () => {
+      fireEvent.click(screen.getByText('Start work'))
+      fireEvent.click(screen.getByText('Open notice'))
+
+      fireEvent.click(screen.getByText('Finish work'))
+      settle()
+
+      expect(screen.queryByText('Start work')).not.toBeInTheDocument()
+      expect(screen.getByText('Access removed')).toBeInTheDocument()
+    })
+
+    test('the closable flag lands on the busy modal, not the top one', () => {
+      fireEvent.click(screen.getByText('Open notice'))
+      fireEvent.click(screen.getByText('Start work'))
+
+      fireEvent.keyDown(window, { key: 'Escape', code: 'Escape' })
+      settle()
+      expect(screen.queryByText('Access removed')).not.toBeInTheDocument()
+
+      fireEvent.keyDown(window, { key: 'Escape', code: 'Escape' })
+      settle()
+      expect(screen.getByText('Start work')).toBeInTheDocument()
+    })
+
+    test('Escape twice within the fade leaves the busy modal open', () => {
+      fireEvent.click(screen.getByText('Start work'))
+      fireEvent.click(screen.getByText('Open notice'))
+
+      fireEvent.keyDown(window, { key: 'Escape', code: 'Escape' })
+      fireEvent.keyDown(window, { key: 'Escape', code: 'Escape' })
+      settle()
+
+      expect(screen.queryByText('Access removed')).not.toBeInTheDocument()
+      expect(screen.getByText('Start work')).toBeInTheDocument()
+    })
+
+    test('a forced close shuts the notice and the busy modal under it', () => {
+      fireEvent.click(screen.getByText('Start work'))
+      fireEvent.click(screen.getByText('Open notice'))
+
+      fireEvent.click(screen.getByText('Lock'))
+      settle()
+
+      expect(screen.queryByText('Access removed')).not.toBeInTheDocument()
+      expect(screen.queryByText('Start work')).not.toBeInTheDocument()
+      expect(screen.queryAllByTestId('modal-wrapper').length).toBe(0)
+    })
+
+    test('closing a modal that is already gone does nothing', () => {
+      fireEvent.click(screen.getByText('Open notice'))
+      const finish = screen.getByText('Finish work')
+      fireEvent.click(finish)
+      settle()
+      fireEvent.click(finish)
+      settle()
+
+      expect(screen.getByText('Access removed')).toBeInTheDocument()
+    })
+  })
+
+  test('closeModal() without an id leaves a busy modal open', () => {
+    // Like a dialog underneath that wires its own Escape listener to
+    // closeModal.
+    const EscapeCloser = () => {
+      const { closeModal } = useModal()
+      React.useEffect(() => {
+        const onKey = (event) => event.key === 'Escape' && closeModal()
+        document.addEventListener('keydown', onKey)
+        return () => document.removeEventListener('keydown', onKey)
+      }, [closeModal])
+      return null
+    }
+    const Busy = () => {
+      const { setClosable } = useModal()
+      const id = useModalEntryId()
+      return (
+        <div>
+          <button onClick={() => setClosable(id, false)}>Start work</button>
+          <button onClick={() => setClosable(id, true)}>Finish work</button>
+        </div>
+      )
+    }
+    const Opener = () => {
+      const { setModal } = useModal()
+      return <button onClick={() => setModal(<Busy />)}>Open Busy</button>
+    }
+    render(
+      <ModalProvider>
+        <EscapeCloser />
+        <Opener />
+      </ModalProvider>
+    )
+
+    fireEvent.click(screen.getByText('Open Busy'))
+    fireEvent.click(screen.getByText('Start work'))
+    fireEvent.keyDown(document, { key: 'Escape', code: 'Escape' })
+    act(() => {
+      jest.advanceTimersByTime(CLOSE_DURATION)
+    })
+    expect(screen.getByText('Start work')).toBeInTheDocument()
+
+    fireEvent.click(screen.getByText('Finish work'))
+    fireEvent.keyDown(document, { key: 'Escape', code: 'Escape' })
+    act(() => {
+      jest.advanceTimersByTime(CLOSE_DURATION)
+    })
+    expect(screen.queryByText('Start work')).not.toBeInTheDocument()
+  })
+
+  test('a forced close shuts a busy modal', () => {
+    const Busy = () => {
+      const { setClosable } = useModal()
+      const id = useModalEntryId()
+      return <button onClick={() => setClosable(id, false)}>Start work</button>
+    }
+    const Locker = () => {
+      const { setModal, closeModal } = useModal()
+      return (
+        <div>
+          <button onClick={() => setModal(<Busy />)}>Open Busy</button>
+          <button onClick={() => closeModal({ force: true })}>Lock</button>
+        </div>
+      )
+    }
+    render(
+      <ModalProvider>
+        <Locker />
+      </ModalProvider>
+    )
+
+    fireEvent.click(screen.getByText('Open Busy'))
+    fireEvent.click(screen.getByText('Start work'))
+    fireEvent.click(screen.getByText('Lock'))
+    act(() => {
+      jest.advanceTimersByTime(CLOSE_DURATION)
+    })
+
+    expect(screen.queryByText('Start work')).not.toBeInTheDocument()
+  })
+
+  test('a forced close shuts a busy modal and the one under it', () => {
+    const Busy = () => {
+      const { setClosable } = useModal()
+      const id = useModalEntryId()
+      return <button onClick={() => setClosable(id, false)}>Start work</button>
+    }
+    const Devices = () => {
+      const { setModal } = useModal()
+      return <button onClick={() => setModal(<Busy />)}>Revoke</button>
+    }
+    const Locker = () => {
+      const { setModal, closeModal } = useModal()
+      return (
+        <div>
+          <button onClick={() => setModal(<Devices />)}>Open Devices</button>
+          <button onClick={() => closeModal({ force: true })}>Lock</button>
+        </div>
+      )
+    }
+    render(
+      <ModalProvider>
+        <Locker />
+      </ModalProvider>
+    )
+
+    fireEvent.click(screen.getByText('Open Devices'))
+    fireEvent.click(screen.getByText('Revoke'))
+    fireEvent.click(screen.getByText('Start work'))
+    fireEvent.click(screen.getByText('Lock'))
+    act(() => {
+      jest.advanceTimersByTime(CLOSE_DURATION)
+    })
+
+    expect(screen.queryByText('Start work')).not.toBeInTheDocument()
+    expect(screen.queryByText('Revoke')).not.toBeInTheDocument()
+    expect(screen.queryAllByTestId('modal-wrapper').length).toBe(0)
+  })
+
+  test('a modal opened as not closable can still close itself by id', () => {
+    const Update = () => {
+      const { closeModal } = useModal()
+      const id = useModalEntryId()
+      return (
+        <div>
+          <button onClick={() => closeModal()}>Close top</button>
+          <button onClick={() => closeModal(id)}>Update now</button>
+        </div>
+      )
+    }
+    const Opener = () => {
+      const { setModal } = useModal()
+      return (
+        <button onClick={() => setModal(<Update />, { closable: false })}>
+          Open Update
+        </button>
+      )
+    }
+    render(
+      <ModalProvider>
+        <Opener />
+      </ModalProvider>
+    )
+
+    fireEvent.click(screen.getByText('Open Update'))
+    fireEvent.click(screen.getByText('Close top'))
+    act(() => {
+      jest.advanceTimersByTime(CLOSE_DURATION)
+    })
+    expect(screen.getByText('Update now')).toBeInTheDocument()
+
+    fireEvent.click(screen.getByText('Update now'))
+    act(() => {
+      jest.advanceTimersByTime(CLOSE_DURATION)
+    })
+    expect(screen.queryByText('Update now')).not.toBeInTheDocument()
   })
 
   test('closes modal on overlay click', () => {

@@ -72,6 +72,8 @@ const VAULT_METHODS = [
   'keepassArgon2',
   'activeVaultFind',
   'activeVaultGetWriterKey',
+  'activeVaultEnsureEpoch',
+  'activeVaultGetEpochStatus',
   'personalSwarmInit',
   'personalSwarmClose',
   'personalSwarmGetTopic',

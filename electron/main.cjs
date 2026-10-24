@@ -541,6 +541,12 @@ async function startRuntime() {
     }
   })
 
+  vaultClient.on('epoch-status', (status) => {
+    if (mainWindow && !mainWindow.isDestroyed()) {
+      mainWindow.webContents.send('vault:epoch-status', status)
+    }
+  })
+
   pearRuntime.updater.on('updating', () => {
     if (mainWindow && !mainWindow.isDestroyed()) {
       logger.info('runtime:updating', 'sending updating event')
@@ -659,6 +665,12 @@ async function startWorkletOnly() {
   vaultClient.on('personal-swarm-envelope', (msg) => {
     if (mainWindow && !mainWindow.isDestroyed()) {
       mainWindow.webContents.send('vault:personal-swarm-envelope', msg)
+    }
+  })
+
+  vaultClient.on('epoch-status', (status) => {
+    if (mainWindow && !mainWindow.isDestroyed()) {
+      mainWindow.webContents.send('vault:epoch-status', status)
     }
   })
 }

@@ -37,6 +37,8 @@ const COMMAND_DEFINITIONS = [
   { id: 1018, name: 'activeVaultCreateInvite' },
   { id: 1019, name: 'activeVaultDeleteInvite' },
   { id: 1046, name: 'activeVaultGetWriterKey' },
+  { id: 1051, name: 'activeVaultEnsureEpoch' },
+  { id: 1052, name: 'activeVaultGetEpochStatus' },
 
   // Password and encryption key commands
   { id: 1020, name: 'hashPassword' },
@@ -86,7 +88,8 @@ const COMMAND_DEFINITIONS = [
   { id: 1047, name: 'findOtpDuplicates' },
 
   // Server-pushed events (fire-and-forget, server -> bridge)
-  { id: 1045, name: 'onVaultAccessRevoked', send: true }
+  { id: 1045, name: 'onVaultAccessRevoked', send: true },
+  { id: 1053, name: 'onEpochStatus', send: true }
 ]
 
 /** @type {string[]} */

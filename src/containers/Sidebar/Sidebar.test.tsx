@@ -215,7 +215,7 @@ describe('Sidebar — lock app flow', () => {
     mockFoldersData = { customFolders: {}, favorites: { records: [] } }
   })
 
-  it('closes instances, navigates to master password, and resets vault state', async () => {
+  it('closes instances and modals, navigates to master password, and resets vault state', async () => {
     mockCloseAllInstances.mockImplementation(() => Promise.resolve())
 
     render(<Sidebar />)
@@ -229,6 +229,7 @@ describe('Sidebar — lock app flow', () => {
       state: 'masterPassword'
     })
     expect(mockResetState).toHaveBeenCalledTimes(1)
+    expect(mockCloseModal).toHaveBeenCalledWith({ force: true })
     expect(mockSetIsLoading).toHaveBeenNthCalledWith(1, true)
     expect(mockSetIsLoading).toHaveBeenLastCalledWith(false)
   })

@@ -76,6 +76,7 @@ export function createElectronVaultClientProxy(api) {
       api.vaultOnPersonalSwarmEnvelope?.((msg) =>
         this.emit('personal-swarm-envelope', fromSerializableData(msg))
       )
+      api.vaultOnEpochStatus?.((status) => this.emit('epoch-status', status))
       for (const method of VAULT_METHODS) {
         this[method] = async (...args) => {
           const serialized = args.map(toSerializableArg)
