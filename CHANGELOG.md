@@ -9,6 +9,10 @@ Starts at 0.0.17, after the Lockwright package rename. Earlier history is git.
 
 ## [Unreleased]
 
+### Changed
+
+- The revoke dialog says a device is revoked only once the vault key has rotated past it, and shows the time of that rotation. Until then it says "Removed · key rotating", including when 50 seconds pass without seeing the rotation, and after a failed rotation "Removed · key not rotated". It no longer toasts "Device can no longer edit this vault" before the rotation is confirmed.
+
 ## [0.0.31] - 2026-10-17
 
 `6e22c86a437f4c698870868ace4d7593ce4102ae`
