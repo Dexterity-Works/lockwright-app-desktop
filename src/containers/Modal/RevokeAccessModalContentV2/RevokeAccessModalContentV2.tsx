@@ -46,7 +46,21 @@ export const RevokeAccessModalContentV2 = ({
   // Set once the device is removed but the key did not rotate, or when
   // kickDevice has not settled by the deadline. The dialog stays open with
   // this warning and only offers Done.
-  const [warning, setWarning] = useState<string | null>(null)
+  const [warning, setWarningState] = useState<string | null>(null)
+  // The warning still on screen. A forced close on lock unmounts the dialog
+  // before the user reads it, so the unmount toasts it instead. Closing
+  // from the dialog's own buttons clears it first.
+  const unreadWarningRef = useRef<string | null>(null)
+  const setWarning = (next: string | null) => {
+    unreadWarningRef.current = next
+    setWarningState(next)
+  }
+  const setToastRef = useRef(setToast)
+  setToastRef.current = setToast
+  const dismiss = () => {
+    unreadWarningRef.current = null
+    handleClose()
+  }
   const doneRef = useRef<HTMLButtonElement>(null)
   const deadlineRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
@@ -65,6 +79,9 @@ export const RevokeAccessModalContentV2 = ({
     return () => {
       mounted.current = false
       clearDeadline()
+      if (unreadWarningRef.current) {
+        setToastRef.current({ message: unreadWarningRef.current })
+      }
     }
   }, [])
 
@@ -213,7 +230,7 @@ export const RevokeAccessModalContentV2 = ({
   return (
     <Dialog
       title={t('Revoke access for {deviceName}?', { deviceName })}
-      onClose={isLoading ? undefined : handleClose}
+      onClose={isLoading ? undefined : dismiss}
       testID="revoke-access-dialog-v2"
       closeButtonTestID="revoke-access-close-v2"
       footer={
@@ -223,7 +240,7 @@ export const RevokeAccessModalContentV2 = ({
             variant="primary"
             size="small"
             type="button"
-            onClick={handleClose}
+            onClick={dismiss}
             data-testid="revoke-access-done-v2"
           >
             {t('Done')}

@@ -400,6 +400,59 @@ describe('RevokeAccessModalContentV2', () => {
     ])
   })
 
+  describe('when a lock closes the dialog after a warning', () => {
+    const NOT_WRITABLE =
+      "This device can't write to the vault. The revoked device can still read new items."
+
+    const settleWithWarning = async () => {
+      const pending = pendingKick()
+      await act(async () => {
+        pending.resolve({
+          results: outbox,
+          failures: [epochFailure('not-writable')],
+          epoch: { rotated: false, reason: 'not-writable', uncovered: [] }
+        })
+      })
+      expect(screen.getByRole('alert').textContent).toContain(NOT_WRITABLE)
+      return pending
+    }
+
+    it('toasts the warning so the lock does not drop it', async () => {
+      const { view } = await settleWithWarning()
+
+      // lockAppSession's forced close unmounts the dialog.
+      view.unmount()
+
+      expect(setToast.mock.calls.map(([toast]) => toast.message)).toEqual([
+        SUCCESS,
+        NOT_WRITABLE
+      ])
+    })
+
+    it('does not repeat the warning after Done', async () => {
+      const { view } = await settleWithWarning()
+
+      fireEvent.click(screen.getByTestId('revoke-access-done-v2'))
+      view.unmount()
+
+      expect(closeModal.mock.calls).toEqual([['revoke-entry']])
+      expect(setToast.mock.calls.map(([toast]) => toast.message)).toEqual([
+        SUCCESS
+      ])
+    })
+
+    it('does not repeat the warning after the close button', async () => {
+      const { view } = await settleWithWarning()
+
+      fireEvent.click(screen.getByTestId('dialog-close'))
+      view.unmount()
+
+      expect(setToast.mock.calls.map(([toast]) => toast.message)).toEqual([
+        SUCCESS
+      ])
+    })
+  })
+
   describe('when the revoke hangs', () => {
     const TIMED_OUT =
       "The revoke didn't finish in time, so the result is unknown. Check the device list after the next sync."
@@ -473,6 +526,32 @@ describe('RevokeAccessModalContentV2', () => {
       expect(screen.queryByRole('alert')).toBeNull()
       expect(closeModal.mock.calls).toEqual([['revoke-entry']])
       expect(setToast.mock.calls.map(([toast]) => toast.message)).toEqual([
+        SUCCESS
+      ])
+    })
+
+    it('toasts the timeout warning when a lock closes the dialog', async () => {
+      const { view, resolve } = pendingKick()
+
+      act(() => {
+        jest.advanceTimersByTime(50_000)
+      })
+      expect(screen.getByRole('alert').textContent).toContain(TIMED_OUT)
+      view.unmount()
+      expect(setToast.mock.calls.map(([toast]) => toast.message)).toEqual([
+        TIMED_OUT
+      ])
+
+      await act(async () => {
+        resolve({
+          results: outbox,
+          failures: [],
+          epoch: { rotated: true, uncovered: [] }
+        })
+      })
+      expect(closeModal).not.toHaveBeenCalled()
+      expect(setToast.mock.calls.map(([toast]) => toast.message)).toEqual([
+        TIMED_OUT,
         SUCCESS
       ])
     })
