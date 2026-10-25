@@ -32,6 +32,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
   vaultOnMasterUpdate: (cb) => subscribeSignal('vault:master-update', cb),
   vaultOnPersonalSwarmEnvelope: (cb) =>
     subscribe('vault:personal-swarm-envelope', cb),
+  vaultOnEpochStatus: (cb) => subscribe('vault:epoch-status', cb),
   clearStaleVaultsDir: () => ipcRenderer.invoke('vault:clearStaleVaultsDir'),
   openExternal: (url) => ipcRenderer.invoke('shell:openExternal', url),
   openLogsFolder: () => ipcRenderer.invoke('vault:openLogsFolder'),

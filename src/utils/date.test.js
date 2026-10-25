@@ -13,6 +13,12 @@ describe('formatDate', () => {
   test('throws on an invalid date', () => {
     expect(() => formatDate('invalid-date')).toThrow('Invalid date input')
   })
+
+  test('passes unknown format components through unchanged', () => {
+    expect(formatDate(new Date(2024, 0, 2), 'yyyy-unknown')).toBe(
+      '2024-unknown'
+    )
+  })
 })
 
 describe('subtractMonths', () => {
@@ -25,6 +31,20 @@ describe('subtractMonths', () => {
   test('subtracts six months', () => {
     expect(subtractMonths(6, new Date(2024, 6, 15)).getTime()).toBe(
       new Date(2024, 0, 15).getTime()
+    )
+  })
+
+  test('uses the current date when no starting date is supplied', () => {
+    jest.useFakeTimers().setSystemTime(new Date(2024, 6, 15))
+
+    expect(subtractMonths(1)).toEqual(new Date(2024, 5, 15))
+
+    jest.useRealTimers()
+  })
+
+  test('rejects an invalid starting date', () => {
+    expect(() => subtractMonths(1, 'invalid-date')).toThrow(
+      'Invalid date input'
     )
   })
 })

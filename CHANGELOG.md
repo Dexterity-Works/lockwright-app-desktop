@@ -11,7 +11,25 @@ Starts at 0.0.17, after the Lockwright package rename. Earlier history is git.
 
 ### Changed
 
+- The revoke dialog says a device is revoked only once the vault key has rotated past it, and shows the time of that rotation. Until then it says "Removed · key rotating", including when 50 seconds pass without seeing the rotation, and after a failed rotation "Removed · key not rotated". It no longer toasts "Device can no longer edit this vault" before the rotation is confirmed. After a failed rotation the dialog offers "Rotate key now".
+- Paired Devices says when the vault key last rotated, and keeps listing a removed device the key still reaches: "Removed · key rotating" while another device has to rotate it, or "Removed · key not rotated" with "Rotate key now". A rotation that lands after the revoke dialog closed shows here.
+- The revoke dialog lists what revoking does (removes the device, rotates the vault key) and what it doesn't (erase what the device already synced; it can still read every item from before the rotation), and asks to change the passwords a lost or stolen device could see. The browser extension uses the same text.
+
+## [0.0.31] - 2026-10-17
+
+`6e22c86a437f4c698870868ace4d7593ce4102ae`
+
+### Changed
+
 - The unique-ID, password check, password generator, QR, and validator utils now come from one package, `lockwright-lib-utils`.
+- The revoke dialog says revoking rotates the vault key, and that once the key rotates the device cannot read items added or changed afterwards. Items it already synced stay on it. If the key did not rotate, the dialog stays open with a warning and a Done button. A toast names devices that cannot read new items yet. The warning says in a plain sentence why the key did not rotate. If revoking has not finished after 50 seconds, the dialog can be closed and says the result is unknown.
+- The browser extension can rotate the vault key and read the key status through this app, so revoking a device from the extension rotates the key too.
+- A native-messaging bridge process started before this update exits once when the first epoch-status push arrives; the extension then reconnects to the new bridge.
+
+### Fixed
+
+- A desktop removed from a vault by a key rotation wipes that vault, as it already does when it is kicked.
+- A password generated on a device whose clock is behind another device's stays at the top of generator history instead of dropping out.
 
 ## [0.0.30] - 2026-10-03
 
@@ -27,7 +45,6 @@ Starts at 0.0.17, after the Lockwright package rename. Earlier history is git.
 - Generator history shows vault entries whose password matches, including ones saved before labels were stamped.
 - Generator history shows as soon as the Generator opens.
 - Generator history no longer loses entries when another device writes at the same time or has not synced yet.
-- A password generated on a device whose clock is behind another device's stays at the top of generator history instead of dropping out.
 - Cleared generator history stays cleared when another device or an older app version has not caught up. Generating and using a password at once no longer adds it twice.
 
 ## [0.0.29] - 2026-10-02
