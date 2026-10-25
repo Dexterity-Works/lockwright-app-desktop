@@ -211,6 +211,20 @@ describe('RevokeAccessModalContentV2', () => {
     expectOutcome(ROTATED_LABEL, 'status')
   })
 
+  it('uses the current time when the confirmed rotation has no timestamp', async () => {
+    jest.spyOn(Date, 'now').mockReturnValue(ROTATED_AT)
+    mockedWait.mockResolvedValue({ ...rotatedState, rotatedAt: undefined } as never)
+
+    const messages = await revoke({
+      results: outbox,
+      failures: [],
+      epoch: { rotated: true, uncovered: [] }
+    })
+
+    expect(messages).toEqual([ROTATED])
+    expectOutcome(ROTATED_LABEL, 'status')
+  })
+
   it('shows the key rotating, with no success toast, while it waits', async () => {
     let settle: (state: null) => void = () => {}
     mockedWait.mockReturnValue(new Promise((r) => (settle = r)) as never)
