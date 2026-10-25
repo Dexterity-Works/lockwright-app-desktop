@@ -242,4 +242,15 @@ describe('PairedDevicesModalContent', () => {
 
     expect(screen.getByText('No devices synced yet')).toBeInTheDocument()
   })
+
+  it('does not read key state when no vault is selected', async () => {
+    jest.mocked(useVault).mockReturnValue({
+      data: { id: undefined, devices: [] }
+    } as unknown as ReturnType<typeof useVault>)
+
+    await open()
+
+    expect(getVaultKeyState).not.toHaveBeenCalled()
+    expect(screen.getByText('No devices synced yet')).toBeInTheDocument()
+  })
 })
