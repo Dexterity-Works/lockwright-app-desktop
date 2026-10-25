@@ -141,6 +141,56 @@ describe('PairedDevicesModalContent', () => {
     expect(screen.queryByTestId('see-devices-removed-k1')).toBeNull()
   })
 
+  it('keeps the newest key-state read when an older one resolves last', async () => {
+    type KeyState = Awaited<ReturnType<typeof getVaultKeyState>>
+    let resolveFirst: (value: KeyState) => void = () => {}
+    jest.mocked(getVaultKeyState).mockReturnValueOnce(
+      new Promise<KeyState>((resolve) => {
+        resolveFirst = resolve
+      })
+    )
+    jest
+      .mocked(getVaultKeyState)
+      .mockResolvedValue(keyState({ members: ['d1'], removed: [] }))
+    let view: ReturnType<typeof render> | undefined
+    await act(async () => {
+      view = render(<PairedDevicesModalContent />)
+    })
+
+    // The device list changes, so the list reads the key state again.
+    jest.mocked(useVault).mockReturnValue({
+      data: { id: 'v1', devices: [{ id: 'd1', name: 'Laptop' }] }
+    } as unknown as ReturnType<typeof useVault>)
+    await act(async () => {
+      view?.rerender(<PairedDevicesModalContent />)
+    })
+    await act(async () => {
+      resolveFirst(keyState() as KeyState)
+    })
+
+    expect(getVaultKeyState).toHaveBeenCalledTimes(2)
+    expect(screen.queryByTestId('see-devices-removed-k1')).toBeNull()
+  })
+
+  it("drops the old vault's rows after a switch, even when the new read fails", async () => {
+    let view: ReturnType<typeof render> | undefined
+    await act(async () => {
+      view = render(<PairedDevicesModalContent />)
+    })
+    expect(screen.getByTestId('see-devices-removed-k1')).toBeTruthy()
+
+    jest.mocked(useVault).mockReturnValue({
+      data: { id: 'v2', devices: [{ id: 'd2', name: 'Laptop' }] }
+    } as unknown as ReturnType<typeof useVault>)
+    jest.mocked(getVaultKeyState).mockRejectedValue(new Error('switching'))
+    await act(async () => {
+      view?.rerender(<PairedDevicesModalContent />)
+    })
+
+    expect(screen.queryByTestId('see-devices-removed-k1')).toBeNull()
+    expect(screen.queryByTestId('see-devices-key-rotated')).toBeNull()
+  })
+
   it('names a removed device without a name as Unknown Device', async () => {
     jest
       .mocked(getVaultKeyState)

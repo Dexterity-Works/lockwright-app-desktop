@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react'
+import React, { useEffect, useMemo, useRef, useState } from 'react'
 
 import { formatDate, formatDateTime } from '../../../utils/date'
 import {
@@ -78,13 +78,21 @@ export const PairedDevicesModalContent = () => {
 
   const [myDeviceId, setMyDeviceId] = useState<string | null>(null)
   // Removed devices stay listed until the vault key rotates past them.
-  const [keyState, setKeyState] = useState<VaultKeyState | null>(null)
-  const readKeyState = () =>
-    getVaultKeyState()
-      .then((state) => setKeyState(state?.vaultId === vaultId ? state : null))
+  const [readState, setKeyState] = useState<VaultKeyState | null>(null)
+  // Only the latest read counts, and only for the vault on screen: an
+  // older read can resolve last, and a switch can leave the old state.
+  const readSeq = useRef(0)
+  const keyState = readState?.vaultId === vaultId ? readState : null
+  const readKeyState = () => {
+    const seq = ++readSeq.current
+    return getVaultKeyState()
+      .then((state) => {
+        if (seq === readSeq.current) setKeyState(state)
+      })
       .catch((error: unknown) => {
         logger.error('PairedDevicesModalContent', 'key state failed:', error)
       })
+  }
 
   useEffect(() => {
     if (vaultId) void readKeyState()
