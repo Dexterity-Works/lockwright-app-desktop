@@ -407,4 +407,58 @@ describe('NativeMessagingHost connect', () => {
     expect(bridge.ipcClient).toBe(successor)
     expect(bridge.desktopAppStatus).toBe('connecting')
   })
+
+  it('does not finish a connection after its ready promise is replaced', async () => {
+    let releaseReady
+    IPC.Client.mockImplementationOnce(function (opts) {
+      this.socketPath = opts.socketPath
+      this.ready = jest.fn(
+        () => new Promise((resolve) => (releaseReady = resolve))
+      )
+      this.on = jest.fn()
+      this.close = jest.fn()
+    })
+    const bridge = host()
+    const connecting = bridge.connectToIPC()
+    await flush()
+    const replaced = IPC.Client.mock.instances.at(-1)
+    const successor = { on: jest.fn(), close: jest.fn() }
+    bridge.ipcClient = successor
+    bridge.desktopAppStatus = 'connecting'
+
+    releaseReady()
+    await connecting
+
+    expect(replaced.close).toHaveBeenCalled()
+    expect(successor.close).not.toHaveBeenCalled()
+    expect(bridge.ipcClient).toBe(successor)
+    expect(bridge.desktopAppStatus).toBe('connecting')
+  })
+
+  it('leaves a replacement client alone when the old ready promise rejects', async () => {
+    let rejectReady
+    IPC.Client.mockImplementationOnce(function (opts) {
+      this.socketPath = opts.socketPath
+      this.ready = jest.fn(
+        () => new Promise((_, reject) => (rejectReady = reject))
+      )
+      this.on = jest.fn()
+      this.close = jest.fn()
+    })
+    const bridge = host()
+    const connecting = bridge.connectToIPC()
+    await flush()
+    const replaced = IPC.Client.mock.instances.at(-1)
+    const successor = { on: jest.fn(), close: jest.fn() }
+    bridge.ipcClient = successor
+    bridge.desktopAppStatus = 'connecting'
+
+    rejectReady(new Error('old connection failed'))
+    await connecting
+
+    expect(replaced.close).toHaveBeenCalled()
+    expect(successor.close).not.toHaveBeenCalled()
+    expect(bridge.ipcClient).toBe(successor)
+    expect(bridge.desktopAppStatus).toBe('connecting')
+  })
 })
