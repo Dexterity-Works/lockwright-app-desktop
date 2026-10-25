@@ -589,6 +589,16 @@ describe('nativeMessagingIPCServer', () => {
         expect(push.revoked).toBe(true)
       })
 
+      it('ignores epoch status after the IPC server has stopped', async () => {
+        await serverInstance.start()
+        const handler = mockPearpassClient.on.mock.calls.find(
+          ([event]) => event === 'epoch-status'
+        )[1]
+        serverInstance.server = null
+
+        expect(() => handler({ vaultId: 'v-1', revoked: true })).not.toThrow()
+      })
+
       it('should subscribe to vault-access-revoked on the pearpass client', async () => {
         await serverInstance.start()
 

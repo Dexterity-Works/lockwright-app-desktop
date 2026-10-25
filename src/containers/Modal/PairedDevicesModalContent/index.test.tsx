@@ -229,4 +229,17 @@ describe('PairedDevicesModalContent', () => {
 
     expect(screen.queryByTestId('see-devices-key-rotated')).toBeNull()
   })
+
+  it('shows the empty state when there are no synced or removed devices', async () => {
+    jest.mocked(useVault).mockReturnValue({
+      data: { id: 'v1', devices: [] }
+    } as unknown as ReturnType<typeof useVault>)
+    jest.mocked(getVaultKeyState).mockResolvedValue(
+      keyState({ members: ['d1'], removed: [] })
+    )
+
+    await open()
+
+    expect(screen.getByText('No devices synced yet')).toBeInTheDocument()
+  })
 })
