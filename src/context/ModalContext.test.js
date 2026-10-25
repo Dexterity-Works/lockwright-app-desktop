@@ -53,6 +53,9 @@ const TestComponent = () => {
         Open Modal
       </button>
       <button onClick={closeModal}>Close Modal</button>
+      <button onClick={() => closeModal('missing-modal-id')}>
+        Close Missing Modal
+      </button>
       <div data-testid="is-open">{isOpen.toString()}</div>
     </div>
   )
@@ -94,6 +97,19 @@ const TestSideDrawerComponent = () => {
 }
 
 describe('ModalProvider', () => {
+  test('ignores closing an entry that is not in the stack', () => {
+    render(
+      <ModalProvider>
+        <TestComponent />
+      </ModalProvider>
+    )
+
+    fireEvent.click(screen.getByText('Close Missing Modal'))
+
+    expect(screen.getByTestId('is-open')).toHaveTextContent('false')
+    expect(screen.queryByTestId('modal-content')).not.toBeInTheDocument()
+  })
+
   beforeEach(() => {
     jest.useFakeTimers()
   })
