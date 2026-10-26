@@ -13,6 +13,10 @@ Starts at 0.0.17, after the Lockwright package rename. Earlier history is git.
 
 - The unique-ID, password check, password generator, QR, and validator utils now come from one package, `lockwright-lib-utils`.
 
+### Fixed
+
+- When the vault process stops, the app starts it again and locks, instead of showing the vault while every action and browser-extension pairing fails with `CHANNEL_CLOSED`. It writes the exit code, signal, and last error lines to stderr even with logging off. Until a new vault process is up, vault actions fail with `WORKLET_EXITED`.
+
 ## [0.0.30] - 2026-10-03
 
 `c75daa893ad2c6f2d624a029bd3e1ac9e8b97037`
