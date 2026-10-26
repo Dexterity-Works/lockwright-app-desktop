@@ -141,6 +141,20 @@ describe('createWorkletSupervisor', () => {
     expect(markers).toContain('WORKLET_EXIT code=null signal=SIGBUS')
   })
 
+  it.each(['SIGINT', 'SIGTERM', 'SIGHUP'])(
+    'does not respawn a worklet stopped by %s before the quit',
+    async (signal) => {
+      await worklet.start(spawn)
+      sidecars[0].close(signal)
+      await flush()
+
+      expect(nativeMessaging.stop).not.toHaveBeenCalled()
+      expect(spawn).toHaveBeenCalledTimes(1)
+      expect(window.reload).not.toHaveBeenCalled()
+      expect(markers).toContain(`WORKLET_EXIT code=null signal=${signal}`)
+    }
+  )
+
   it('does not spawn when the quit lands while native messaging stops', async () => {
     await worklet.start(spawn)
     const stopping = deferred()
@@ -168,6 +182,7 @@ describe('createWorkletSupervisor', () => {
 
     expect(sidecars[1].destroy).toHaveBeenCalled()
     expect(window.reload).not.toHaveBeenCalled()
+    expect(markers).not.toContain('WORKLET_RESPAWNED attempt=1')
   })
 
   it('gives up after three respawns', async () => {
