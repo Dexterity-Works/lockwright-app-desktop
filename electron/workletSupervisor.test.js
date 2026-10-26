@@ -66,6 +66,7 @@ describe('createWorkletSupervisor', () => {
 
   it('stops native messaging, respawns, and reloads after an exit', async () => {
     await worklet.start(spawn)
+    expect(markers.some((m) => m.startsWith('WORKLET_RESPAWNED'))).toBe(false)
     const first = worklet.client()
 
     sidecars[0].close()
@@ -222,6 +223,20 @@ describe('createWorkletSupervisor', () => {
     expect(spawn).toHaveBeenCalledTimes(2)
     expect(worklet.client().sidecar).toBe(sidecars[1])
     expect(worklet.exitError()).toBeNull()
+  })
+
+  it('resolves start when a quit lands while the first worklet connects', async () => {
+    const connecting = deferred()
+    connect.mockImplementationOnce(() => connecting.promise)
+
+    const started = worklet.start(spawn)
+    await flush()
+    quitting = true
+    connecting.resolve(new EventEmitter())
+
+    await expect(started).resolves.toBeUndefined()
+    expect(sidecars[0].destroy).toHaveBeenCalled()
+    expect(spawn).toHaveBeenCalledTimes(1)
   })
 
   it('gives up at startup after three respawns', async () => {
