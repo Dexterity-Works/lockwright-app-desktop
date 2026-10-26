@@ -82,6 +82,8 @@ const normalizeEncryptionGet = (val) => {
  * @returns {Promise<string|null>}
  */
 const readEncrypted = async (client, key) => {
+  // A desktop lock closes the store; opening it needs no password.
+  await ensureEncryptionInitialized(client)
   try {
     return normalizeEncryptionGet(await client.encryptionGet(key))
   } catch (err) {

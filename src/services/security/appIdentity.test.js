@@ -13,6 +13,7 @@ import {
   removeClientIdentity,
   createMemoryClientKeyStore,
   getCachedClientIdentityPublicKeys,
+  getPairedClients,
   setClientKeyStore
 } from './appIdentity'
 import { PAIRING_STATES } from '../../constants/pairing'
@@ -447,6 +448,30 @@ describe('appIdentity', () => {
         `${SecurityErrorCodes.ENCRYPTION_READ_FAILED}: nm.client.data: CHANNEL_CLOSED`
       )
       expect(mockClient.encryptionAdd).not.toHaveBeenCalled()
+    })
+  })
+
+  describe('getPairedClients', () => {
+    it('opens a store the desktop lock closed before reading it', async () => {
+      let open = false
+      mockClient.encryptionGetStatus.mockImplementation(async () => ({
+        status: open
+      }))
+      mockClient.encryptionInit.mockImplementation(async () => {
+        open = true
+      })
+      mockClient.encryptionGet.mockImplementation(async () => {
+        if (!open) throw new Error('Encryption not initialised')
+        return JSON.stringify({
+          clients: [
+            { publicKey: 'chromePub', pairingState: PAIRING_STATES.CONFIRMED }
+          ]
+        })
+      })
+
+      await expect(getPairedClients(mockClient)).resolves.toEqual([
+        { publicKey: 'chromePub', pairingState: PAIRING_STATES.CONFIRMED }
+      ])
     })
   })
 
