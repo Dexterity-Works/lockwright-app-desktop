@@ -226,4 +226,27 @@ describe('useConnectExtension', () => {
         'Error: ENCRYPTION_READ_FAILED: nm.identity.pairingSecret: CHANNEL_CLOSED'
     })
   })
+
+  it('drops the removed browser from the list when stopping afterwards fails', async () => {
+    getNativeMessagingEnabled.mockReturnValue(true)
+    nm.isRunning.mockResolvedValue(true)
+    nm.pairedClients.mockResolvedValue([
+      { publicKey: 'chromePub', pairingState: 'CONFIRMED' }
+    ])
+    nm.stop.mockRejectedValue(new Error('stop failed'))
+
+    const { result } = renderHook(() => useConnectExtension())
+    await waitFor(() => {
+      expect(result.current.pairedBrowsers).toHaveLength(1)
+    })
+
+    await act(async () => {
+      await result.current.unpairBrowser('chromePub')
+    })
+
+    expect(mockSetToast).toHaveBeenCalledWith({
+      message: 'Error: stop failed'
+    })
+    expect(result.current.pairedBrowsers).toEqual([])
+  })
 })
