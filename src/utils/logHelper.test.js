@@ -4,7 +4,10 @@ import fs from 'fs'
 import os from 'os'
 import path from 'path'
 
-const { createMainProcessLogger } = require('./logHelper.cjs')
+const {
+  createMainProcessLogger,
+  createWorkletLogConfigurer
+} = require('./logHelper.cjs')
 
 describe('createMainProcessLogger', () => {
   let tmpDir
@@ -160,5 +163,26 @@ describe('createMainProcessLogger', () => {
       expect(main).toContain('kaboom')
       expect(main).toMatch(/at .*logHelper/)
     })
+  })
+})
+
+describe('createWorkletLogConfigurer', () => {
+  it('configures the client it is handed before main points at it', async () => {
+    const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'worklet-log-'))
+    const client = { setLogOptions: jest.fn().mockResolvedValue(undefined) }
+    const enable = createWorkletLogConfigurer({
+      getStorageDir: () => tmpDir,
+      getVaultClient: () => null,
+      isPackaged: true,
+      workletLogLevel: 'debug',
+      logger: { warn: jest.fn() }
+    })
+
+    await enable(client)
+
+    expect(client.setLogOptions).toHaveBeenCalledWith(
+      expect.objectContaining({ logLevel: 'debug', dev: false })
+    )
+    fs.rmSync(tmpDir, { recursive: true, force: true })
   })
 })
