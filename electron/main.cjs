@@ -170,9 +170,22 @@ let workletSidecar = null
 /** @type {import('lockwright-lib-vault-core').PearpassVaultClient | null} */
 let vaultClient = null
 
+/** `code=… signal=…` of the worklet that exited, until a new one connects */
+let workletExit = null
+let workletRespawns = 0
+const MAX_WORKLET_RESPAWNS = 3
+const WORKLET_STDERR_TAIL_LINES = 20
+const WORKLET_STDERR_TAIL_CHARS = 8192
+
+/** Set on before-quit: the worklet dying on the way out is not a crash. */
+let quitting = false
+
 const nativeMessaging = createNativeMessaging({
   logger,
-  getVaultClient: () => vaultClient,
+  getVaultClient: () => {
+    if (workletExit) throw workletExitError()
+    return vaultClient
+  },
   getStorageDir: () => getStorageDir(),
   getExecPath: () => getRuntimeExecPath(),
   getBridgePath: () => getNativeBridgePath(),
@@ -446,9 +459,6 @@ async function startRuntime() {
   clearVaultStorageForDevReset(storageDir)
   const workletPath = getWorkletPath()
 
-  const { PearpassVaultClient } = await import(
-    'lockwright-lib-vault-core'
-  )
   // MSIX (Store) vs NSIS/portable: Pear OTA artifact extension must match.
   const extension = isLinux
     ? '.AppImage'
@@ -475,70 +485,10 @@ async function startRuntime() {
     throw new Error(`Worklet not found: ${workletPath}`)
   }
 
-  workletSidecar = pearRuntime.run(workletPath)
-  emitStartupMarker('WORKLET_SPAWNED', 'mode=pear-runtime')
-  workletSidecar.on('error', (err) => {
-    logger.error('MAIN', '[worklet IPC error]', err.code || err.message, err)
-  })
-  const ipcStream = workletSidecar._process?.stdio?.[3]
-  if (ipcStream)
-    ipcStream.on('error', (err) => {
-      logger.error(
-        'MAIN',
-        '[worklet IPC pipe error]',
-        err.code || err.message,
-        err
-      )
-    })
-  workletSidecar.stderr?.on('data', (d) =>
-    logger.error('MAIN', '[worklet stderr]', d?.toString?.() || d)
-  )
-  workletSidecar.stdout?.on('data', (d) =>
-    logger.log('MAIN', '[worklet stdout]', d?.toString?.() || d)
-  )
-  workletSidecar._process?.on?.('exit', (code, sig) => {
-    logger.error('MAIN', '[worklet exit] code=', code, 'signal=', sig)
-  })
-  workletSidecar._process?.on?.('error', (err) => {
-    logger.error('MAIN', '[worklet process error]', err)
-  })
-  await waitForWorkletReady(workletSidecar)
-  const storagePath = await resolveRuntimeStorageDir()
-  emitStartupMarker('STORAGE_PATH_SET', storagePath)
-  try {
-    vaultClient = new PearpassVaultClient(workletSidecar, storagePath, {
-      debugMode,
-      logger
-    })
-    emitStartupMarker('VAULT_CLIENT_READY')
-  } catch (error) {
-    emitStartupMarker(
-      'VAULT_CLIENT_ERROR',
-      (error && (error.stack || error.message)) || String(error)
-    )
-    throw error
-  }
-
-  if (loggingActive) {
-    await enableWorkletFileLogging()
-  }
-
-  vaultClient.on('update', () => {
-    if (mainWindow && !mainWindow.isDestroyed()) {
-      mainWindow.webContents.send('vault:update')
-    }
-  })
-
-  vaultClient.on('master-update', () => {
-    if (mainWindow && !mainWindow.isDestroyed()) {
-      mainWindow.webContents.send('vault:master-update')
-    }
-  })
-
-  vaultClient.on('personal-swarm-envelope', (msg) => {
-    if (mainWindow && !mainWindow.isDestroyed()) {
-      mainWindow.webContents.send('vault:personal-swarm-envelope', msg)
-    }
+  await connectWorklet(() => {
+    const sidecar = pearRuntime.run(workletPath)
+    emitStartupMarker('WORKLET_SPAWNED', 'mode=pear-runtime')
+    return sidecar
   })
 
   pearRuntime.updater.on('updating', () => {
@@ -566,9 +516,6 @@ async function startWorkletOnly() {
   // bare-sidecar is a dependency of pear-runtime and will be hoisted into
   // this app's node_modules, so we can require it directly.
   const Sidecar = require('bare-sidecar')
-  const { PearpassVaultClient } = await import(
-    'lockwright-lib-vault-core'
-  )
 
   const workletPath = getWorkletPath()
   if (!fs.existsSync(workletPath)) {
@@ -579,29 +526,50 @@ async function startWorkletOnly() {
   // to clear local vault/encryption data so the app starts from scratch.
   clearVaultStorageForDevReset(getStorageDir())
 
-  // In packaged builds, Bare's module resolution uses the process cwd.
-  let previousCwd = null
-  if (app.isPackaged) {
-    const appRoot = path.join(process.resourcesPath, 'app')
-    if (fs.existsSync(appRoot)) {
-      previousCwd = process.cwd()
-      process.chdir(appRoot)
-      logger.log('MAIN', 'Worklet cwd set to', appRoot)
+  await connectWorklet(() => {
+    // In packaged builds, Bare's module resolution uses the process cwd.
+    let previousCwd = null
+    if (app.isPackaged) {
+      const appRoot = path.join(process.resourcesPath, 'app')
+      if (fs.existsSync(appRoot)) {
+        previousCwd = process.cwd()
+        process.chdir(appRoot)
+        logger.log('MAIN', 'Worklet cwd set to', appRoot)
+      }
     }
-  }
 
-  try {
-    workletSidecar = new Sidecar(workletPath)
-  } finally {
-    if (previousCwd !== null) {
-      process.chdir(previousCwd)
+    let sidecar
+    try {
+      sidecar = new Sidecar(workletPath)
+    } finally {
+      if (previousCwd !== null) {
+        process.chdir(previousCwd)
+      }
     }
-  }
-  emitStartupMarker('WORKLET_SPAWNED', 'mode=bare-sidecar')
-  workletSidecar.on('error', (err) => {
+    emitStartupMarker('WORKLET_SPAWNED', 'mode=bare-sidecar')
+    return sidecar
+  })
+}
+
+/**
+ * Spawn the vault worklet with `spawn`, then point `vaultClient` at it. When
+ * the worklet exits on its own, the exit and its last stderr lines go to
+ * stderr and it is spawned again the same way (see onWorkletExit).
+ * @param {() => import('bare-sidecar')} spawn
+ */
+async function connectWorklet(spawn) {
+  const { PearpassVaultClient } = await import(
+    'lockwright-lib-vault-core'
+  )
+  const sidecar = spawn()
+  workletSidecar = sidecar
+  let connected = false
+  let stderrTail = ''
+
+  sidecar.on('error', (err) => {
     logger.error('MAIN', '[worklet IPC error]', err.code || err.message, err)
   })
-  const ipcStream = workletSidecar._process?.stdio?.[3]
+  const ipcStream = sidecar._process?.stdio?.[3]
   if (ipcStream)
     ipcStream.on('error', (err) => {
       logger.error(
@@ -611,23 +579,40 @@ async function startWorkletOnly() {
         err
       )
     })
-  workletSidecar.stderr?.on('data', (d) =>
-    logger.error('MAIN', '[worklet stderr]', d?.toString?.() || d)
-  )
-  workletSidecar.stdout?.on('data', (d) =>
+  sidecar.stderr?.on('data', (d) => {
+    const text = d?.toString?.() || d
+    logger.error('MAIN', '[worklet stderr]', text)
+    stderrTail = (stderrTail + text).slice(-WORKLET_STDERR_TAIL_CHARS)
+  })
+  sidecar.stdout?.on('data', (d) =>
     logger.log('MAIN', '[worklet stdout]', d?.toString?.() || d)
   )
-  workletSidecar._process?.on?.('exit', (code, sig) => {
+  let exitStatus = null
+  sidecar._process?.on?.('exit', (code, sig) => {
     logger.error('MAIN', '[worklet exit] code=', code, 'signal=', sig)
+    // The main logger writes nowhere with logging off; stderr reaches the
+    // journal whatever the setting.
+    exitStatus = `code=${code} signal=${sig}`
+    emitStartupMarker('WORKLET_EXIT', exitStatus)
+    const lines = stderrTail.split('\n').filter(Boolean)
+    for (const line of lines.slice(-WORKLET_STDERR_TAIL_LINES)) {
+      emitStartupMarker('WORKLET_STDERR', line)
+    }
+    if (sidecar !== workletSidecar) return
+    workletExit = exitStatus
+    if (connected) void onWorkletExit(spawn)
   })
-  workletSidecar._process?.on?.('error', (err) => {
+  sidecar._process?.on?.('error', (err) => {
     logger.error('MAIN', '[worklet process error]', err)
   })
-  await waitForWorkletReady(workletSidecar)
+  await waitForWorkletReady(sidecar)
   const storagePath = await resolveRuntimeStorageDir()
   emitStartupMarker('STORAGE_PATH_SET', storagePath)
+  if (exitStatus) {
+    throw new Error(`Vault worklet exited before it was ready (${exitStatus})`)
+  }
   try {
-    vaultClient = new PearpassVaultClient(workletSidecar, storagePath, {
+    vaultClient = new PearpassVaultClient(sidecar, storagePath, {
       debugMode,
       logger
     })
@@ -639,6 +624,8 @@ async function startWorkletOnly() {
     )
     throw error
   }
+  connected = true
+  workletExit = null
 
   if (loggingActive) {
     await enableWorkletFileLogging()
@@ -661,6 +648,49 @@ async function startWorkletOnly() {
       mainWindow.webContents.send('vault:personal-swarm-envelope', msg)
     }
   })
+}
+
+/**
+ * A connected worklet exited on its own. Spawn it again (a few times per
+ * launch, so a worklet that keeps crashing does not loop), then reload the
+ * window: the unlocked vault died with the worklet, and a fresh renderer
+ * boots to the lock screen against the new one. Vault calls in between fail
+ * with WORKLET_EXITED. An exit while the app quits changes nothing.
+ * @param {() => import('bare-sidecar')} spawn
+ */
+async function onWorkletExit(spawn) {
+  if (quitting) return
+  // The server holds the dead client. The reloaded window's first nm:prefs
+  // push starts it again on the new one.
+  try {
+    await nativeMessaging.stop()
+  } catch (err) {
+    logger.error('MAIN', 'Failed to stop native messaging:', err)
+  }
+  if (workletRespawns < MAX_WORKLET_RESPAWNS) {
+    workletRespawns += 1
+    try {
+      await connectWorklet(spawn)
+      emitStartupMarker('WORKLET_RESPAWNED', `attempt=${workletRespawns}`)
+    } catch (err) {
+      emitStartupMarker(
+        'WORKLET_RESPAWN_ERROR',
+        (err && (err.stack || err.message)) || String(err)
+      )
+    }
+  } else {
+    emitStartupMarker('WORKLET_RESPAWN_SKIPPED', `attempts=${workletRespawns}`)
+  }
+  if (!quitting && mainWindow && !mainWindow.isDestroyed()) {
+    mainWindow.webContents.reload()
+  }
+}
+
+/** Why vault calls fail while no worklet runs. */
+function workletExitError() {
+  const err = new Error(`Vault worklet exited (${workletExit})`)
+  err.code = 'WORKLET_EXITED'
+  return err
 }
 
 function createWindow() {
@@ -841,6 +871,10 @@ function registerIPC() {
   })
 
   ipcMain.handle('vault:invoke', async (_event, { method, args }) => {
+    if (workletExit) {
+      const err = workletExitError()
+      return { ok: false, error: err.message, code: err.code }
+    }
     if (!vaultClient) {
       throw new Error('Vault client not ready')
     }
@@ -1014,5 +1048,6 @@ app.on('window-all-closed', async () => {
 })
 
 app.on('before-quit', async () => {
+  quitting = true
   await cleanup()
 })
