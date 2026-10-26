@@ -207,4 +207,23 @@ describe('useConnectExtension', () => {
     })
     expect(nm.stop).not.toHaveBeenCalled()
   })
+
+  it('shows the error when resetting the identity after the last unpair fails', async () => {
+    nm.identity.mockRejectedValue(
+      new Error(
+        'ENCRYPTION_READ_FAILED: nm.identity.pairingSecret: CHANNEL_CLOSED'
+      )
+    )
+
+    const { result } = renderHook(() => useConnectExtension())
+
+    await act(async () => {
+      await result.current.unpairBrowser('chromePub')
+    })
+
+    expect(mockSetToast).toHaveBeenCalledWith({
+      message:
+        'Error: ENCRYPTION_READ_FAILED: nm.identity.pairingSecret: CHANNEL_CLOSED'
+    })
+  })
 })

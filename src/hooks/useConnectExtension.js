@@ -180,22 +180,20 @@ export const useConnectExtension = () => {
   }
 
   const unpairBrowser = async (publicKey) => {
-    let remaining
     try {
-      remaining = await nativeMessaging().removeClient(publicKey)
+      const remaining = await nativeMessaging().removeClient(publicKey)
+      await nativeMessaging().closeSessionsForClient(publicKey)
+      const confirmed = remaining.filter(
+        (entry) => entry.pairingState === PAIRING_STATES.CONFIRMED
+      )
+      if (confirmed.length === 0) {
+        await handleStopNativeMessaging()
+        return
+      }
+      setPairedBrowsers(confirmed)
     } catch (error) {
       setToast({ message: t('Error: ') + error.message })
-      return
     }
-    await nativeMessaging().closeSessionsForClient(publicKey)
-    const confirmed = remaining.filter(
-      (entry) => entry.pairingState === PAIRING_STATES.CONFIRMED
-    )
-    if (confirmed.length === 0) {
-      await handleStopNativeMessaging()
-      return
-    }
-    setPairedBrowsers(confirmed)
   }
 
   return {
