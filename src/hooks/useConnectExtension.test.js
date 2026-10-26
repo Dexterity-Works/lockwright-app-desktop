@@ -192,11 +192,19 @@ describe('useConnectExtension', () => {
   })
 
   it('shows the error and keeps pairing when unpair fails', async () => {
+    getNativeMessagingEnabled.mockReturnValue(true)
+    nm.isRunning.mockResolvedValue(true)
+    nm.pairedClients.mockResolvedValue([
+      { publicKey: 'chromePub', pairingState: 'CONFIRMED' }
+    ])
     nm.removeClient.mockRejectedValue(
       new Error('ENCRYPTION_READ_FAILED: nm.client.data: CHANNEL_CLOSED')
     )
 
     const { result } = renderHook(() => useConnectExtension())
+    await waitFor(() => {
+      expect(result.current.pairedBrowsers).toHaveLength(1)
+    })
 
     await act(async () => {
       await result.current.unpairBrowser('chromePub')
@@ -206,6 +214,9 @@ describe('useConnectExtension', () => {
       message: 'Error: ENCRYPTION_READ_FAILED: nm.client.data: CHANNEL_CLOSED'
     })
     expect(nm.stop).not.toHaveBeenCalled()
+    expect(result.current.pairedBrowsers).toEqual([
+      { publicKey: 'chromePub', pairingState: 'CONFIRMED' }
+    ])
   })
 
   it('shows the error when resetting the identity after the last unpair fails', async () => {
