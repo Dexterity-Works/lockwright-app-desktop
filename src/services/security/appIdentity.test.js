@@ -473,6 +473,26 @@ describe('appIdentity', () => {
         { publicKey: 'chromePub', pairingState: PAIRING_STATES.CONFIRMED }
       ])
     })
+
+    it('opens a closed store once for concurrent reads', async () => {
+      let open = false
+      mockClient.encryptionGetStatus.mockImplementation(async () => ({
+        status: open
+      }))
+      mockClient.encryptionInit.mockImplementation(async () => {
+        await Promise.resolve()
+        open = true
+      })
+      mockClient.encryptionGet.mockResolvedValue(null)
+
+      await expect(
+        Promise.all([
+          getPairedClients(mockClient),
+          getPairedClients(mockClient)
+        ])
+      ).resolves.toEqual([[], []])
+      expect(mockClient.encryptionInit).toHaveBeenCalledTimes(1)
+    })
   })
 
   describe('confirmClientPairing', () => {
