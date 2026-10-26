@@ -5,17 +5,20 @@
  * logging off), native messaging stops, a new worklet is spawned the same
  * way, and the window reloads: the unlocked vault died with the old worklet,
  * and a fresh renderer boots to the lock screen against the new one. Vault
- * calls in between fail with WORKLET_EXITED. An exit while the app quits,
- * or by a shutdown signal, changes nothing. Respawns stop after a few per
- * launch, so a worklet that keeps crashing does not loop.
+ * calls in between fail with WORKLET_EXITED. An exit while the app quits
+ * changes nothing. Respawns stop after a few per launch, so a worklet that
+ * keeps crashing does not loop.
  */
 
 const MAX_RESPAWNS = 3
 const STDERR_TAIL_LINES = 20
 const STDERR_TAIL_CHARS = 8192
-// What Ctrl-C under `pnpm dev` or a session shutdown sends the whole process
-// group. The worklet can see it before Electron's before-quit.
+// Ctrl-C under `pnpm dev` or a session shutdown signals the whole process
+// group, so the worklet can see one before Electron's before-quit. So do
+// `kill`, a task manager, an OOM helper, and bare-sidecar's own destroy.
+// After one, wait this long for a quit before treating it as a crash.
 const SHUTDOWN_SIGNALS = new Set(['SIGINT', 'SIGTERM', 'SIGHUP'])
+const SHUTDOWN_GRACE_MS = 1500
 
 /**
  * @param {object} deps
@@ -27,6 +30,8 @@ const SHUTDOWN_SIGNALS = new Set(['SIGINT', 'SIGTERM', 'SIGHUP'])
  *   no-ops without a window
  * @param {(name: string, detail?: string) => void} deps.emitMarker to stderr
  * @param {{ log: Function, error: Function }} deps.logger
+ * @param {(ms: number) => Promise<void>} [deps.wait] test seam for the grace
+ *   period after a shutdown signal
  */
 function createWorkletSupervisor({
   connect,
@@ -34,7 +39,8 @@ function createWorkletSupervisor({
   nativeMessaging,
   window,
   emitMarker,
-  logger
+  logger,
+  wait = (ms) => new Promise((resolve) => setTimeout(resolve, ms))
 }) {
   /** @type {(() => object) | null} */
   let spawn = null
@@ -48,16 +54,14 @@ function createWorkletSupervisor({
 
   /**
    * Spawn one worklet and connect to it.
-   * @returns {Promise<'connected' | 'exited' | 'stopped'>} `exited` when it
-   *   crashed before it connected, `stopped` when a quit or a shutdown
-   *   signal ended it
+   * @returns {Promise<boolean>} false when it exited before it connected
    */
   async function connectOnce() {
     const current = spawn()
     sidecar = current
     let connected = false
     let closed = false
-    let stoppedBySignal = false
+    let closeSignal = null
     let stderrTail = ''
 
     current.on('error', (err) => {
@@ -86,7 +90,7 @@ function createWorkletSupervisor({
     // holds the crash reason.
     current._process?.on?.('close', (code, sig) => {
       closed = true
-      stoppedBySignal = SHUTDOWN_SIGNALS.has(sig)
+      closeSignal = sig
       const status = `code=${code} signal=${sig}`
       logger.error('MAIN', '[worklet exit]', status)
       emitMarker('WORKLET_EXIT', status)
@@ -96,15 +100,18 @@ function createWorkletSupervisor({
       }
       if (current !== sidecar) return
       exitStatus = status
-      if (connected && !isQuitting() && !stoppedBySignal) void recover()
+      if (connected) void afterExit(sig)
     })
 
     const next = await connect(current)
     if (isQuitting()) {
       current.destroy()
-      return 'stopped'
+      return false
     }
-    if (closed) return stoppedBySignal ? 'stopped' : 'exited'
+    if (closed) {
+      await graceAfter(closeSignal)
+      return false
+    }
 
     next.on('update', () => window.send('vault:update'))
     next.on('master-update', () => window.send('vault:master-update'))
@@ -114,7 +121,7 @@ function createWorkletSupervisor({
     client = next
     exitStatus = null
     connected = true
-    return 'connected'
+    return true
   }
 
   /**
@@ -125,6 +132,7 @@ function createWorkletSupervisor({
    */
   async function connectWithRespawns(respawn) {
     for (let again = respawn; ; again = true) {
+      if (isQuitting()) return false
       if (again) {
         if (respawns >= MAX_RESPAWNS) {
           emitMarker('WORKLET_RESPAWN_SKIPPED', `attempts=${respawns}`)
@@ -132,14 +140,20 @@ function createWorkletSupervisor({
         }
         respawns += 1
       }
-      if (isQuitting()) return false
-      const result = await connectOnce()
-      if (result === 'stopped') return false
-      if (result === 'connected') {
+      if (await connectOnce()) {
         if (again) emitMarker('WORKLET_RESPAWNED', `attempt=${respawns}`)
         return true
       }
     }
+  }
+
+  async function graceAfter(sig) {
+    if (SHUTDOWN_SIGNALS.has(sig)) await wait(SHUTDOWN_GRACE_MS)
+  }
+
+  async function afterExit(sig) {
+    await graceAfter(sig)
+    if (!isQuitting()) await recover()
   }
 
   async function recover() {
