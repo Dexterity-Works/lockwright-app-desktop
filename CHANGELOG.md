@@ -18,6 +18,7 @@ Starts at 0.0.17, after the Lockwright package rename. Earlier history is git.
 - When the encryption store can't be read, the pairing code no longer changes and paired browsers are no longer forgotten. Pairing and the extension connection fail with `ENCRYPTION_READ_FAILED` instead of `CLIENT_NOT_PAIRED` or `PairingSecretPersistenceFailed`.
 - The browser extension's pairing check no longer fails while the desktop app is locked. Pairing reads open the encryption store, which the lock closes, before reading it.
 - Two browsers connecting at once while the desktop app is locked no longer leave every pairing read failing until the app restarts. They share one opening of the encryption store.
+- When the encryption store won't open, `ENCRYPTION_READ_FAILED` gives the reason instead of `Encryption not initialised`.
 - Unpairing a browser shows the error when it fails instead of doing nothing.
 
 ## [0.0.32] - 2026-10-26

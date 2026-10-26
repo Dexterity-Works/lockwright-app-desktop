@@ -493,6 +493,23 @@ describe('appIdentity', () => {
       ).resolves.toEqual([[], []])
       expect(mockClient.encryptionInit).toHaveBeenCalledTimes(1)
     })
+
+    it('reports why the store would not open', async () => {
+      mockClient.encryptionGetStatus.mockResolvedValue({ status: false })
+      mockClient.encryptionInit.mockRejectedValue(
+        new Error('File descriptor could not be locked')
+      )
+      mockClient.encryptionGet.mockResolvedValue(null)
+
+      await expect(getPairedClients(mockClient)).rejects.toThrow(
+        `${SecurityErrorCodes.ENCRYPTION_READ_FAILED}: nm.client.data: File descriptor could not be locked`
+      )
+      expect(mockClient.encryptionGet).not.toHaveBeenCalled()
+      // Identity loading still falls back instead of failing.
+      await expect(getOrCreateIdentity(mockClient)).resolves.toHaveProperty(
+        'ed25519PublicKey'
+      )
+    })
   })
 
   describe('confirmClientPairing', () => {
