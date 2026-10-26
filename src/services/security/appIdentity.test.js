@@ -3,6 +3,7 @@ import sodium from 'sodium-native'
 import {
   getOrCreateIdentity,
   getPairingCode,
+  getPairingToken,
   getFingerprint,
   verifyPairingToken,
   rotatePairingSecret,
@@ -15,6 +16,7 @@ import {
   setClientKeyStore
 } from './appIdentity'
 import { PAIRING_STATES } from '../../constants/pairing'
+import { SecurityErrorCodes } from '../../constants/securityErrors'
 import { logger } from '../../utils/logger'
 
 // Mock dependencies
@@ -316,6 +318,40 @@ describe('appIdentity', () => {
     })
   })
 
+  describe('getPairingToken', () => {
+    const publicKeyB64 = Buffer.alloc(32, 42).toString('base64')
+
+    beforeEach(() => {
+      sodium.randombytes_buf = jest.fn((buf) => buf.fill(5))
+    })
+
+    afterEach(() => {
+      delete sodium.randombytes_buf
+    })
+
+    it('creates a secret when none is stored', async () => {
+      mockClient.encryptionGet.mockResolvedValue({ data: null })
+      mockClient.encryptionAdd.mockResolvedValue()
+
+      await getPairingToken(mockClient, publicKeyB64)
+
+      expect(mockClient.encryptionAdd).toHaveBeenCalledWith(
+        'nm.identity.pairingSecret',
+        Buffer.alloc(32, 5).toString('base64')
+      )
+    })
+
+    it('fails without replacing the secret when the read fails', async () => {
+      mockClient.encryptionGet.mockRejectedValue(new Error('CHANNEL_CLOSED'))
+      mockClient.encryptionAdd.mockResolvedValue()
+
+      await expect(getPairingToken(mockClient, publicKeyB64)).rejects.toThrow(
+        `${SecurityErrorCodes.ENCRYPTION_READ_FAILED}: nm.identity.pairingSecret: CHANNEL_CLOSED`
+      )
+      expect(mockClient.encryptionAdd).not.toHaveBeenCalled()
+    })
+  })
+
   describe('getFingerprint', () => {
     it('should generate a hex SHA-256 fingerprint', () => {
       const publicKeyB64 = Buffer.alloc(32, 10).toString('base64')
@@ -399,6 +435,18 @@ describe('appIdentity', () => {
           ]
         })
       )
+    })
+
+    it('fails without rewriting the client list when the read fails', async () => {
+      mockClient.encryptionGet.mockRejectedValue(new Error('CHANNEL_CLOSED'))
+      mockClient.encryptionAdd.mockResolvedValue()
+
+      await expect(
+        setClientIdentityPublicKey(mockClient, 'firefoxPub')
+      ).rejects.toThrow(
+        `${SecurityErrorCodes.ENCRYPTION_READ_FAILED}: nm.client.data: CHANNEL_CLOSED`
+      )
+      expect(mockClient.encryptionAdd).not.toHaveBeenCalled()
     })
   })
 

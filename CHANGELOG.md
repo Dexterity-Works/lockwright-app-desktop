@@ -13,6 +13,10 @@ Starts at 0.0.17, after the Lockwright package rename. Earlier history is git.
 
 - The unique-ID, password check, password generator, QR, and validator utils now come from one package, `lockwright-lib-utils`.
 
+### Fixed
+
+- When the encryption store can't be read, the pairing code no longer changes and paired browsers are no longer forgotten. Pairing and the extension connection fail with `ENCRYPTION_READ_FAILED` instead of `CLIENT_NOT_PAIRED` or `PairingSecretPersistenceFailed`.
+
 ## [0.0.30] - 2026-10-03
 
 `c75daa893ad2c6f2d624a029bd3e1ac9e8b97037`

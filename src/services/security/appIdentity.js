@@ -74,6 +74,27 @@ const normalizeEncryptionGet = (val) => {
 }
 
 /**
+ * Read a value from the encryption store. Only a stored-but-empty or missing
+ * value is null; a failed read throws, so callers never mistake it for
+ * "nothing stored" and overwrite what is there.
+ * @param {import('lockwright-lib-vault-core').PearpassVaultClient} client
+ * @param {string} key
+ * @returns {Promise<string|null>}
+ */
+const readEncrypted = async (client, key) => {
+  try {
+    return normalizeEncryptionGet(await client.encryptionGet(key))
+  } catch (err) {
+    throw new Error(
+      createErrorWithCode(
+        SecurityErrorCodes.ENCRYPTION_READ_FAILED,
+        `${key}: ${err?.message || 'Unknown error'}`
+      )
+    )
+  }
+}
+
+/**
  * Convert bytes to base64 (URL-safe=false)
  * @param {Uint8Array} bytes
  * @returns {string}
@@ -112,9 +133,7 @@ const createPairingSecret = async (client) => {
  * @returns {Promise<string>} base64-encoded secret
  */
 const getOrCreatePairingSecret = async (client) => {
-  const pairingSecretB64 = normalizeEncryptionGet(
-    await client.encryptionGet(ENC_KEY_PAIRING_SECRET).catch(() => null)
-  )
+  const pairingSecretB64 = await readEncrypted(client, ENC_KEY_PAIRING_SECRET)
   if (!pairingSecretB64) return createPairingSecret(client)
 
   const bytes = Buffer.from(pairingSecretB64, 'base64')
@@ -528,9 +547,7 @@ const parseClientRecords = (data) => {
  * @param {import('lockwright-lib-vault-core').PearpassVaultClient} client
  */
 const getClientData = async (client) => {
-  const data = normalizeEncryptionGet(
-    await client.encryptionGet(ENC_KEY_CLIENT_DATA).catch(() => null)
-  )
+  const data = await readEncrypted(client, ENC_KEY_CLIENT_DATA)
   if (!data) return null
   try {
     return JSON.parse(data)
