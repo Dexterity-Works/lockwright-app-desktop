@@ -510,6 +510,50 @@ describe('appIdentity', () => {
         'ed25519PublicKey'
       )
     })
+
+    describe('after an open settles', () => {
+      // A fresh module, so no open still in flight leaks in from other tests.
+      let isolatedGetPairedClients
+      let open
+
+      beforeEach(() => {
+        jest.isolateModules(() => {
+          isolatedGetPairedClients = require('./appIdentity').getPairedClients
+        })
+        open = false
+        mockClient.encryptionGetStatus.mockImplementation(async () => ({
+          status: open
+        }))
+        mockClient.encryptionGet.mockResolvedValue(null)
+      })
+
+      it('opens the store again after a lock closes it', async () => {
+        mockClient.encryptionInit.mockImplementation(async () => {
+          open = true
+        })
+
+        await isolatedGetPairedClients(mockClient)
+        open = false
+        await isolatedGetPairedClients(mockClient)
+
+        expect(mockClient.encryptionInit).toHaveBeenCalledTimes(2)
+      })
+
+      it('tries again after a failed open', async () => {
+        mockClient.encryptionInit
+          .mockRejectedValueOnce(
+            new Error('File descriptor could not be locked')
+          )
+          .mockImplementation(async () => {
+            open = true
+          })
+
+        await expect(isolatedGetPairedClients(mockClient)).rejects.toThrow(
+          'File descriptor could not be locked'
+        )
+        await expect(isolatedGetPairedClients(mockClient)).resolves.toEqual([])
+      })
+    })
   })
 
   describe('confirmClientPairing', () => {
