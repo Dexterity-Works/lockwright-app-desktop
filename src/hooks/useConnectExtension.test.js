@@ -190,4 +190,21 @@ describe('useConnectExtension', () => {
     expect(nm.stop).toHaveBeenCalled()
     expect(nm.identity).toHaveBeenCalledWith(true)
   })
+
+  it('shows the error and keeps pairing when unpair fails', async () => {
+    nm.removeClient.mockRejectedValue(
+      new Error('ENCRYPTION_READ_FAILED: nm.client.data: CHANNEL_CLOSED')
+    )
+
+    const { result } = renderHook(() => useConnectExtension())
+
+    await act(async () => {
+      await result.current.unpairBrowser('chromePub')
+    })
+
+    expect(mockSetToast).toHaveBeenCalledWith({
+      message: 'Error: ENCRYPTION_READ_FAILED: nm.client.data: CHANNEL_CLOSED'
+    })
+    expect(nm.stop).not.toHaveBeenCalled()
+  })
 })
