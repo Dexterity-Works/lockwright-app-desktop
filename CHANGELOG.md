@@ -9,13 +9,21 @@ Starts at 0.0.17, after the Lockwright package rename. Earlier history is git.
 
 ## [Unreleased]
 
+### Fixed
+
+- When the vault process stops, the app starts it again and locks, instead of showing the vault while every action and browser-extension pairing fails with `CHANNEL_CLOSED`. It writes the exit code, signal, and last error lines to stderr even with logging off. Until a new vault process is up, vault actions fail with `WORKLET_EXITED`.
+
+## [0.0.31] - 2026-10-26
+
+`436ef5a1ee4d60bab6d227e2d0f8e174ea157978`
+
 ### Changed
 
 - The unique-ID, password check, password generator, QR, and validator utils now come from one package, `lockwright-lib-utils`.
 
 ### Fixed
 
-- When the vault process stops, the app starts it again and locks, instead of showing the vault while every action and browser-extension pairing fails with `CHANNEL_CLOSED`. It writes the exit code, signal, and last error lines to stderr even with logging off. Until a new vault process is up, vault actions fail with `WORKLET_EXITED`.
+- A use-after-free in the network library (host lookups and network-interface watching) could corrupt the vault process's memory and crash it. udx-native moves to 1.22.0, which fixes it.
 
 ## [0.0.30] - 2026-10-03
 
