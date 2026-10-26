@@ -11,6 +11,8 @@ Starts at 0.0.17, after the Lockwright package rename. Earlier history is git.
 
 ## [0.0.33] - 2026-10-26
 
+`b188e11bf8d06465cd6a276f673b4899ed6cb958`
+
 ### Fixed
 
 - When the encryption store can't be read, the pairing code no longer changes and paired browsers are no longer forgotten. Pairing and the extension connection fail with `ENCRYPTION_READ_FAILED` instead of `CLIENT_NOT_PAIRED` or `PairingSecretPersistenceFailed`.
