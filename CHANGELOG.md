@@ -28,7 +28,7 @@ Starts at 0.0.17, after the Lockwright package rename. Earlier history is git.
 ### Fixed
 
 - When the vault process stops, the app starts it again and locks, instead of showing the vault while every action and browser-extension pairing fails with `CHANNEL_CLOSED`. It writes the exit code, signal, and last error lines to stderr even with logging off. Until a new vault process is up, vault actions fail with `WORKLET_EXITED`.
-- A vault process that stops while the app is still starting is started again too, and its last error line reaches stderr. Quitting during a restart no longer leaves a vault process running.
+- A vault process that stops while the app is still starting is started again too, and its last error lines reach stderr.
 
 ## [0.0.31] - 2026-10-26
 

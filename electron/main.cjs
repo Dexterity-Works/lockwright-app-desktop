@@ -494,12 +494,7 @@ async function startRuntime() {
     throw new Error(`Worklet not found: ${workletPath}`)
   }
 
-  await worklet.start(() => {
-    const sidecar = pearRuntime.run(workletPath)
-    emitStartupMarker('WORKLET_SPAWNED', 'mode=pear-runtime')
-    return sidecar
-  })
-
+  // Before the worklet: if every spawn crashes, an OTA update may be the fix.
   pearRuntime.updater.on('updating', () => {
     if (mainWindow && !mainWindow.isDestroyed()) {
       logger.info('runtime:updating', 'sending updating event')
@@ -513,6 +508,12 @@ async function startRuntime() {
       await pearRuntime.updater.applyUpdate()
       mainWindow.webContents.send('runtime:updated')
     }
+  })
+
+  await worklet.start(() => {
+    const sidecar = pearRuntime.run(workletPath)
+    emitStartupMarker('WORKLET_SPAWNED', 'mode=pear-runtime')
+    return sidecar
   })
 }
 
