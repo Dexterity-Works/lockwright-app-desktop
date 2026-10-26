@@ -164,8 +164,8 @@ export const rotatePairingSecret = async (client) => {
 let encryptionOpening = null
 
 const initEncryption = async (client) => {
-  // The worklet returns { status: boolean }. A failed check throws rather
-  // than initializing, since that could reopen a store that is open.
+  // The worklet returns { status: boolean }. A failed check means the channel
+  // is down, so fail closed instead of initializing on an unknown state.
   const statusResponse = await client.encryptionGetStatus()
   if (statusResponse?.status === true) return
 
