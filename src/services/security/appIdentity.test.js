@@ -202,24 +202,6 @@ describe('appIdentity', () => {
       )
       expect(mockClient.encryptionInit).toHaveBeenCalled()
     })
-
-    it('should ignore "already initialized" errors', async () => {
-      mockClient.encryptionGetStatus.mockRejectedValue(
-        new Error('Status check failed')
-      )
-      mockClient.encryptionInit.mockRejectedValue(
-        new Error('Encryption already initialized')
-      )
-      mockClient.encryptionGet.mockResolvedValue(null)
-      mockClient.encryptionAdd.mockResolvedValue()
-
-      await getOrCreateIdentity(mockClient)
-
-      expect(logger.error).not.toHaveBeenCalledWith(
-        'APP-IDENTITY',
-        expect.stringContaining('already initialized')
-      )
-    })
   })
 
   describe('getPairingCode', () => {

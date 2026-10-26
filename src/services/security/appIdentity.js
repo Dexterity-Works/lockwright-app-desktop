@@ -177,15 +177,11 @@ const initEncryption = async (client) => {
   if (initialized) return
 
   logger.info('APP-IDENTITY', 'Encryption not initialized, initializing...')
-  try {
-    const initResult = await client.encryptionInit()
-    logger.info(
-      'APP-IDENTITY',
-      `Encryption initialization result: ${JSON.stringify(initResult)}`
-    )
-  } catch (err) {
-    if (!err?.message?.includes('already initialized')) throw err
-  }
+  const initResult = await client.encryptionInit()
+  logger.info(
+    'APP-IDENTITY',
+    `Encryption initialization result: ${JSON.stringify(initResult)}`
+  )
 }
 
 /**
