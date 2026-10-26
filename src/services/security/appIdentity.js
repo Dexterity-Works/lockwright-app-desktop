@@ -164,17 +164,10 @@ export const rotatePairingSecret = async (client) => {
 let encryptionOpening = null
 
 const initEncryption = async (client) => {
-  let initialized = false
-  try {
-    // The worklet returns { status: boolean }
-    initialized = (await client.encryptionGetStatus())?.status === true
-  } catch (err) {
-    logger.info(
-      'APP-IDENTITY',
-      `Status check failed, attempting initialization: ${err.message}`
-    )
-  }
-  if (initialized) return
+  // The worklet returns { status: boolean }. A failed check throws rather
+  // than initializing, since that could reopen a store that is open.
+  const statusResponse = await client.encryptionGetStatus()
+  if (statusResponse?.status === true) return
 
   logger.info('APP-IDENTITY', 'Encryption not initialized, initializing...')
   const initResult = await client.encryptionInit()

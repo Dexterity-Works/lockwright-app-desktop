@@ -186,7 +186,7 @@ describe('appIdentity', () => {
       expect(__getMemIdentity()).not.toBeNull()
     })
 
-    it('should handle encryption initialization failure gracefully', async () => {
+    it('does not initialize when the status check fails', async () => {
       mockClient.encryptionGetStatus.mockRejectedValue(
         new Error('Status check failed')
       )
@@ -194,13 +194,18 @@ describe('appIdentity', () => {
       mockClient.encryptionGet.mockResolvedValue(null)
       mockClient.encryptionAdd.mockResolvedValue()
 
-      await getOrCreateIdentity(mockClient)
+      await expect(getOrCreateIdentity(mockClient)).resolves.toHaveProperty(
+        'ed25519PublicKey'
+      )
+      await expect(getPairedClients(mockClient)).rejects.toThrow(
+        `${SecurityErrorCodes.ENCRYPTION_READ_FAILED}: nm.client.data: Status check failed`
+      )
 
-      expect(logger.info).toHaveBeenCalledWith(
+      expect(logger.error).toHaveBeenCalledWith(
         'APP-IDENTITY',
         expect.stringContaining('Status check failed')
       )
-      expect(mockClient.encryptionInit).toHaveBeenCalled()
+      expect(mockClient.encryptionInit).not.toHaveBeenCalled()
     })
   })
 
