@@ -36,6 +36,8 @@ describe('createWorkletSupervisor', () => {
   let nativeMessaging
   let window
   let markers
+  let wait
+  let endGrace
   let worklet
 
   beforeEach(() => {
@@ -54,13 +56,20 @@ describe('createWorkletSupervisor', () => {
     nativeMessaging = { stop: jest.fn().mockResolvedValue(undefined) }
     window = { send: jest.fn(), reload: jest.fn() }
     markers = []
+    wait = jest.fn(
+      () =>
+        new Promise((resolve) => {
+          endGrace = resolve
+        })
+    )
     worklet = createWorkletSupervisor({
       connect: (sidecar) => connect(sidecar),
       isQuitting: () => quitting,
       nativeMessaging,
       window,
       emitMarker: (name, detail) => markers.push(`${name} ${detail}`),
-      logger: silentLogger
+      logger: silentLogger,
+      wait: (ms) => wait(ms)
     })
   })
 
@@ -143,16 +152,45 @@ describe('createWorkletSupervisor', () => {
   })
 
   it.each(['SIGINT', 'SIGTERM', 'SIGHUP'])(
-    'does not respawn a worklet stopped by %s before the quit',
+    'respawns a worklet stopped by %s once a grace period passes with no quit',
+    async (signal) => {
+      await worklet.start(spawn)
+      sidecars[0].close(signal)
+      await flush()
+      expect(wait).toHaveBeenCalledWith(1500)
+      expect(spawn).toHaveBeenCalledTimes(1)
+
+      endGrace()
+      await flush()
+      expect(nativeMessaging.stop).toHaveBeenCalledTimes(1)
+      expect(spawn).toHaveBeenCalledTimes(2)
+      expect(window.reload).toHaveBeenCalledTimes(1)
+    }
+  )
+
+  it('leaves a worklet stopped by SIGTERM down when the quit follows', async () => {
+    await worklet.start(spawn)
+    sidecars[0].close('SIGTERM')
+    await flush()
+    quitting = true
+    endGrace()
+    await flush()
+
+    expect(nativeMessaging.stop).not.toHaveBeenCalled()
+    expect(spawn).toHaveBeenCalledTimes(1)
+    expect(window.reload).not.toHaveBeenCalled()
+    expect(markers).toContain('WORKLET_EXIT code=null signal=SIGTERM')
+  })
+
+  it.each(['SIGKILL', 'SIGSEGV'])(
+    'respawns a worklet killed by %s at once',
     async (signal) => {
       await worklet.start(spawn)
       sidecars[0].close(signal)
       await flush()
 
-      expect(nativeMessaging.stop).not.toHaveBeenCalled()
-      expect(spawn).toHaveBeenCalledTimes(1)
-      expect(window.reload).not.toHaveBeenCalled()
-      expect(markers).toContain(`WORKLET_EXIT code=null signal=${signal}`)
+      expect(wait).not.toHaveBeenCalled()
+      expect(spawn).toHaveBeenCalledTimes(2)
     }
   )
 
@@ -222,6 +260,41 @@ describe('createWorkletSupervisor', () => {
 
     expect(spawn).toHaveBeenCalledTimes(2)
     expect(worklet.client().sidecar).toBe(sidecars[1])
+    expect(worklet.exitError()).toBeNull()
+  })
+
+  it('leaves a startup worklet stopped by SIGTERM down when the quit follows', async () => {
+    const connecting = deferred()
+    connect.mockImplementationOnce(() => connecting.promise)
+
+    const started = worklet.start(spawn)
+    await flush()
+    sidecars[0].close('SIGTERM')
+    connecting.resolve(new EventEmitter())
+    await flush()
+    expect(wait).toHaveBeenCalledWith(1500)
+    quitting = true
+    endGrace()
+
+    await expect(started).resolves.toBeUndefined()
+    expect(spawn).toHaveBeenCalledTimes(1)
+    expect(markers.some((m) => m.startsWith('WORKLET_RESPAWN'))).toBe(false)
+  })
+
+  it('respawns a startup worklet stopped by SIGTERM when no quit follows', async () => {
+    const connecting = deferred()
+    connect.mockImplementationOnce(() => connecting.promise)
+
+    const started = worklet.start(spawn)
+    await flush()
+    sidecars[0].close('SIGTERM')
+    connecting.resolve(new EventEmitter())
+    await flush()
+    endGrace()
+    await started
+
+    expect(spawn).toHaveBeenCalledTimes(2)
+    expect(markers).toContain('WORKLET_RESPAWNED attempt=1')
     expect(worklet.exitError()).toBeNull()
   })
 
