@@ -7,14 +7,14 @@ const { createWorkletSupervisor } = require('./workletSupervisor.cjs')
 
 const silentLogger = { log: jest.fn(), error: jest.fn() }
 
-/** A bare-sidecar stand-in: `close(signal)` ends it the way a crash does. */
+/** A bare-sidecar stand-in: `close(signal, code)` ends it like a crash. */
 function fakeSidecar() {
   const sidecar = new EventEmitter()
   sidecar._process = new EventEmitter()
   sidecar.stderr = new EventEmitter()
   sidecar.destroy = jest.fn()
-  sidecar.close = (signal = 'SIGSEGV') =>
-    sidecar._process.emit('close', null, signal)
+  sidecar.close = (signal = 'SIGSEGV', code = null) =>
+    sidecar._process.emit('close', code, signal)
   return sidecar
 }
 
@@ -78,6 +78,7 @@ describe('createWorkletSupervisor', () => {
     expect(worklet.client().sidecar).toBe(sidecars[1])
     expect(worklet.exitError()).toBeNull()
     expect(window.reload).toHaveBeenCalledTimes(1)
+    expect(markers).toContain('WORKLET_RESPAWNED attempt=1')
 
     worklet.destroy()
     expect(sidecars[1].destroy).toHaveBeenCalled()
@@ -101,15 +102,29 @@ describe('createWorkletSupervisor', () => {
     expect(markers.filter((m) => m.startsWith('WORKLET_EXIT'))).toHaveLength(1)
   })
 
+  it('writes the last 20 stderr lines', async () => {
+    await worklet.start(spawn)
+    for (let i = 1; i <= 25; i++) {
+      sidecars[0].stderr.emit('data', Buffer.from(`line ${i}\n`))
+    }
+    sidecars[0].close()
+
+    const tail = markers.filter((m) => m.startsWith('WORKLET_STDERR'))
+    expect(tail).toHaveLength(20)
+    expect(tail[0]).toBe('WORKLET_STDERR line 6')
+  })
+
   it('forwards each client’s events to the window once', async () => {
     await worklet.start(spawn)
     sidecars[0].close()
     await flush()
 
     worklet.client().emit('update')
+    worklet.client().emit('master-update')
     worklet.client().emit('personal-swarm-envelope', { id: 1 })
     expect(window.send.mock.calls).toEqual([
       ['vault:update'],
+      ['vault:master-update'],
       ['vault:personal-swarm-envelope', { id: 1 }]
     ])
   })
@@ -191,6 +206,44 @@ describe('createWorkletSupervisor', () => {
 
     expect(spawn).toHaveBeenCalledTimes(2)
     expect(worklet.client().sidecar).toBe(sidecars[1])
+    expect(worklet.exitError()).toBeNull()
+  })
+
+  it('gives up at startup after three respawns', async () => {
+    connect.mockImplementation(
+      (sidecar) =>
+        new Promise((resolve) =>
+          sidecar._process.once('close', () => resolve(new EventEmitter()))
+        )
+    )
+
+    const started = worklet.start(spawn)
+    for (let i = 0; i < 4; i++) {
+      await flush()
+      sidecars[i].close()
+    }
+
+    await expect(started).rejects.toMatchObject({ code: 'WORKLET_EXITED' })
+    expect(spawn).toHaveBeenCalledTimes(4)
+    expect(markers).toContain('WORKLET_RESPAWN_SKIPPED attempts=3')
+  })
+
+  it('respawns after a spawn error', async () => {
+    const connecting = deferred()
+    connect.mockImplementationOnce(() => connecting.promise)
+
+    const started = worklet.start(spawn)
+    await flush()
+    const enoent = Object.assign(new Error('spawn bare ENOENT'), {
+      code: 'ENOENT'
+    })
+    sidecars[0]._process.emit('error', enoent)
+    sidecars[0].close(null, -2)
+    connecting.resolve(new EventEmitter())
+    await started
+
+    expect(spawn).toHaveBeenCalledTimes(2)
+    expect(markers).toContain('WORKLET_EXIT code=-2 signal=null')
     expect(worklet.exitError()).toBeNull()
   })
 })
