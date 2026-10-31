@@ -9,6 +9,10 @@ Starts at 0.0.17, after the Lockwright package rename. Earlier history is git.
 
 ## [Unreleased]
 
+### Added
+
+- `LOCKWRIGHT_PROFILE=<name>` starts a test desktop with its own data folder, native messaging socket, native host manifest and window title, so a test build never opens, copies, migrates or kills anything of the installed app. A bad name, or a profile under flatpak or snap, stops the app with an error. Unset, nothing changes. See "Test profiles" in the README.
+
 ### Changed
 
 - The revoke dialog says a device is revoked only once the vault key has rotated past it, and shows the time of that rotation. Until then it says "Removed · key rotating", including when 50 seconds pass without seeing the rotation, and after a failed rotation "Removed · key not rotated". It no longer toasts "Device can no longer edit this vault" before the rotation is confirmed. After a failed rotation the dialog offers "Rotate key now".

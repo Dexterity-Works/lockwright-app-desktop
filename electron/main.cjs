@@ -11,6 +11,7 @@ const path = require('path')
 const {
   app,
   BrowserWindow,
+  dialog,
   ipcMain,
   nativeImage,
   shell,
@@ -29,8 +30,22 @@ const {
   migratePearPassUserData
 } = require('./migrateUserData.cjs')
 const { createNativeMessaging } = require('./nativeMessaging.cjs')
+const {
+  getSandboxSafePath,
+  isFlatpakRuntime,
+  isSnapRuntime
+} = require('./flatpak-paths.cjs')
 const { openExternalIfAllowed } = require('./openExternalPolicy.cjs')
-const { adoptInheritedVault, hasVault } = require('./pickRuntimeStorage.cjs')
+const {
+  hasVault,
+  resolveRuntimeStorageDir: resolveStorageRoot
+} = require('./pickRuntimeStorage.cjs')
+const {
+  profileAppId,
+  profileDirName,
+  profileWindowTitle,
+  readProfile
+} = require('./profile.cjs')
 // eslint-disable-next-line import/order
 const { scheduleClipboardCleanup } = require('./clipboardCleanup.cjs')
 
@@ -38,16 +53,58 @@ const debugMode = false
 
 const pkg = require('../package.json')
 
+// LOCKWRIGHT_PROFILE=<name> runs a test desktop that owns nothing of the
+// installed app: its own userData, socket, native host and window identity
+// (profile.cjs). A bad name stops here, before userData is set or anything is
+// read. So does a profile under flatpak or snap: those builds have fixed data
+// paths and a fixed native host wrapper, shared with the installed app.
+let profile = null
+let profileError = null
+try {
+  profile = readProfile()
+  if (profile && (isFlatpakRuntime() || isSnapRuntime())) {
+    throw new Error(
+      'LOCKWRIGHT_PROFILE is not supported in the flatpak or snap build: their data folder and native host are fixed and shared with the installed app. Run a test profile from a source checkout or an AppImage.'
+    )
+  }
+} catch (err) {
+  profileError = err
+}
+if (profileError) {
+  const message = profileError.message
+  process.stderr.write(`[PEARPASS] PROFILE_REFUSED ${message}\n`)
+  // Chromium writes its caches into userData once ready; keep them out of
+  // the installed app's folder while the dialog is up.
+  app.setPath(
+    'userData',
+    fs.mkdtempSync(path.join(os.tmpdir(), 'lockwright-profile-refused-'))
+  )
+  app.once('ready', () => {
+    dialog.showErrorBox('Lockwright did not start', message)
+    app.exit(1)
+  })
+  // Nothing below may run: it would set up and open the real profile.
+  return
+}
+
+const appId = pkg.build?.appId ?? 'works.dexterity.lockwright'
+
 // Windows Task Manager / taskbar group by AppUserModelID + exe FileDescription.
 // Must be set before ready; keeps packaged Lockwright from grouping under "Electron".
+// A test profile gets its own id so it never groups with the installed app.
 if (isWindows) {
-  app.setAppUserModelId(pkg.build?.appId ?? 'works.dexterity.lockwright')
+  app.setAppUserModelId(profile ? profileAppId(appId, profile) : appId)
 }
 
 // userData does not follow setName. Pin it before any getPath('userData').
+const userDataDirName = profile
+  ? profileDirName(pkg.productName, profile)
+  : pkg.productName
 app.setName(pkg.productName)
-app.setPath('userData', path.join(app.getPath('appData'), pkg.productName))
-if (isLinux) {
+app.setPath('userData', path.join(app.getPath('appData'), userDataDirName))
+if (isLinux && profile) {
+  app.commandLine.appendSwitch('class', userDataDirName)
+} else if (isLinux) {
   app.commandLine.appendSwitch('class', pkg.productName)
 }
 
@@ -55,9 +112,14 @@ if (isLinux) {
 // its window. Two instances would fight over the vault and the native
 // messaging socket. Dev builds skip the lock because electron-reload spawns
 // the replacement before the old process exits; LOCKWRIGHT_SINGLE_INSTANCE=1
-// forces it on there.
+// forces it on there. A test profile always takes it, so two instances of one
+// profile never share a store. electron-reload below is set up without its
+// `electron` option, so it only reloads windows and never starts a second
+// main process that the lock would turn away.
 const wantsSingleInstance =
-  app.isPackaged || process.env.LOCKWRIGHT_SINGLE_INSTANCE === '1'
+  app.isPackaged ||
+  Boolean(profile) ||
+  process.env.LOCKWRIGHT_SINGLE_INSTANCE === '1'
 const hasSingleInstanceLock =
   !wantsSingleInstance || app.requestSingleInstanceLock()
 if (!hasSingleInstanceLock) {
@@ -70,11 +132,6 @@ if (!hasSingleInstanceLock) {
   })
 }
 
-const {
-  getSandboxSafePath,
-  isFlatpakRuntime,
-  isSnapRuntime
-} = require('./flatpak-paths.cjs')
 const {
   refreshNativeHostWrapperIfPresent,
   killNativeHostProcesses
@@ -103,6 +160,7 @@ if (hasSingleInstanceLock && process.env.PEARPASS_DEV_RESET !== '1') {
     const result = migratePearPassUserData({
       destDir,
       sourceDirs: legacyUserDataDirs(destDir),
+      profile,
       logger
     })
     if (result.migrated) {
@@ -212,11 +270,8 @@ function getStorageDir() {
   return getSandboxSafePath(app.getPath('userData'))
 }
 
-// Resolve storage root for this pear app.
-// 1) If the legacy Pear platform store knows this app (existing install),
-//    use that path for full compatibility.
-// 2) Otherwise, fall back to an Electron-owned per-link directory under
-//    userData so multiple links can coexist on the same machine.
+// Resolve storage root for this pear app (resolveRuntimeStorageDir in
+// pickRuntimeStorage.cjs). A test profile always gets its own local store.
 // The answer never changes within a process, and the uncached walk scans
 // directories synchronously; every caller shares the first resolution.
 let runtimeStorageDirPromise = null
@@ -232,69 +287,18 @@ function resolveRuntimeStorageDir() {
   return runtimeStorageDirPromise
 }
 
-async function resolveRuntimeStorageDirUncached() {
+function resolveRuntimeStorageDirUncached() {
   const { legacyChannelLink, upgrade } = runtimeConfig || {}
-
-  let storageDir = getStorageDir()
-
-  // Classic PearPass stores the vault at userData/app-storage/by-dkey/{id}.
-  // Copy+open that folder when Lockwright userData is empty or only has a
-  // new per-link store. Do this before the local / upgrade-id fallbacks.
-  const inherited = adoptInheritedVault({
-    destDir: storageDir,
-    sourceDirs: legacyUserDataDirs(storageDir),
-    upgrade
+  return resolveStorageRoot({
+    userDataDir: getStorageDir(),
+    profile,
+    upgrade,
+    legacyChannelLink,
+    isSandboxed: isFlatpakRuntime() || isSnapRuntime(),
+    getLegacyStorage: getPearRuntimeLegacyStorage,
+    toSandboxSafePath: getSandboxSafePath,
+    logger
   })
-  if (inherited) {
-    logger.info('[MAIN]', 'Using inherited vault storage:', inherited)
-    return inherited
-  }
-
-  // Local/NSIS builds may omit the pear upgrade channel. Keep vault data under
-  // a stable folder and never call String methods on a null upgrade link.
-  if (!upgrade) {
-    storageDir = path.join(storageDir, 'app-storage', 'local')
-    logger.info('[MAIN]', 'Using local app-storage root (no upgrade link):', storageDir)
-    return storageDir
-  }
-
-  const linkId = upgrade.replace(/^pear:\/\//, '')
-
-  if (isFlatpakRuntime() || isSnapRuntime()) {
-    storageDir = path.join(storageDir, 'app-storage', 'by-dkey', linkId)
-    logger.info('[MAIN]', 'Using sandbox per-link storage root:', storageDir)
-    return storageDir
-  }
-
-  try {
-    const legacyStorageDir = legacyChannelLink
-      ? await getPearRuntimeLegacyStorage(legacyChannelLink)
-      : null
-
-    if (legacyStorageDir) {
-      storageDir = getSandboxSafePath(legacyStorageDir)
-      logger.info('[MAIN]', 'Using pear legacy storage root:', storageDir)
-    } else {
-      storageDir = path.join(storageDir, 'app-storage', 'by-dkey', linkId)
-      logger.warn(
-        'MAIN',
-        'pear-runtime-legacy-storage returned null; using per-link Electron storage:',
-        storageDir
-      )
-    }
-  } catch (err) {
-    storageDir = path.join(getStorageDir(), 'app-storage', 'by-dkey', linkId)
-    logger.warn(
-      'MAIN',
-      'Failed to resolve legacy pear storage, using per-link Electron storage:',
-      legacyChannelLink,
-      err && err.message ? err.message : err,
-      'storageDir=',
-      storageDir
-    )
-  }
-
-  return storageDir
 }
 
 function getNativeBridgePath() {
@@ -339,7 +343,8 @@ async function refreshNativeHostWrapper() {
       electronExecPath: getRuntimeExecPath(),
       bridgeScriptPath: getNativeBridgePath(),
       platform,
-      isFlatpak: isFlatpakRuntime()
+      isFlatpak: isFlatpakRuntime(),
+      profile
     })
     if (result.refreshed) {
       logger.info(
@@ -425,7 +430,10 @@ function waitForWorkletReady(sidecar) {
  * Start pear-runtime and the vault worklet (bare worker). Called after app is ready.
  */
 async function startRuntime() {
+  // A test profile never takes an OTA update: it runs the code it was
+  // started with, and pear-runtime stays out of its folder.
   const upgrade =
+    profile ||
     process.env.PEARPASS_DISABLE_UPGRADE === '1' ||
     process.env.PEARPASS_DISABLE_UPGRADE === 'true'
       ? null
@@ -730,6 +738,15 @@ function createWindow() {
     }
   })
 
+  // Mark a test profile in the title bar, the taskbar and window switchers.
+  if (profile) {
+    mainWindow.setTitle(profileWindowTitle(pkg.productName, profile))
+    mainWindow.on('page-title-updated', (event, title) => {
+      event.preventDefault()
+      mainWindow.setTitle(profileWindowTitle(title, profile))
+    })
+  }
+
   mainWindow.webContents.on('console-message', (event) => {
     const { level, message, line, sourceId } = event
     emitStartupMarker(
@@ -971,7 +988,8 @@ app.whenReady().then(async () => {
       ? path.join(process.resourcesPath, 'assets', 'linux', 'icon.png')
       : path.join(__dirname, '..', 'assets', 'linux', 'icon.png')
     const desktop = installAppImageDesktop({
-      appImagePath: process.env.APPIMAGE,
+      // A test profile never rewrites the installed app's desktop entry.
+      appImagePath: profile ? undefined : process.env.APPIMAGE,
       productName: pkg.productName,
       appId: pkg.build?.appId ?? 'works.dexterity.lockwright',
       iconSourcePath: iconPath

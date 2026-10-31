@@ -1,5 +1,6 @@
 const fs = require('fs')
 const path = require('path')
+const { legacyUserDataDirs } = require('./migrateUserData.cjs')
 const { restampCopiedCorestores } = require('./restampCopiedCorestores.cjs')
 
 function dirHasEntries(dir, fsImpl = fs) {
@@ -114,8 +115,114 @@ function adoptInheritedVault({
   return null
 }
 
+/**
+ * Resolve the storage root the vault opens.
+ * 0) A test profile always uses <userData>/app-storage/local: no adoption,
+ *    no Pear platform store, no per-link store. It touches nothing on disk.
+ * 1) A classic PearPass vault in userData or a sibling folder is adopted.
+ * 2) No upgrade link: <userData>/app-storage/local.
+ * 3) Flatpak/snap: the per-link folder under userData.
+ * 4) If the legacy Pear platform store knows this app (existing install),
+ *    use that path for full compatibility; otherwise the per-link folder.
+ * @param {object} opts
+ * @param {string} opts.userDataDir sandbox-safe userData
+ * @param {string | null} [opts.profile]
+ * @param {string | null} [opts.upgrade]
+ * @param {string | null} [opts.legacyChannelLink]
+ * @param {boolean} [opts.isSandboxed] flatpak or snap
+ * @param {(link: string) => Promise<string | null>} opts.getLegacyStorage
+ * @param {(p: string) => string} [opts.toSandboxSafePath]
+ * @param {{ info: Function, warn: Function }} opts.logger
+ * @param {typeof fs} [opts.fsImpl]
+ * @returns {Promise<string>}
+ */
+async function resolveRuntimeStorageDir({
+  userDataDir,
+  profile = null,
+  upgrade,
+  legacyChannelLink,
+  isSandboxed = false,
+  getLegacyStorage,
+  toSandboxSafePath = (p) => p,
+  logger,
+  fsImpl = fs
+}) {
+  if (profile) {
+    const storageDir = path.join(userDataDir, 'app-storage', 'local')
+    logger.info('[MAIN]', 'Using test profile storage root:', storageDir)
+    return storageDir
+  }
+
+  let storageDir = userDataDir
+
+  // Classic PearPass stores the vault at userData/app-storage/by-dkey/{id}.
+  // Copy+open that folder when Lockwright userData is empty or only has a
+  // new per-link store. Do this before the local / upgrade-id fallbacks.
+  const inherited = adoptInheritedVault({
+    destDir: storageDir,
+    sourceDirs: legacyUserDataDirs(storageDir),
+    upgrade,
+    fsImpl
+  })
+  if (inherited) {
+    logger.info('[MAIN]', 'Using inherited vault storage:', inherited)
+    return inherited
+  }
+
+  // Local/NSIS builds may omit the pear upgrade channel. Keep vault data under
+  // a stable folder and never call String methods on a null upgrade link.
+  if (!upgrade) {
+    storageDir = path.join(storageDir, 'app-storage', 'local')
+    logger.info(
+      '[MAIN]',
+      'Using local app-storage root (no upgrade link):',
+      storageDir
+    )
+    return storageDir
+  }
+
+  const linkId = upgrade.replace(/^pear:\/\//, '')
+
+  if (isSandboxed) {
+    storageDir = path.join(storageDir, 'app-storage', 'by-dkey', linkId)
+    logger.info('[MAIN]', 'Using sandbox per-link storage root:', storageDir)
+    return storageDir
+  }
+
+  try {
+    const legacyStorageDir = legacyChannelLink
+      ? await getLegacyStorage(legacyChannelLink)
+      : null
+
+    if (legacyStorageDir) {
+      storageDir = toSandboxSafePath(legacyStorageDir)
+      logger.info('[MAIN]', 'Using pear legacy storage root:', storageDir)
+    } else {
+      storageDir = path.join(storageDir, 'app-storage', 'by-dkey', linkId)
+      logger.warn(
+        'MAIN',
+        'pear-runtime-legacy-storage returned null; using per-link Electron storage:',
+        storageDir
+      )
+    }
+  } catch (err) {
+    storageDir = path.join(userDataDir, 'app-storage', 'by-dkey', linkId)
+    logger.warn(
+      'MAIN',
+      'Failed to resolve legacy pear storage, using per-link Electron storage:',
+      legacyChannelLink,
+      err && err.message ? err.message : err,
+      'storageDir=',
+      storageDir
+    )
+  }
+
+  return storageDir
+}
+
 module.exports = {
   adoptInheritedVault,
   hasVault,
-  pickRuntimeStorageDir
+  pickRuntimeStorageDir,
+  resolveRuntimeStorageDir
 }

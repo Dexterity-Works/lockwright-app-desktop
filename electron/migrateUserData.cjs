@@ -44,9 +44,15 @@ function legacyUserDataDirs(destDir) {
 function migratePearPassUserData({
   destDir,
   sourceDirs,
+  profile = null,
   fsImpl = fs,
   logger
 } = {}) {
+  // A test profile never copies from the installed app's siblings.
+  if (profile) {
+    return { migrated: false, reason: 'profile' }
+  }
+
   if (!destDir) {
     return { migrated: false, reason: 'no-dest' }
   }

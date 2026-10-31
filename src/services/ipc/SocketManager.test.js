@@ -204,3 +204,21 @@ describe('getIpcPath', () => {
     expect(getIpcPath('foo')).toBe('/home/testuser/.lockwright/foo.sock')
   })
 })
+
+describe('SocketManager under LOCKWRIGHT_PROFILE', () => {
+  afterEach(() => {
+    delete process.env.LOCKWRIGHT_PROFILE
+  })
+
+  it("listens on and publishes into the profile's socket dir", () => {
+    process.env.LOCKWRIGHT_PROFILE = 'test1'
+    require('os').platform.mockReturnValue('linux')
+    const manager = new SocketManager('lockwright-native-messaging')
+    expect(manager.getPath()).toBe(
+      '/home/testuser/.lockwright/profiles/test1/lockwright-native-messaging.sock'
+    )
+    expect(manager.getPipeFilePath()).toBe(
+      '/home/testuser/.lockwright/profiles/test1/lockwright-native-messaging.pipe'
+    )
+  })
+})

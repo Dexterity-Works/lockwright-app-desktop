@@ -96,3 +96,45 @@ describe('getIpcPath', () => {
     expect(fs.readFileSync).not.toHaveBeenCalled()
   })
 })
+
+describe('getIpcPath under LOCKWRIGHT_PROFILE', () => {
+  beforeEach(() => {
+    os.homedir.mockReturnValue('/home/testuser')
+    path.join.mockImplementation((...args) => args.join('/'))
+  })
+
+  afterEach(() => {
+    delete process.env.LOCKWRIGHT_PROFILE
+    jest.resetAllMocks()
+  })
+
+  it("uses the profile's socket on Unix", () => {
+    process.env.LOCKWRIGHT_PROFILE = 'test1'
+    os.platform.mockReturnValue('linux')
+
+    expect(getIpcPath('test-socket')).toBe(
+      '/home/testuser/.lockwright/profiles/test1/test-socket.sock'
+    )
+  })
+
+  it("reads the profile's pipe pointer on Windows", () => {
+    process.env.LOCKWRIGHT_PROFILE = 'test1'
+    os.platform.mockReturnValue('win32')
+    fs.readFileSync.mockImplementation(() => {
+      throw Object.assign(new Error('ENOENT'), { code: 'ENOENT' })
+    })
+
+    expect(getIpcPath('test-socket')).toBeNull()
+    expect(fs.readFileSync).toHaveBeenCalledWith(
+      '/home/testuser/.lockwright/profiles/test1/test-socket.pipe',
+      'utf8'
+    )
+  })
+
+  it("throws on an invalid name instead of returning the installed app's socket", () => {
+    process.env.LOCKWRIGHT_PROFILE = 'Test-1'
+    os.platform.mockReturnValue('linux')
+
+    expect(() => getIpcPath('test-socket')).toThrow(/LOCKWRIGHT_PROFILE/)
+  })
+})

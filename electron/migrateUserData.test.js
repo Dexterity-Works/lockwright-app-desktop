@@ -185,6 +185,45 @@ describe('migratePearPassUserData', () => {
   })
 })
 
+describe('migratePearPassUserData under a test profile', () => {
+  let root
+
+  afterEach(() => {
+    if (root) fs.rmSync(root, { recursive: true, force: true })
+    root = null
+  })
+
+  it('copies nothing from PearPass siblings and never touches fs', () => {
+    ;({ root } = makeTree())
+    const destDir = path.join(root, 'Lockwright-profile-test1')
+    const sourceDir = path.join(root, 'PearPass')
+    writeVault(sourceDir)
+    const fsImpl = new Proxy(
+      {},
+      {
+        get: (_, name) => () => {
+          throw new Error(`fs.${String(name)} called under a profile`)
+        }
+      }
+    )
+
+    const result = migratePearPassUserData({
+      destDir,
+      sourceDirs: legacyUserDataDirs(destDir),
+      profile: 'test1',
+      fsImpl
+    })
+
+    expect(result).toEqual({ migrated: false, reason: 'profile' })
+    expect(fs.existsSync(destDir)).toBe(false)
+  })
+
+  it('main passes the profile to the migration', () => {
+    const main = fs.readFileSync(path.join(__dirname, 'main.cjs'), 'utf8')
+    expect(main).toMatch(/migratePearPassUserData\(\{[^}]*\bprofile,/)
+  })
+})
+
 describe('desktop main process wiring', () => {
   it('migrates PearPass userData after setName and before whenReady', () => {
     const main = fs.readFileSync(path.join(__dirname, 'main.cjs'), 'utf8')
