@@ -9,6 +9,11 @@ Starts at 0.0.17, after the Lockwright package rename. Earlier history is git.
 
 ## [Unreleased]
 
+### Fixed
+
+- Locking, or switching to another vault, while a vault was applying synced changes could crash the vault process with `Cannot read properties of null (reading 'flushing')`. hypercore moves to 11.39.6, which fixes it.
+- Quitting the app while the vault database was still opening could crash it. rocksdb-native moves to 3.19.2, which fixes it.
+
 ## [0.0.33] - 2026-10-26
 
 `b188e11bf8d06465cd6a276f673b4899ed6cb958`
