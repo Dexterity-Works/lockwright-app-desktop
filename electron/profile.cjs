@@ -19,18 +19,40 @@ const PROFILE_HOST_ARG_PREFIX = '--lockwright-profile='
 const PROFILE_CHROMIUM_EXTENSION_ID = 'degfjkbgcfkbfhhhecbdllgcokjgcdfb'
 const PROFILE_FIREFOX_EXTENSION_ID = 'lockwright-profile@dexterity.works'
 
+function validProfileName(value, source) {
+  if (PROFILE_NAME_PATTERN.test(value)) return value
+  throw new Error(
+    `${source} must be 1 to 24 characters from a-z, 0-9 and _ (got ${JSON.stringify(value)}). Lockwright will not start rather than open the real profile.`
+  )
+}
+
 /**
- * The profile name from the environment, or null when the variable is unset.
- * Any other value throws: a typo must never fall back to the real profile.
+ * The desktop's profile name from the environment, or null when the
+ * variable is unset. Any other value throws: a typo must never fall back to
+ * the real profile.
  * @param {Record<string, string | undefined>} [env]
  * @returns {string | null}
  */
 function readProfile(env = process.env) {
   const value = env[PROFILE_ENV]
   if (value === undefined) return null
-  if (PROFILE_NAME_PATTERN.test(value)) return value
-  throw new Error(
-    `${PROFILE_ENV} must be 1 to 24 characters from a-z, 0-9 and _ (got ${JSON.stringify(value)}). Lockwright will not start rather than open the real profile.`
+  return validProfileName(value, PROFILE_ENV)
+}
+
+/**
+ * The bridge's profile name, from the argument only the profile wrapper
+ * passes. The bridge ignores LOCKWRIGHT_PROFILE: a browser started from a
+ * shell that exported it would otherwise point the shipped host at a test
+ * socket. An invalid value throws rather than use the real socket.
+ * @param {string[]} [argv]
+ * @returns {string | null}
+ */
+function readProfileArg(argv = process.argv) {
+  const arg = argv.find((a) => a.startsWith(PROFILE_HOST_ARG_PREFIX))
+  if (arg === undefined) return null
+  return validProfileName(
+    arg.slice(PROFILE_HOST_ARG_PREFIX.length),
+    PROFILE_HOST_ARG_PREFIX.slice(0, -1)
   )
 }
 
@@ -92,5 +114,6 @@ module.exports = {
   profileDirName,
   profileHostArg,
   profileWindowTitle,
-  readProfile
+  readProfile,
+  readProfileArg
 }

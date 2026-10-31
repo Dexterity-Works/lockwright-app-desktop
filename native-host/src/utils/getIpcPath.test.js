@@ -97,19 +97,40 @@ describe('getIpcPath', () => {
   })
 })
 
-describe('getIpcPath under LOCKWRIGHT_PROFILE', () => {
+describe('getIpcPath for a test profile', () => {
+  const argv = process.argv
+
   beforeEach(() => {
     os.homedir.mockReturnValue('/home/testuser')
     path.join.mockImplementation((...args) => args.join('/'))
   })
 
   afterEach(() => {
+    process.argv = argv
     delete process.env.LOCKWRIGHT_PROFILE
     jest.resetAllMocks()
   })
 
-  it("uses the profile's socket on Unix", () => {
+  it('ignores LOCKWRIGHT_PROFILE in the environment and uses the real socket', () => {
     process.env.LOCKWRIGHT_PROFILE = 'test1'
+    os.platform.mockReturnValue('linux')
+
+    expect(getIpcPath('test-socket')).toBe(
+      '/home/testuser/.lockwright/test-socket.sock'
+    )
+  })
+
+  it('ignores an invalid LOCKWRIGHT_PROFILE instead of breaking the real host', () => {
+    process.env.LOCKWRIGHT_PROFILE = 'Test-1'
+    os.platform.mockReturnValue('linux')
+
+    expect(getIpcPath('test-socket')).toBe(
+      '/home/testuser/.lockwright/test-socket.sock'
+    )
+  })
+
+  it("uses the profile's socket when the wrapper passes --lockwright-profile", () => {
+    process.argv = [...argv, '--lockwright-profile=test1']
     os.platform.mockReturnValue('linux')
 
     expect(getIpcPath('test-socket')).toBe(
@@ -118,7 +139,7 @@ describe('getIpcPath under LOCKWRIGHT_PROFILE', () => {
   })
 
   it("reads the profile's pipe pointer on Windows", () => {
-    process.env.LOCKWRIGHT_PROFILE = 'test1'
+    process.argv = [...argv, '--lockwright-profile=test1']
     os.platform.mockReturnValue('win32')
     fs.readFileSync.mockImplementation(() => {
       throw Object.assign(new Error('ENOENT'), { code: 'ENOENT' })
@@ -131,10 +152,10 @@ describe('getIpcPath under LOCKWRIGHT_PROFILE', () => {
     )
   })
 
-  it("throws on an invalid name instead of returning the installed app's socket", () => {
-    process.env.LOCKWRIGHT_PROFILE = 'Test-1'
+  it("throws on an invalid argument instead of returning the installed app's socket", () => {
+    process.argv = [...argv, '--lockwright-profile=Test-1']
     os.platform.mockReturnValue('linux')
 
-    expect(() => getIpcPath('test-socket')).toThrow(/LOCKWRIGHT_PROFILE/)
+    expect(() => getIpcPath('test-socket')).toThrow(/--lockwright-profile/)
   })
 })

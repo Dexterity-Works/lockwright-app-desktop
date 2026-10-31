@@ -7,8 +7,8 @@ import { DEBUG_MODE } from '../constants/debugMode.js'
 
 /**
  * Dedicated logger for native messaging bridge
- * Logs to ~/.lockwright/logs when in debug mode, or under LOCKWRIGHT_PROFILE
- * to ~/.lockwright/profiles/<name>/logs
+ * Logs to ~/.lockwright/logs when in debug mode, or under
+ * --lockwright-profile=<name> to ~/.lockwright/profiles/<name>/logs
  * @param {'INFO'|'ERROR'|'DEBUG'|'WARN'} level - Log level
  * @param {string} message - Log message
  */
@@ -20,7 +20,7 @@ export const log = (level, message) => {
       ...profiles.ipcSocketDirSegments(
         os.homedir(),
         '.lockwright',
-        profiles.readProfile()
+        profiles.readProfileArg()
       ),
       'logs'
     )

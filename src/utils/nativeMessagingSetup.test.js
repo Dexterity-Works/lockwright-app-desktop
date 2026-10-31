@@ -598,7 +598,7 @@ describe('under LOCKWRIGHT_PROFILE', () => {
     const [, wrapper] = fs.writeFile.mock.calls.find(([file]) =>
       file.endsWith('lockwright-native-host.sh')
     )
-    expect(wrapper).toContain('export LOCKWRIGHT_PROFILE=test1')
+    expect(wrapper).not.toContain('LOCKWRIGHT_PROFILE')
     expect(wrapper).toContain('--lockwright-profile=test1')
   })
 

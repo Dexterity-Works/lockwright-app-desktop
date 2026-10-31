@@ -5,7 +5,8 @@ const {
   profileAppId,
   profileDirName,
   profileWindowTitle,
-  readProfile
+  readProfile,
+  readProfileArg
 } = require('./profile.cjs')
 
 describe('readProfile', () => {
@@ -72,4 +73,27 @@ describe('profile names', () => {
       '.lockwright'
     ])
   })
+})
+
+describe('readProfileArg', () => {
+  const host = ['/opt/electron', '/opt/native-messaging-bridge.bundle.cjs']
+
+  it('is null without the argument', () => {
+    expect(readProfileArg(host)).toBeNull()
+  })
+
+  it('reads the name the profile wrapper passes', () => {
+    expect(readProfileArg([...host, '--lockwright-profile=test1'])).toBe(
+      'test1'
+    )
+  })
+
+  it.each(['', 'Test1', 'test-1', '../x', 'x'.repeat(25)])(
+    'refuses %p',
+    (name) => {
+      expect(() =>
+        readProfileArg([...host, `--lockwright-profile=${name}`])
+      ).toThrow(/--lockwright-profile must be 1 to 24 characters/)
+    }
+  )
 })

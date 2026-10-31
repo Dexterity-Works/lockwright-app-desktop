@@ -194,19 +194,17 @@ set ELECTRON_RUN_AS_NODE=1
     expect(build('win32')).toBe(shippedWin)
   })
 
-  it('bakes the profile into the env and argv of a unix wrapper', () => {
+  it('bakes the profile into the argv of a unix wrapper', () => {
     expect(build('linux', 'test1')).toContain(
       `export ELECTRON_RUN_AS_NODE=1
-export LOCKWRIGHT_PROFILE=test1
 exec "${EXEC_PATH}" "${BRIDGE_PATH}" --lockwright-profile=test1
 `
     )
   })
 
-  it('bakes the profile into the env and argv of a cmd wrapper', () => {
+  it('bakes the profile into the argv of a cmd wrapper', () => {
     expect(build('win32', 'test1')).toContain(
       `set ELECTRON_RUN_AS_NODE=1
-set LOCKWRIGHT_PROFILE=test1
 "${EXEC_PATH}" "${BRIDGE_PATH}" --lockwright-profile=test1
 `
     )
@@ -224,7 +222,7 @@ set LOCKWRIGHT_PROFILE=test1
       profile: 'test1'
     })
     expect(fsp.writeFile.mock.calls[0][1]).toContain(
-      'export LOCKWRIGHT_PROFILE=test1'
+      '--lockwright-profile=test1'
     )
   })
 })

@@ -14,9 +14,10 @@ const NATIVE_HOST_PROCESS_PATTERN = 'native-messaging-bridge.bundle'
 // native-messaging payloads, so any plain text there drops the port with
 // "Native host has exited".
 //
-// A test profile bakes its name into the wrapper: the browser spawns the
-// host with its own environment, not the desktop's. The argument is what
-// nativeHostKillCommand matches. Flatpak and snap refuse profiles at startup.
+// A test profile bakes its name into the wrapper as an argument: the browser
+// spawns the host with its own environment, not the desktop's. The bridge
+// reads only that argument, and nativeHostKillCommand matches it. Flatpak
+// and snap refuse profiles at startup.
 function buildWrapperContent({
   platform,
   isFlatpak,
@@ -54,24 +55,22 @@ exec "\${FLATPAK_BIN}" run --command=${FLATPAK_NATIVE_HOST_COMMAND} ${FLATPAK_AP
   const profileArg = profile ? ` ${profileHostArg(profile)}` : ''
 
   if (platform === 'darwin' || platform === 'linux') {
-    const profileEnv = profile ? `export LOCKWRIGHT_PROFILE=${profile}\n` : ''
     return `#!/bin/bash
 # Lockwright Native Messaging Host
 # Runs the native messaging bridge via Electron's embedded Node.js
 
 export ELECTRON_RUN_AS_NODE=1
-${profileEnv}exec ${command}${profileArg}
+exec ${command}${profileArg}
 `
   }
 
   if (platform === 'win32') {
-    const profileEnv = profile ? `set LOCKWRIGHT_PROFILE=${profile}\n` : ''
     return `@echo off
 REM Lockwright Native Messaging Host
 REM Runs the native messaging bridge via Electron's embedded Node.js
 
 set ELECTRON_RUN_AS_NODE=1
-${profileEnv}${command}${profileArg}
+${command}${profileArg}
 `
   }
 

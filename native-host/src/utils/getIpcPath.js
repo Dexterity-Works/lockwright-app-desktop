@@ -23,9 +23,9 @@ import profiles from '../../../electron/profile.cjs'
  * pointer means the desktop is not running. The pre-proof plain-string
  * pointer is invalid for the same reason.
  *
- * Under LOCKWRIGHT_PROFILE (set by a profile desktop's wrapper) the socket
- * dir is that profile's. An invalid name throws instead of falling back to
- * the installed app's socket.
+ * Under --lockwright-profile=<name> (passed only by a profile desktop's
+ * wrapper) the socket dir is that profile's. The environment is ignored. An
+ * invalid name throws instead of falling back to the installed app's socket.
  * @param {string} socketName
  * @returns {string|{ pipe: string, secret: string }|null} the socket path,
  *   or on win32 the published pipe and secret, or null when none is valid
@@ -35,7 +35,7 @@ export const getIpcPath = (socketName) => {
   const socketDir = profiles.ipcSocketDirSegments(
     os.homedir(),
     IPC_SOCKET_DIR_NAME,
-    profiles.readProfile()
+    profiles.readProfileArg()
   )
   if (os.platform() === 'win32') {
     let pointer
