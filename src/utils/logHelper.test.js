@@ -228,8 +228,6 @@ describe('worklet log options', () => {
       path.join(__dirname, '..', '..', 'electron', 'main.cjs'),
       'utf8'
     )
-    expect(main).toContain(
-      "tracing: Boolean(profile) || process.env.LOCKWRIGHT_TRACE === '1'"
-    )
+    expect(main).toContain('tracing: boot.tracing')
   })
 })

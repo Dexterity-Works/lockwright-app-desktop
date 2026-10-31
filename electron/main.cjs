@@ -40,12 +40,9 @@ const {
   hasVault,
   resolveRuntimeStorageDir: resolveStorageRoot
 } = require('./pickRuntimeStorage.cjs')
-const {
-  profileAppId,
-  profileDirName,
-  profileWindowTitle,
-  readProfile
-} = require('./profile.cjs')
+const { bootProfile } = require('./bootProfile.cjs')
+const { profileWindowTitle } = require('./profile.cjs')
+const runtimeConfig = require('./runtime-config.cjs')
 // eslint-disable-next-line import/order
 const { scheduleClipboardCleanup } = require('./clipboardCleanup.cjs')
 
@@ -55,71 +52,58 @@ const pkg = require('../package.json')
 
 // LOCKWRIGHT_PROFILE=<name> runs a test desktop that owns nothing of the
 // installed app: its own userData, socket, native host and window identity
-// (profile.cjs). A bad name stops here, before userData is set or anything is
-// read. So does a profile under flatpak or snap: those builds have fixed data
-// paths and a fixed native host wrapper, shared with the installed app.
-let profile = null
-let profileError = null
-try {
-  profile = readProfile()
-  if (profile && (isFlatpakRuntime() || isSnapRuntime())) {
-    throw new Error(
-      'LOCKWRIGHT_PROFILE is not supported in the flatpak or snap build: their data folder and native host are fixed and shared with the installed app. Run a test profile from a source checkout or an AppImage.'
-    )
-  }
-} catch (err) {
-  profileError = err
-}
-if (profileError) {
-  const message = profileError.message
+// (bootProfile.cjs, profile.cjs). A bad name, or a profile under flatpak or
+// snap, stops here, before userData is set or anything is read.
+const boot = bootProfile({
+  env: process.env,
+  productName: pkg.productName,
+  appId: pkg.build?.appId ?? 'works.dexterity.lockwright',
+  isSandboxed: isFlatpakRuntime() || isSnapRuntime(),
+  isPackaged: app.isPackaged,
+  upgrade: runtimeConfig.upgrade,
+  appImagePath: process.env.APPIMAGE
+})
+if (boot.refuse) {
+  const message = boot.refuse
   process.stderr.write(`[PEARPASS] PROFILE_REFUSED ${message}\n`)
   // Chromium writes its caches into userData once ready; keep them out of
   // the installed app's folder while the dialog is up.
-  app.setPath(
-    'userData',
-    fs.mkdtempSync(path.join(os.tmpdir(), 'lockwright-profile-refused-'))
+  const refusedDir = fs.mkdtempSync(
+    path.join(os.tmpdir(), 'lockwright-profile-refused-')
   )
+  app.setPath('userData', refusedDir)
   app.once('ready', () => {
     dialog.showErrorBox('Lockwright did not start', message)
+    fs.rmSync(refusedDir, { recursive: true, force: true })
     app.exit(1)
   })
   // Nothing below may run: it would set up and open the real profile.
   return
 }
-
-const appId = pkg.build?.appId ?? 'works.dexterity.lockwright'
+const { profile } = boot
 
 // Windows Task Manager / taskbar group by AppUserModelID + exe FileDescription.
 // Must be set before ready; keeps packaged Lockwright from grouping under "Electron".
 // A test profile gets its own id so it never groups with the installed app.
 if (isWindows) {
-  app.setAppUserModelId(profile ? profileAppId(appId, profile) : appId)
+  app.setAppUserModelId(boot.appUserModelId)
 }
 
 // userData does not follow setName. Pin it before any getPath('userData').
-const userDataDirName = profile
-  ? profileDirName(pkg.productName, profile)
-  : pkg.productName
 app.setName(pkg.productName)
-app.setPath('userData', path.join(app.getPath('appData'), userDataDirName))
-if (isLinux && profile) {
-  app.commandLine.appendSwitch('class', userDataDirName)
-} else if (isLinux) {
-  app.commandLine.appendSwitch('class', pkg.productName)
+app.setPath('userData', path.join(app.getPath('appData'), boot.userDataDirName))
+if (isLinux) {
+  app.commandLine.appendSwitch('class', boot.wmClass)
 }
 
 // One Lockwright per userData: a second launch quits and the first focuses
 // its window. Two instances would fight over the vault and the native
 // messaging socket. Dev builds skip the lock because electron-reload spawns
 // the replacement before the old process exits; LOCKWRIGHT_SINGLE_INSTANCE=1
-// forces it on there. A test profile always takes it, so two instances of one
-// profile never share a store. electron-reload below is set up without its
-// `electron` option, so it only reloads windows and never starts a second
-// main process that the lock would turn away.
-const wantsSingleInstance =
-  app.isPackaged ||
-  Boolean(profile) ||
-  process.env.LOCKWRIGHT_SINGLE_INSTANCE === '1'
+// forces it on there. A test profile always takes it. electron-reload below
+// is set up without its `electron` option, so it only reloads windows and
+// never starts a second main process that the lock would turn away.
+const wantsSingleInstance = boot.singleInstance
 const hasSingleInstanceLock =
   !wantsSingleInstance || app.requestSingleInstanceLock()
 if (!hasSingleInstanceLock) {
@@ -137,7 +121,6 @@ const {
   killNativeHostProcesses
 } = require('./nativeHostWrapper.cjs')
 const { installAppImageDesktop } = require('./installAppImageDesktop.cjs')
-const runtimeConfig = require('./runtime-config.cjs')
 const { assertVaultMethod } = require('./vaultMethods.cjs')
 const devicePreferences = require('../src/utils/devicePreferences.cjs')
 const {
@@ -150,7 +133,7 @@ const { logger, loggingForced, enableWorkletFileLogging } = setupLogging({
   app,
   pkg,
   debugMode,
-  tracing: Boolean(profile) || process.env.LOCKWRIGHT_TRACE === '1',
+  tracing: boot.tracing,
   getStorageDir: () => getStorageDir(),
   getVaultClient: () => vaultClient
 })
@@ -431,14 +414,8 @@ function waitForWorkletReady(sidecar) {
  * Start pear-runtime and the vault worklet (bare worker). Called after app is ready.
  */
 async function startRuntime() {
-  // A test profile never takes an OTA update: it runs the code it was
-  // started with, and pear-runtime stays out of its folder.
-  const upgrade =
-    profile ||
-    process.env.PEARPASS_DISABLE_UPGRADE === '1' ||
-    process.env.PEARPASS_DISABLE_UPGRADE === 'true'
-      ? null
-      : runtimeConfig.upgrade
+  // Null under a test profile or PEARPASS_DISABLE_UPGRADE (bootProfile.cjs).
+  const upgrade = boot.upgrade
 
   if (!upgrade) {
     logger.warn(
@@ -989,8 +966,8 @@ app.whenReady().then(async () => {
       ? path.join(process.resourcesPath, 'assets', 'linux', 'icon.png')
       : path.join(__dirname, '..', 'assets', 'linux', 'icon.png')
     const desktop = installAppImageDesktop({
-      // A test profile never rewrites the installed app's desktop entry.
-      appImagePath: profile ? undefined : process.env.APPIMAGE,
+      // Undefined under a test profile (bootProfile.cjs).
+      appImagePath: boot.appImagePath,
       productName: pkg.productName,
       appId: pkg.build?.appId ?? 'works.dexterity.lockwright',
       iconSourcePath: iconPath

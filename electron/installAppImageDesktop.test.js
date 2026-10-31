@@ -123,7 +123,7 @@ describe('desktop main process wiring', () => {
     const lastWindowCallAt = main.lastIndexOf('createWindow()')
     expect(installAt).toBeGreaterThan(-1)
     expect(main).toContain('process.env.APPIMAGE')
-    expect(main).toContain("appendSwitch('class', pkg.productName)")
+    expect(main).toContain("appendSwitch('class', boot.wmClass)")
     expect(installAt).toBeGreaterThan(defineWindowAt)
     expect(installAt).toBeLessThan(lastWindowCallAt)
   })
