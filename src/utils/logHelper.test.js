@@ -4,7 +4,11 @@ import fs from 'fs'
 import os from 'os'
 import path from 'path'
 
-const { createMainProcessLogger } = require('./logHelper.cjs')
+const {
+  createMainProcessLogger,
+  createWorkletLogConfigurer,
+  setupLogging
+} = require('./logHelper.cjs')
 
 describe('createMainProcessLogger', () => {
   let tmpDir
@@ -160,5 +164,72 @@ describe('createMainProcessLogger', () => {
       expect(main).toContain('kaboom')
       expect(main).toMatch(/at .*logHelper/)
     })
+  })
+})
+
+describe('worklet log options', () => {
+  let tmpDir
+
+  beforeEach(() => {
+    tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'worklet-log-test-'))
+  })
+
+  afterEach(() => {
+    fs.rmSync(tmpDir, { recursive: true, force: true })
+  })
+
+  const configure = async (tracing) => {
+    const vaultClient = { setLogOptions: jest.fn().mockResolvedValue() }
+    const enable = createWorkletLogConfigurer({
+      getStorageDir: () => tmpDir,
+      getVaultClient: () => vaultClient,
+      isPackaged: true,
+      workletLogLevel: 'debug',
+      ...(tracing === undefined ? {} : { tracing }),
+      logger: { warn: jest.fn() }
+    })
+    await enable()
+    return vaultClient.setLogOptions.mock.calls[0][0]
+  }
+
+  it('sends exactly the shipped options without tracing', async () => {
+    const shipped = {
+      logFile: path.join(tmpDir, 'logs', 'core.log'),
+      logLevel: 'debug',
+      dev: false
+    }
+    expect(await configure()).toStrictEqual(shipped)
+    expect(await configure(false)).toStrictEqual(shipped)
+  })
+
+  it('adds traceFile under logs/ when tracing', async () => {
+    expect(await configure(true)).toStrictEqual({
+      logFile: path.join(tmpDir, 'logs', 'core.log'),
+      logLevel: 'debug',
+      dev: false,
+      traceFile: path.join(tmpDir, 'logs', 'trace.jsonl')
+    })
+  })
+
+  it('forces logging on when tracing, and only then', () => {
+    const base = {
+      app: { isPackaged: true },
+      pkg: { productName: 'Lockwright' },
+      debugMode: false,
+      getStorageDir: () => tmpDir,
+      getVaultClient: () => null
+    }
+    expect(setupLogging(base).loggingForced).toBe(false)
+    expect(setupLogging({ ...base, tracing: true }).loggingForced).toBe(true)
+  })
+
+  it('main traces under a profile or LOCKWRIGHT_TRACE=1', () => {
+    const main = fs.readFileSync(
+      path.join(__dirname, '..', '..', 'electron', 'main.cjs'),
+      'utf8'
+    )
+    expect(main).toContain(
+      "tracing: Boolean(profile) || process.env.LOCKWRIGHT_TRACE === '1'"
+    )
   })
 })

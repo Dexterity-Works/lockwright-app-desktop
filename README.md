@@ -105,6 +105,7 @@ Three ways to enable:
 - **In-app toggle** (Settings → Diagnostics → **Enable logs**). Persists across launches; toggling **on** clears any previous log files to start a clean session. Toggling **off** stops writing but preserves the existing files so you can share them.
 - **Launch flag:** pass `--enable-logging` at startup. Forces logging on regardless of the toggle.
 - **Nightly builds** (`PearPass-nightly`): logging is on automatically and the in-app toggle is locked.
+- **Tracing:** a test profile or `LOCKWRIGHT_TRACE=1` forces logging on and also asks the vault worker for `<userData>/logs/trace.jsonl`. A vault-core that does not know `traceFile` ignores it.
 
 When logging is on, **Open logs folder** in the same screen reveals the directory.
 
@@ -120,7 +121,7 @@ LOCKWRIGHT_PROFILE=test1 pnpm dev
 
 Where a profile keeps its data:
 
-- App data: `<appData>/Lockwright-profile-<name>` (Linux `~/.config/Lockwright-profile-test1`, macOS `~/Library/Application Support/Lockwright-profile-test1`, Windows `%APPDATA%\Lockwright-profile-test1`). The vault is in `app-storage/local` inside it; logs are in `logs/`.
+- App data: `<appData>/Lockwright-profile-<name>` (Linux `~/.config/Lockwright-profile-test1`, macOS `~/Library/Application Support/Lockwright-profile-test1`, Windows `%APPDATA%\Lockwright-profile-test1`). The vault is in `app-storage/local` inside it; logs and the trace are in `logs/`.
 - Native messaging socket and bridge logs: `~/.lockwright/profiles/<name>/`.
 - Native host manifest: `works.dexterity.lockwright.profile_<name>.json`, written next to the real manifest in each browser's `NativeMessagingHosts` folder (on Windows, its own registry key). It admits only the profile build of the extension.
 

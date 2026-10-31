@@ -150,6 +150,7 @@ const { logger, loggingForced, enableWorkletFileLogging } = setupLogging({
   app,
   pkg,
   debugMode,
+  tracing: Boolean(profile) || process.env.LOCKWRIGHT_TRACE === '1',
   getStorageDir: () => getStorageDir(),
   getVaultClient: () => vaultClient
 })
