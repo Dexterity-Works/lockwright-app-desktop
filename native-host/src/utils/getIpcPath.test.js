@@ -96,3 +96,66 @@ describe('getIpcPath', () => {
     expect(fs.readFileSync).not.toHaveBeenCalled()
   })
 })
+
+describe('getIpcPath for a test profile', () => {
+  const argv = process.argv
+
+  beforeEach(() => {
+    os.homedir.mockReturnValue('/home/testuser')
+    path.join.mockImplementation((...args) => args.join('/'))
+  })
+
+  afterEach(() => {
+    process.argv = argv
+    delete process.env.LOCKWRIGHT_PROFILE
+    jest.resetAllMocks()
+  })
+
+  it('ignores LOCKWRIGHT_PROFILE in the environment and uses the real socket', () => {
+    process.env.LOCKWRIGHT_PROFILE = 'test1'
+    os.platform.mockReturnValue('linux')
+
+    expect(getIpcPath('test-socket')).toBe(
+      '/home/testuser/.lockwright/test-socket.sock'
+    )
+  })
+
+  it('ignores an invalid LOCKWRIGHT_PROFILE instead of breaking the real host', () => {
+    process.env.LOCKWRIGHT_PROFILE = 'Test-1'
+    os.platform.mockReturnValue('linux')
+
+    expect(getIpcPath('test-socket')).toBe(
+      '/home/testuser/.lockwright/test-socket.sock'
+    )
+  })
+
+  it("uses the profile's socket when the wrapper passes --lockwright-profile", () => {
+    process.argv = [...argv, '--lockwright-profile=test1']
+    os.platform.mockReturnValue('linux')
+
+    expect(getIpcPath('test-socket')).toBe(
+      '/home/testuser/.lockwright/profiles/test1/test-socket.sock'
+    )
+  })
+
+  it("reads the profile's pipe pointer on Windows", () => {
+    process.argv = [...argv, '--lockwright-profile=test1']
+    os.platform.mockReturnValue('win32')
+    fs.readFileSync.mockImplementation(() => {
+      throw Object.assign(new Error('ENOENT'), { code: 'ENOENT' })
+    })
+
+    expect(getIpcPath('test-socket')).toBeNull()
+    expect(fs.readFileSync).toHaveBeenCalledWith(
+      '/home/testuser/.lockwright/profiles/test1/test-socket.pipe',
+      'utf8'
+    )
+  })
+
+  it("throws on an invalid argument instead of returning the installed app's socket", () => {
+    process.argv = [...argv, '--lockwright-profile=Test-1']
+    os.platform.mockReturnValue('linux')
+
+    expect(() => getIpcPath('test-socket')).toThrow(/--lockwright-profile/)
+  })
+})

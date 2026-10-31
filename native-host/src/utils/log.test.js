@@ -72,3 +72,42 @@ describe('log', () => {
     console.error.mockRestore()
   })
 })
+
+describe('log for a test profile', () => {
+  const argv = process.argv
+
+  beforeEach(() => {
+    mockDebugMode = true
+    os.homedir.mockReturnValue('/home/testuser')
+    path.join.mockImplementation((...args) => args.join('/'))
+    fs.existsSync.mockReturnValue(true)
+  })
+
+  afterEach(() => {
+    process.argv = argv
+    delete process.env.LOCKWRIGHT_PROFILE
+    jest.clearAllMocks()
+  })
+
+  it('ignores LOCKWRIGHT_PROFILE in the environment', () => {
+    process.env.LOCKWRIGHT_PROFILE = 'test1'
+
+    log('INFO', 'hello')
+
+    expect(fs.appendFileSync).toHaveBeenCalledWith(
+      '/home/testuser/.lockwright/logs/native-messaging-bridge.log',
+      expect.stringContaining('hello')
+    )
+  })
+
+  it("writes to the profile's log dir under --lockwright-profile", () => {
+    process.argv = [...argv, '--lockwright-profile=test1']
+
+    log('INFO', 'hello')
+
+    expect(fs.appendFileSync).toHaveBeenCalledWith(
+      '/home/testuser/.lockwright/profiles/test1/logs/native-messaging-bridge.log',
+      expect.stringContaining('hello')
+    )
+  })
+})

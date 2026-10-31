@@ -7,7 +7,8 @@ const path = require('path')
 const {
   adoptInheritedVault,
   hasVault,
-  pickRuntimeStorageDir
+  pickRuntimeStorageDir,
+  resolveRuntimeStorageDir
 } = require('./pickRuntimeStorage.cjs')
 
 const OLD_ID = 'oldpearpassdkey11111111111111111111111111111111111'
@@ -277,16 +278,129 @@ describe('desktop main process wiring', () => {
     expect(main).toMatch(/hasVault:\s*hasVault\(/)
   })
 
-  it('adopts an inherited PearPass by-dkey vault before opening storage', () => {
+  it('resolves storage through resolveRuntimeStorageDir with the profile', () => {
     const main = fs.readFileSync(path.join(__dirname, 'main.cjs'), 'utf8')
     expect(main).toMatch(/pickRuntimeStorage/)
-    expect(main).toMatch(/adoptInheritedVault\(/)
-    const adoptAt = main.indexOf('adoptInheritedVault(')
-    const fallbackLocalAt = main.indexOf(
-      "path.join(storageDir, 'app-storage', 'local')"
-    )
-    expect(adoptAt).toBeGreaterThan(-1)
-    expect(fallbackLocalAt).toBeGreaterThan(-1)
-    expect(adoptAt).toBeLessThan(fallbackLocalAt)
+    expect(main).toMatch(/resolveStorageRoot\(\{[^}]*\bprofile,/)
+    expect(main).not.toMatch(/adoptInheritedVault\(/)
+  })
+})
+
+describe('resolveRuntimeStorageDir', () => {
+  const UPGRADE = `pear://${NEW_ID}`
+  const LEGACY_LINK = 'pear://legacychannel'
+  const logger = { info: jest.fn(), warn: jest.fn() }
+  let root
+
+  afterEach(() => {
+    if (root) fs.rmSync(root, { recursive: true, force: true })
+    root = null
+    jest.clearAllMocks()
+  })
+
+  // A PearPass sibling with a vault and a Pear platform store that knows the
+  // app: everything the installed app would adopt or open.
+  function installedAppTree() {
+    root = fs.mkdtempSync(path.join(os.tmpdir(), 'lockwright-resolve-'))
+    const pearPass = path.join(root, 'PearPass')
+    writeVault(path.join(pearPass, 'app-storage', 'by-dkey', OLD_ID))
+    const platformStore = path.join(root, 'pear', 'corestores', 'platform')
+    return { pearPass, platformStore }
+  }
+
+  // Any fs call throws, so the profile branch is proven not to look.
+  const untouchableFs = new Proxy(
+    {},
+    {
+      get: (_, name) => () => {
+        throw new Error(`fs.${String(name)} called under a profile`)
+      }
+    }
+  )
+
+  it('under a profile opens <userData>/app-storage/local and touches nothing else', async () => {
+    const { platformStore } = installedAppTree()
+    const userDataDir = path.join(root, 'Lockwright-profile-test1')
+    const getLegacyStorage = jest.fn().mockResolvedValue(platformStore)
+
+    const storage = await resolveRuntimeStorageDir({
+      userDataDir,
+      profile: 'test1',
+      upgrade: UPGRADE,
+      legacyChannelLink: LEGACY_LINK,
+      getLegacyStorage,
+      logger,
+      fsImpl: untouchableFs
+    })
+
+    expect(storage).toBe(path.join(userDataDir, 'app-storage', 'local'))
+    expect(getLegacyStorage).not.toHaveBeenCalled()
+    // Nothing copied in from the PearPass sibling.
+    expect(fs.existsSync(userDataDir)).toBe(false)
+  })
+
+  it('unset, still adopts the PearPass sibling vault first', async () => {
+    installedAppTree()
+    const userDataDir = path.join(root, 'Lockwright')
+    const getLegacyStorage = jest.fn()
+
+    const storage = await resolveRuntimeStorageDir({
+      userDataDir,
+      upgrade: UPGRADE,
+      legacyChannelLink: LEGACY_LINK,
+      getLegacyStorage,
+      logger
+    })
+
+    const adopted = path.join(userDataDir, 'app-storage', 'by-dkey', OLD_ID)
+    expect(storage).toBe(adopted)
+    expect(hasVault(adopted)).toBe(true)
+    expect(getLegacyStorage).not.toHaveBeenCalled()
+  })
+
+  it('unset, opens the Pear platform store when nothing is inherited', async () => {
+    root = fs.mkdtempSync(path.join(os.tmpdir(), 'lockwright-resolve-'))
+    const platformStore = path.join(root, 'pear', 'corestores', 'platform')
+    const getLegacyStorage = jest.fn().mockResolvedValue(platformStore)
+
+    const storage = await resolveRuntimeStorageDir({
+      userDataDir: path.join(root, 'Lockwright'),
+      upgrade: UPGRADE,
+      legacyChannelLink: LEGACY_LINK,
+      getLegacyStorage,
+      toSandboxSafePath: (p) => p,
+      logger
+    })
+
+    expect(getLegacyStorage).toHaveBeenCalledWith(LEGACY_LINK)
+    expect(storage).toBe(platformStore)
+  })
+
+  it('unset, keeps the local, sandbox and per-link fallbacks', async () => {
+    root = fs.mkdtempSync(path.join(os.tmpdir(), 'lockwright-resolve-'))
+    const userDataDir = path.join(root, 'Lockwright')
+    const base = { userDataDir, legacyChannelLink: LEGACY_LINK, logger }
+    const perLink = path.join(userDataDir, 'app-storage', 'by-dkey', NEW_ID)
+
+    await expect(
+      resolveRuntimeStorageDir({ ...base, upgrade: null })
+    ).resolves.toBe(path.join(userDataDir, 'app-storage', 'local'))
+    await expect(
+      resolveRuntimeStorageDir({ ...base, upgrade: UPGRADE, isSandboxed: true })
+    ).resolves.toBe(perLink)
+    await expect(
+      resolveRuntimeStorageDir({
+        ...base,
+        upgrade: UPGRADE,
+        getLegacyStorage: jest.fn().mockResolvedValue(null)
+      })
+    ).resolves.toBe(perLink)
+    await expect(
+      resolveRuntimeStorageDir({
+        ...base,
+        upgrade: UPGRADE,
+        getLegacyStorage: jest.fn().mockRejectedValue(new Error('boom'))
+      })
+    ).resolves.toBe(perLink)
   })
 })

@@ -51,6 +51,7 @@ function createWorkletLogConfigurer({
   getVaultClient,
   isPackaged,
   workletLogLevel,
+  tracing = false,
   logger
 }) {
   return async function enableWorkletFileLogging() {
@@ -59,10 +60,12 @@ function createWorkletLogConfigurer({
     const { logsDir, corePath } = getLogPaths(getStorageDir())
     try {
       fs.mkdirSync(logsDir, { recursive: true })
+      // traceFile only when tracing; a vault-core without it ignores the key.
       await vaultClient.setLogOptions({
         logFile: corePath,
         logLevel: workletLogLevel,
-        dev: !isPackaged
+        dev: !isPackaged,
+        ...(tracing ? { traceFile: path.join(logsDir, 'trace.jsonl') } : {})
       })
     } catch (err) {
       logger.warn(
@@ -189,11 +192,21 @@ function createMainProcessLogger(options = {}) {
  *
  * Mutable runtime state (`loggingActive`) stays with the caller — only the
  * stable boot wiring lives here.
+ *
+ * `tracing` (a test profile or LOCKWRIGHT_TRACE=1) forces logging on, so the
+ * worklet is always configured and gets a traceFile.
  */
-function setupLogging({ app, pkg, debugMode, getStorageDir, getVaultClient }) {
+function setupLogging({
+  app,
+  pkg,
+  debugMode,
+  tracing = false,
+  getStorageDir,
+  getVaultClient
+}) {
   const isNightlyBuild = pkg.productName === 'Lockwright-nightly'
   const loggingForced =
-    process.argv.includes('--enable-logging') || isNightlyBuild
+    process.argv.includes('--enable-logging') || isNightlyBuild || tracing
   const workletLogLevel = 'debug'
   const logger = createMainProcessLogger({
     app,
@@ -205,6 +218,7 @@ function setupLogging({ app, pkg, debugMode, getStorageDir, getVaultClient }) {
     getVaultClient,
     isPackaged: app.isPackaged,
     workletLogLevel,
+    tracing,
     logger
   })
   return { logger, loggingForced, enableWorkletFileLogging }

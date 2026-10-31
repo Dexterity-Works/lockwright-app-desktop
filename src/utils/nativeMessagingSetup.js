@@ -13,10 +13,27 @@ import {
 import { logger } from './logger'
 import flatpakPaths from '../../electron/flatpak-paths.cjs'
 import nativeHostWrapper from '../../electron/nativeHostWrapper.cjs'
+import profiles from '../../electron/profile.cjs'
 
 const { isFlatpakRuntime, isSnapRuntime, getHostHome, getSnapRealHome } =
   flatpakPaths
-const { buildWrapperContent, NATIVE_HOST_PROCESS_PATTERN } = nativeHostWrapper
+const { buildWrapperContent, nativeHostKillCommand } = nativeHostWrapper
+const {
+  PROFILE_CHROMIUM_EXTENSION_ID,
+  PROFILE_FIREFOX_EXTENSION_ID,
+  profileAppId,
+  readProfile
+} = profiles
+
+/**
+ * Native host name: the shipped one, or under a test profile a separate one
+ * whose manifest sits next to the real manifest and never replaces it.
+ * @returns {string}
+ */
+const getNativeHostName = () => {
+  const profile = readProfile()
+  return profile ? profileAppId(MANIFEST_NAME, profile) : MANIFEST_NAME
+}
 
 const promisify =
   (fn) =>
@@ -79,7 +96,8 @@ export const generateNativeHostExecutable = async (
       platform,
       isFlatpak: isFlatpakRuntime(),
       electronExecPath,
-      bridgeScriptPath
+      bridgeScriptPath,
+      profile: readProfile()
     })
 
     await fs.writeFile(executablePath, content, 'utf8')
@@ -125,7 +143,8 @@ export const getNativeMessagingLocations = () => {
   } else {
     home = os.homedir()
   }
-  const manifestFile = `${MANIFEST_NAME}.json`
+  const hostName = getNativeHostName()
+  const manifestFile = `${hostName}.json`
   const browsers = []
 
   switch (platform) {
@@ -252,45 +271,45 @@ export const getNativeMessagingLocations = () => {
       const manifestPath = path.join(nativeMessagingDir, manifestFile)
       const firefoxManifestPath = path.join(
         nativeMessagingDir,
-        `${MANIFEST_NAME}.firefox.json`
+        `${hostName}.firefox.json`
       )
       browsers.push(
         {
           name: 'Google Chrome',
           browserDir: null,
           manifestPath,
-          registryKey: `HKCU\\Software\\Google\\Chrome\\NativeMessagingHosts\\${MANIFEST_NAME}`
+          registryKey: `HKCU\\Software\\Google\\Chrome\\NativeMessagingHosts\\${hostName}`
         },
         {
           name: 'Microsoft Edge',
           browserDir: null,
           manifestPath,
-          registryKey: `HKCU\\Software\\Microsoft\\Edge\\NativeMessagingHosts\\${MANIFEST_NAME}`
+          registryKey: `HKCU\\Software\\Microsoft\\Edge\\NativeMessagingHosts\\${hostName}`
         },
         {
           name: 'Chromium',
           browserDir: null,
           manifestPath,
-          registryKey: `HKCU\\Software\\Chromium\\NativeMessagingHosts\\${MANIFEST_NAME}`
+          registryKey: `HKCU\\Software\\Chromium\\NativeMessagingHosts\\${hostName}`
         },
         {
           name: 'Brave',
           browserDir: null,
           manifestPath,
-          registryKey: `HKCU\\Software\\BraveSoftware\\Brave-Browser\\NativeMessagingHosts\\${MANIFEST_NAME}`
+          registryKey: `HKCU\\Software\\BraveSoftware\\Brave-Browser\\NativeMessagingHosts\\${hostName}`
         },
         {
           name: 'Vivaldi',
           browserDir: null,
           manifestPath,
-          registryKey: `HKCU\\Software\\Vivaldi\\NativeMessagingHosts\\${MANIFEST_NAME}`
+          registryKey: `HKCU\\Software\\Vivaldi\\NativeMessagingHosts\\${hostName}`
         },
         {
           name: 'Firefox',
           isFirefox: true,
           browserDir: null,
           manifestPath: firefoxManifestPath,
-          registryKey: `HKCU\\Software\\Mozilla\\NativeMessagingHosts\\${MANIFEST_NAME}`
+          registryKey: `HKCU\\Software\\Mozilla\\NativeMessagingHosts\\${hostName}`
         }
       )
       break
@@ -497,11 +516,13 @@ export const killNativeMessagingHostProcesses = async () => {
   try {
     const platform = os.platform()
 
+    // Under a test profile, only that profile's bridges.
+    const cmd = nativeHostKillCommand(platform, readProfile())
+
     if (platform === 'win32') {
       // Find processes with the bridge module in their command line and force-kill them
       try {
-        const psCmd = `powershell -NoProfile -Command "Get-WmiObject Win32_Process | Where-Object {\$_.CommandLine -like '*${NATIVE_HOST_PROCESS_PATTERN}*'} | ForEach-Object { taskkill /PID \$_.ProcessId /F }"`
-        await execAsync(psCmd)
+        await execAsync(cmd)
         logger.info(
           'NATIVE-MESSAGING-KILL',
           'Windows: Killed native messaging host processes'
@@ -515,7 +536,7 @@ export const killNativeMessagingHostProcesses = async () => {
     } else {
       // macOS/Linux: the wrapper uses 'exec' so the bridge module path appears in the process args
       try {
-        await execAsync(`pkill -f "${NATIVE_HOST_PROCESS_PATTERN}"`)
+        await execAsync(cmd)
         logger.info(
           'NATIVE-MESSAGING-KILL',
           'Killed native messaging host process'
@@ -568,21 +589,29 @@ export const setupNativeMessaging = async ({
       }
     }
 
+    // A test profile admits only the profile build of the extension.
+    const profile = readProfile()
+    const hostName = getNativeHostName()
+
     const chromiumManifest = {
-      name: MANIFEST_NAME,
+      name: hostName,
       description: 'Lockwright Native Messaging Host',
       path: manifestExecPath,
       type: 'stdio',
-      allowed_origins: [`chrome-extension://${CHROMIUM_EXTENSION_ID}/`]
+      allowed_origins: [
+        `chrome-extension://${profile ? PROFILE_CHROMIUM_EXTENSION_ID : CHROMIUM_EXTENSION_ID}/`
+      ]
     }
 
     // Create Firefox native messaging manifest
     const firefoxManifest = {
-      name: MANIFEST_NAME,
+      name: hostName,
       description: 'Lockwright Native Messaging Host',
       path: manifestExecPath,
       type: 'stdio',
-      allowed_extensions: [FIREFOX_EXTENSION_ID, FIREFOX_NIGHTLY_EXTENSION_ID]
+      allowed_extensions: profile
+        ? [PROFILE_FIREFOX_EXTENSION_ID]
+        : [FIREFOX_EXTENSION_ID, FIREFOX_NIGHTLY_EXTENSION_ID]
     }
 
     const { browsers } = getNativeMessagingLocations()

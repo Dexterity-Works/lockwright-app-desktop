@@ -4,6 +4,8 @@ import path from 'path'
 
 import { IPC_SOCKET_DIR_NAME } from 'lockwright-lib-constants'
 
+import profiles from '../../../electron/profile.cjs'
+
 /**
  * Returns cross-platform IPC path.
  * Uses os.homedir() so both the desktop app (Electron/Node) and the
@@ -20,20 +22,26 @@ import { IPC_SOCKET_DIR_NAME } from 'lockwright-lib-constants'
  * (nmProveServer) before it sends anything. Never guess a name: no valid
  * pointer means the desktop is not running. The pre-proof plain-string
  * pointer is invalid for the same reason.
+ *
+ * Under --lockwright-profile=<name> (passed only by a profile desktop's
+ * wrapper) the socket dir is that profile's. The environment is ignored. An
+ * invalid name throws instead of falling back to the installed app's socket.
  * @param {string} socketName
  * @returns {string|{ pipe: string, secret: string }|null} the socket path,
  *   or on win32 the published pipe and secret, or null when none is valid
  */
 export const getIpcPath = (socketName) => {
   // Home dir, not a Pear/sandbox dir: sandboxed runs resolved different paths (upstream 95d4206, ac2d4c7)
+  const socketDir = profiles.ipcSocketDirSegments(
+    os.homedir(),
+    IPC_SOCKET_DIR_NAME,
+    profiles.readProfileArg()
+  )
   if (os.platform() === 'win32') {
     let pointer
     try {
       pointer = JSON.parse(
-        fs.readFileSync(
-          path.join(os.homedir(), IPC_SOCKET_DIR_NAME, `${socketName}.pipe`),
-          'utf8'
-        )
+        fs.readFileSync(path.join(...socketDir, `${socketName}.pipe`), 'utf8')
       )
     } catch {
       return null
@@ -49,5 +57,5 @@ export const getIpcPath = (socketName) => {
     return validPipe && validSecret ? { pipe, secret } : null
   }
 
-  return path.join(os.homedir(), IPC_SOCKET_DIR_NAME, `${socketName}.sock`)
+  return path.join(...socketDir, `${socketName}.sock`)
 }

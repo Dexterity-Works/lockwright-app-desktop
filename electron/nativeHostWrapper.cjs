@@ -1,6 +1,8 @@
 const { exec } = require('child_process')
 const fsp = require('fs/promises')
 
+const { profileHostArg, readProfile } = require('./profile.cjs')
+
 const FLATPAK_APP_ID = 'works.dexterity.lockwright'
 const FLATPAK_NATIVE_HOST_COMMAND = 'lockwright-native-host'
 // Packaged host argv is `.../native-messaging-bridge.bundle.cjs`, not the
@@ -11,11 +13,17 @@ const NATIVE_HOST_PROCESS_PATTERN = 'native-messaging-bridge.bundle'
 // Wrappers emit diagnostics to stderr only: Chrome reads stdout as framed
 // native-messaging payloads, so any plain text there drops the port with
 // "Native host has exited".
+//
+// A test profile bakes its name into the wrapper as an argument: the browser
+// spawns the host with its own environment, not the desktop's. The bridge
+// reads only that argument, and nativeHostKillCommand matches it. Flatpak
+// and snap refuse profiles at startup.
 function buildWrapperContent({
   platform,
   isFlatpak,
   electronExecPath,
-  bridgeScriptPath
+  bridgeScriptPath,
+  profile = null
 }) {
   if (platform === 'linux' && isFlatpak) {
     // Chrome runs outside the flatpak sandbox; the wrapper re-enters via
@@ -43,13 +51,16 @@ exec "\${FLATPAK_BIN}" run --command=${FLATPAK_NATIVE_HOST_COMMAND} ${FLATPAK_AP
 `
   }
 
+  const command = `"${electronExecPath}" "${bridgeScriptPath}"`
+  const profileArg = profile ? ` ${profileHostArg(profile)}` : ''
+
   if (platform === 'darwin' || platform === 'linux') {
     return `#!/bin/bash
 # Lockwright Native Messaging Host
 # Runs the native messaging bridge via Electron's embedded Node.js
 
 export ELECTRON_RUN_AS_NODE=1
-exec "${electronExecPath}" "${bridgeScriptPath}"
+exec ${command}${profileArg}
 `
   }
 
@@ -59,7 +70,7 @@ REM Lockwright Native Messaging Host
 REM Runs the native messaging bridge via Electron's embedded Node.js
 
 set ELECTRON_RUN_AS_NODE=1
-"${electronExecPath}" "${bridgeScriptPath}"
+${command}${profileArg}
 `
   }
 
@@ -76,13 +87,31 @@ async function writeWrapperAtomic(executablePath, content, platform) {
   await fsp.rename(tmpPath, executablePath)
 }
 
-function killNativeHostProcesses() {
+/**
+ * Shell command that kills native hosts. Unset profile: every Lockwright
+ * bridge, as before. Under a profile: only bridges whose command line ends
+ * in that profile's argument, so the installed app's hosts and other
+ * profiles' (test1 vs test10) survive.
+ * @param {string} platform
+ * @param {string | null} [profile]
+ */
+function nativeHostKillCommand(platform, profile = null) {
+  if (platform === 'win32') {
+    const like = profile
+      ? `*${NATIVE_HOST_PROCESS_PATTERN}* ${profileHostArg(profile)}`
+      : `*${NATIVE_HOST_PROCESS_PATTERN}*`
+    return `powershell -NoProfile -Command "Get-WmiObject Win32_Process | Where-Object {$_.CommandLine -like '${like}'} | ForEach-Object { taskkill /PID $_.ProcessId /F }"`
+  }
+  const pattern = profile
+    ? `${NATIVE_HOST_PROCESS_PATTERN}.cjs ${profileHostArg(profile)}$`
+    : NATIVE_HOST_PROCESS_PATTERN
+  return `pkill -f "${pattern}"`
+}
+
+// Reads the profile itself, as nativeMessagingSetup does; main validated it.
+function killNativeHostProcesses(profile = readProfile()) {
   return new Promise((resolve) => {
-    const cmd =
-      process.platform === 'win32'
-        ? `powershell -NoProfile -Command "Get-WmiObject Win32_Process | Where-Object {$_.CommandLine -like '*${NATIVE_HOST_PROCESS_PATTERN}*'} | ForEach-Object { taskkill /PID $_.ProcessId /F }"`
-        : `pkill -f "${NATIVE_HOST_PROCESS_PATTERN}"`
-    exec(cmd, () => resolve())
+    exec(nativeHostKillCommand(process.platform, profile), () => resolve())
   })
 }
 
@@ -91,7 +120,8 @@ async function refreshNativeHostWrapperIfPresent({
   electronExecPath,
   bridgeScriptPath,
   platform,
-  isFlatpak
+  isFlatpak,
+  profile = null
 }) {
   try {
     await fsp.access(executablePath)
@@ -103,7 +133,8 @@ async function refreshNativeHostWrapperIfPresent({
     platform,
     isFlatpak,
     electronExecPath,
-    bridgeScriptPath
+    bridgeScriptPath,
+    profile
   })
   await writeWrapperAtomic(executablePath, content, platform)
   return { refreshed: true }
@@ -112,6 +143,7 @@ async function refreshNativeHostWrapperIfPresent({
 module.exports = {
   NATIVE_HOST_PROCESS_PATTERN,
   buildWrapperContent,
+  nativeHostKillCommand,
   writeWrapperAtomic,
   refreshNativeHostWrapperIfPresent,
   killNativeHostProcesses

@@ -20,6 +20,7 @@ Community fork of PearPass (Apache 2.0). Not affiliated with or endorsed by Teth
 - [Changelog](CHANGELOG.md)
 - [Usage Examples](#usage-examples)
 - [Logging](#logging)
+- [Test profiles](#test-profiles)
 - [Testing](#testing)
 - [Staging to Dev](#staging-to-dev)
 - [Workspace Dependencies](#workspace-dependencies)
@@ -104,8 +105,38 @@ Three ways to enable:
 - **In-app toggle** (Settings → Diagnostics → **Enable logs**). Persists across launches; toggling **on** clears any previous log files to start a clean session. Toggling **off** stops writing but preserves the existing files so you can share them.
 - **Launch flag:** pass `--enable-logging` at startup. Forces logging on regardless of the toggle.
 - **Nightly builds** (`PearPass-nightly`): logging is on automatically and the in-app toggle is locked.
+- **Tracing:** a test profile or `LOCKWRIGHT_TRACE=1` forces logging on and also asks the vault worker for `<userData>/logs/trace.jsonl`. A vault-core that does not know `traceFile` ignores it.
 
 When logging is on, **Open logs folder** in the same screen reveals the directory.
+
+---
+
+## Test profiles
+
+`LOCKWRIGHT_PROFILE=<name>` runs a desktop that shares nothing with the installed Lockwright, so you can try a build without risking your real vault. The name is 1 to 24 characters from `a-z`, `0-9` and `_`. Any other value stops the app with an error; it never falls back to the real profile.
+
+```bash
+LOCKWRIGHT_PROFILE=test1 pnpm dev
+```
+
+Where a profile keeps its data:
+
+- App data: `<appData>/Lockwright-profile-<name>` (Linux `~/.config/Lockwright-profile-test1`, macOS `~/Library/Application Support/Lockwright-profile-test1`, Windows `%APPDATA%\Lockwright-profile-test1`). The vault is in `app-storage/local` inside it; logs and the trace are in `logs/`.
+- Native messaging socket and bridge logs: `~/.lockwright/profiles/<name>/`.
+- Native host manifest: `works.dexterity.lockwright.profile_<name>.json`, written next to the real manifest in each browser's `NativeMessagingHosts` folder (on Windows, its own registry key). It admits only the profile build of the extension.
+
+A profile never copies a PearPass vault, never opens the Pear platform store, never takes an OTA update, never rewrites the AppImage desktop entry, and kills only its own native hosts. The window title ends in `— profile <name>`, and the Linux WM class and Windows AppUserModelId carry the profile too. Two launches of the same profile share one window. Flatpak and snap builds refuse profiles, because their data paths and native host are fixed.
+
+The browser extension only talks to a profile desktop if it is the profile build of the extension; the shipped extension still talks to the installed app.
+
+To delete a profile, quit it, then remove both folders and the manifests. On Linux:
+
+```bash
+rm -rf ~/.config/Lockwright-profile-test1 ~/.lockwright/profiles/test1
+find ~/.config ~/.mozilla ~/snap -name 'works.dexterity.lockwright.profile_test1.json' -delete 2>/dev/null
+```
+
+On macOS, the manifests are under `~/Library/Application Support/<browser>/NativeMessagingHosts/`. On Windows, delete the manifests in `%LOCALAPPDATA%\Lockwright\NativeMessaging` and the `works.dexterity.lockwright.profile_test1` keys under each browser's `HKCU\Software\...\NativeMessagingHosts`.
 
 ---
 

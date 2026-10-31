@@ -538,3 +538,109 @@ describe('setupNativeMessaging', () => {
     }
   })
 })
+
+describe('under LOCKWRIGHT_PROFILE', () => {
+  const REAL_MANIFEST = 'com.pearpass.native_messaging.json'
+  const PROFILE_HOST = 'com.pearpass.native_messaging.profile_test1'
+  const setup = () =>
+    setupNativeMessaging({
+      userDataPath: MOCK_USER_DATA_PATH,
+      execPath: MOCK_EXEC_PATH,
+      bridgePath: MOCK_BRIDGE_PATH
+    })
+  const manifestWrites = () =>
+    fs.writeFile.mock.calls.filter(([file]) => file.endsWith('.json'))
+
+  beforeEach(() => {
+    resetMocks()
+    process.env.LOCKWRIGHT_PROFILE = 'test1'
+  })
+
+  afterEach(() => {
+    delete process.env.LOCKWRIGHT_PROFILE
+  })
+
+  it.each(['linux', 'darwin'])(
+    'on %s writes only the profile manifest, for the profile extension only',
+    async (platform) => {
+      os.platform.mockReturnValue(platform)
+
+      const result = await setup()
+
+      expect(result.success).toBe(true)
+      const writes = manifestWrites()
+      expect(writes.length).toBeGreaterThan(0)
+      for (const [file, contents] of writes) {
+        expect(file.endsWith(`/${PROFILE_HOST}.json`)).toBe(true)
+        const manifest = JSON.parse(contents)
+        expect(manifest.name).toBe(PROFILE_HOST)
+        if (manifest.allowed_origins) {
+          expect(manifest.allowed_origins).toEqual([
+            'chrome-extension://degfjkbgcfkbfhhhecbdllgcokjgcdfb/'
+          ])
+        } else {
+          expect(manifest.allowed_extensions).toEqual([
+            'lockwright-profile@dexterity.works'
+          ])
+        }
+      }
+      expect(writes.some(([, c]) => JSON.parse(c).allowed_extensions)).toBe(
+        true
+      )
+      const everyPath = fs.writeFile.mock.calls.map(([file]) => file)
+      expect(everyPath.some((file) => file.endsWith(REAL_MANIFEST))).toBe(false)
+    }
+  )
+
+  it('bakes the profile into the wrapper it writes', async () => {
+    await setup()
+
+    const [, wrapper] = fs.writeFile.mock.calls.find(([file]) =>
+      file.endsWith('lockwright-native-host.sh')
+    )
+    expect(wrapper).not.toContain('LOCKWRIGHT_PROFILE')
+    expect(wrapper).toContain('--lockwright-profile=test1')
+  })
+
+  it('on win32 writes only the profile registry keys and manifests', async () => {
+    os.platform.mockReturnValue('win32')
+    os.homedir.mockReturnValue('C:/Users/testuser')
+    const execMock = jest.fn((cmd, cb) => cb(null, ''))
+    child_process.exec.mockImplementation(execMock)
+
+    await setup()
+
+    const commands = execMock.mock.calls.map(([cmd]) => cmd)
+    expect(commands).toHaveLength(6)
+    for (const cmd of commands) {
+      expect(cmd).toMatch(
+        new RegExp(
+          `NativeMessagingHosts\\\\${PROFILE_HOST}" /ve /d "[^"]*${PROFILE_HOST}(\\.firefox)?\\.json"`
+        )
+      )
+    }
+    for (const [file] of manifestWrites()) {
+      expect(file).toMatch(new RegExp(`/${PROFILE_HOST}(\\.firefox)?\\.json$`))
+    }
+  })
+
+  it('cleans up only the profile manifests', async () => {
+    await cleanupNativeMessaging()
+
+    expect(fs.unlink).toHaveBeenCalled()
+    for (const [file] of fs.unlink.mock.calls) {
+      expect(file.endsWith(`/${PROFILE_HOST}.json`)).toBe(true)
+    }
+  })
+
+  it("kills only the profile's bridges", async () => {
+    const execMock = jest.fn((cmd, cb) => cb(null, ''))
+    child_process.exec.mockImplementation(execMock)
+
+    await killNativeMessagingHostProcesses()
+
+    expect(execMock.mock.calls[0][0]).toBe(
+      'pkill -f "native-messaging-bridge.bundle.cjs --lockwright-profile=test1$"'
+    )
+  })
+})

@@ -6,11 +6,21 @@ import { join } from 'path'
 
 import { IPC_SOCKET_DIR_NAME } from 'lockwright-lib-constants'
 
+import profiles from '../../../electron/profile.cjs'
 import { logger } from '../../utils/logger'
 
 const { rename, unlink, writeFile } = fs.promises
 
-const getSocketDir = () => join(homedir(), IPC_SOCKET_DIR_NAME)
+// A test profile gets its own directory, so its socket and pointer file
+// never collide with the installed app's.
+const getSocketDir = () =>
+  join(
+    ...profiles.ipcSocketDirSegments(
+      homedir(),
+      IPC_SOCKET_DIR_NAME,
+      profiles.readProfile()
+    )
+  )
 
 /**
  * Manages IPC socket creation and cleanup
