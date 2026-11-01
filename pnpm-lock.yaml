@@ -207,6 +207,8 @@ overrides:
   lockwright-lib-constants: git+https://github.com/Dexterity-Works/lockwright-lib-constants.git#f6142c9554e9f972519dd8115b2b73f02b73d5fb
   lockwright-lib-ui-react-native-components: git+https://github.com/Dexterity-Works/lockwright-lib-ui-react-native-components.git#5a4ed69feda9b76c0de6f40cb12df72569beb9b4
   kdbxweb>@xmldom/xmldom: 0.8.15
+  hypercore: ^11.39.6
+  rocksdb-native: ^3.19.2
   udx-native: ^1.22.0
 
 importers:
@@ -3669,11 +3671,11 @@ packages:
   hypercore-id-encoding@1.3.0:
     resolution: {integrity: sha512-W6sHdGo5h7LXEsoWfKf/KfuROZmZRQDlGqJF2EPHW+noCK66Vvr0+zE6cL0vqQi18s0kQPeN7Sq3QyR0Ytc2VQ==}
 
-  hypercore-storage@3.2.0:
-    resolution: {integrity: sha512-i5O5ZMkdZaNAWGuNRXUZjuzv7B41OIhDHUwLCZPjucgVmywY0ZE5PDafu6e5oPuhtghjl6S8q6Jn+POVKN2BvQ==}
+  hypercore-storage@3.4.0:
+    resolution: {integrity: sha512-qwqW0QSH2YQW0/7T8WdHSmQBPqz3IbGcbqysJnnYgPvIp17Qr0CFD7bRGC/b9vo4FPBiW4QV9vytmkfCYJRr9A==}
 
-  hypercore@11.35.1:
-    resolution: {integrity: sha512-Oy3cfRfTBkiDSwewBicF8S97fNnon4RWYidthhQK+UB0z4SR85sfMqPtrNXQFIUt9e6i5W/vJHPfzd0lj0ZYtg==}
+  hypercore@11.39.6:
+    resolution: {integrity: sha512-9zAsZnSuwxL555eb6cIs2KLpgYsAJ6+nUyjOcu7VtSNmFjXDXzEl6sVW6t1398uL942EONcgeQxI1lgSSM9e1w==}
 
   hyperdb@4.22.3:
     resolution: {integrity: sha512-CZifHGDiOKQbZLWQL7pH0Sct3AjmXG96MeZdE6Y8YH5vBqKif22YhfmaVk35ko/maXCl68jM/uFYUB62hxgA4w==}
@@ -5238,8 +5240,8 @@ packages:
     resolution: {integrity: sha512-CHhPh+UNHD2GTXNYhPWLnU8ONHdI+5DI+4EYIAOaiD63rHeYlZvyh8P+in5999TTSFgUYuKUAjzRI4mdh/p+2A==}
     engines: {node: '>=8.0'}
 
-  rocksdb-native@3.17.3:
-    resolution: {integrity: sha512-bvwfA5QTPZuR4Kb8fU7RPbUHhNJyBZHaZG4IwmM7G1+BjPeOfVeKH+5vM4ylp4F2JDn667B4VxlkWK1+F6o6+A==}
+  rocksdb-native@3.19.2:
+    resolution: {integrity: sha512-QNiKvb4+WocuFkTzMkKdU33qTmV4ymVvMwbsY78nJqpz5vInhb6qse/Q+mIJwMICdkNzu0MHKIvz3/WnYkJ8RQ==}
     engines: {bare: '>=1.16.0'}
 
   run-async@2.4.1:
@@ -8150,7 +8152,7 @@ snapshots:
       debounceify: 1.1.0
       encryption-encoding: 1.0.3(bare-buffer@3.6.2)
       hyperbee: 2.27.3
-      hypercore: 11.35.1(bare-buffer@3.6.2)(bare-url@2.4.7)
+      hypercore: 11.39.6(bare-buffer@3.6.2)(bare-url@2.4.7)
       hypercore-crypto: 3.7.0(bare-buffer@3.6.2)(bare-events@2.9.1)(bare-url@2.4.7)
       hypercore-id-encoding: 1.3.0
       hyperschema: 1.22.0(bare-buffer@3.6.2)
@@ -8181,7 +8183,7 @@ snapshots:
       blind-peering: 1.15.0(bare-buffer@3.6.2)(bare-url@2.4.7)
       corestore: 7.12.0(bare-buffer@3.6.2)(bare-url@2.4.7)
       hyperbee: 2.27.3
-      hypercore: 11.35.1(bare-buffer@3.6.2)(bare-url@2.4.7)
+      hypercore: 11.39.6(bare-buffer@3.6.2)(bare-url@2.4.7)
       hypercore-id-encoding: 1.3.0
       hyperdb: 4.22.3(bare-buffer@3.6.2)(bare-url@2.4.7)
       hyperdispatch: 1.6.0(bare-buffer@3.6.2)
@@ -9147,7 +9149,7 @@ snapshots:
     dependencies:
       b4a: 1.8.1
       bare-events: 2.9.1
-      hypercore: 11.35.1(bare-buffer@3.6.2)(bare-url@2.4.7)
+      hypercore: 11.39.6(bare-buffer@3.6.2)(bare-url@2.4.7)
       hypercore-crypto: 3.7.0(bare-buffer@3.6.2)(bare-events@2.9.1)(bare-url@2.4.7)
       hypercore-errors: 1.5.0
       hypercore-id-encoding: 1.3.0
@@ -10356,7 +10358,7 @@ snapshots:
     transitivePeerDependencies:
       - react-native-b4a
 
-  hypercore-storage@3.2.0(bare-buffer@3.6.2)(bare-events@2.9.1)(bare-url@2.4.7):
+  hypercore-storage@3.4.0(bare-buffer@3.6.2)(bare-events@2.9.1)(bare-url@2.4.7):
     dependencies:
       b4a: 1.8.1
       bare-path: 3.1.1
@@ -10367,7 +10369,7 @@ snapshots:
       hyperschema: 1.22.0(bare-buffer@3.6.2)
       index-encoder: 3.5.0
       resolve-reject-promise: 1.1.0
-      rocksdb-native: 3.17.3(bare-url@2.4.7)
+      rocksdb-native: 3.19.2(bare-url@2.4.7)
       scope-lock: 1.2.4
       streamx: 2.28.0
       xache: 1.3.0
@@ -10379,7 +10381,7 @@ snapshots:
       - react-native-b4a
       - sodium-javascript
 
-  hypercore@11.35.1(bare-buffer@3.6.2)(bare-url@2.4.7):
+  hypercore@11.39.6(bare-buffer@3.6.2)(bare-url@2.4.7):
     dependencies:
       '@hyperswarm/secret-stream': 6.9.1(bare-buffer@3.6.2)(bare-events@2.9.1)(bare-url@2.4.7)
       b4a: 1.8.1
@@ -10391,7 +10393,7 @@ snapshots:
       hypercore-crypto: 3.7.0(bare-buffer@3.6.2)(bare-events@2.9.1)(bare-url@2.4.7)
       hypercore-errors: 1.5.0
       hypercore-id-encoding: 1.3.0
-      hypercore-storage: 3.2.0(bare-buffer@3.6.2)(bare-events@2.9.1)(bare-url@2.4.7)
+      hypercore-storage: 3.4.0(bare-buffer@3.6.2)(bare-events@2.9.1)(bare-url@2.4.7)
       is-options: 1.0.2
       nanoassert: 2.0.0
       protomux: 3.11.0
@@ -10419,7 +10421,7 @@ snapshots:
       hyperschema: 1.22.0(bare-buffer@3.6.2)
       index-encoder: 3.5.0
       refcounter: 1.0.0
-      rocksdb-native: 3.17.3(bare-url@2.4.7)
+      rocksdb-native: 3.19.2(bare-url@2.4.7)
       scope-lock: 1.2.4
       streamx: 2.28.0
     transitivePeerDependencies:
@@ -10435,11 +10437,11 @@ snapshots:
       generate-object-property: 2.0.0
       generate-string: 1.0.1
       hyperbee: 2.27.3
-      hypercore: 11.35.1(bare-buffer@3.6.2)(bare-url@2.4.7)
+      hypercore: 11.39.6(bare-buffer@3.6.2)(bare-url@2.4.7)
       hyperschema: 1.22.0(bare-buffer@3.6.2)
       index-encoder: 3.5.0
       refcounter: 1.0.0
-      rocksdb-native: 3.17.3(bare-url@2.4.7)
+      rocksdb-native: 3.19.2(bare-url@2.4.7)
       scope-lock: 1.2.4
       streamx: 2.28.0
     transitivePeerDependencies:
@@ -10504,7 +10506,7 @@ snapshots:
     dependencies:
       hyperbee: 2.27.3
       hyperblobs: 2.12.1(bare-buffer@3.6.2)(bare-url@2.4.7)
-      hypercore: 11.35.1(bare-buffer@3.6.2)(bare-url@2.4.7)
+      hypercore: 11.39.6(bare-buffer@3.6.2)(bare-url@2.4.7)
       hypercore-errors: 1.5.0
       is-options: 1.0.2
       mirror-drive: 1.14.2(bare-url@2.4.7)
@@ -11402,12 +11404,13 @@ snapshots:
       corestore: 7.12.0(bare-buffer@3.6.2)(bare-url@2.4.7)
       events: 3.3.0
       framed-stream: 1.0.1
+      hypercore: 11.39.6(bare-buffer@3.6.2)(bare-url@2.4.7)
       hypercore-id-encoding: 1.3.0
       hyperdht: 6.33.0(bare-buffer@3.6.2)(bare-url@2.4.7)
       hyperswarm: 4.17.0(bare-buffer@3.6.2)(bare-url@2.4.7)
       lockwright-lib-utils: https://codeload.github.com/Dexterity-Works/lockwright-lib-utils/tar.gz/32ffefed29db8d198f96401c780e09e70719bcc2
       otpauth: 9.5.1
-      rocksdb-native: 3.17.3(bare-url@2.4.7)
+      rocksdb-native: 3.19.2(bare-url@2.4.7)
       sodium-native: 5.1.0(bare-buffer@3.6.2)(bare-events@2.9.1)(bare-url@2.4.7)
       suspendify: 1.7.2
       udx-native: 1.22.0(bare-url@2.4.7)
@@ -12650,7 +12653,7 @@ snapshots:
       sprintf-js: 1.1.3
     optional: true
 
-  rocksdb-native@3.17.3(bare-url@2.4.7):
+  rocksdb-native@3.19.2(bare-url@2.4.7):
     dependencies:
       compact-encoding: 3.3.0
       ready-resource: 1.2.0

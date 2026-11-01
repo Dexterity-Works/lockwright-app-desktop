@@ -8,6 +8,8 @@ overrides:
   "lockwright-lib-constants": "git+https://github.com/Dexterity-Works/lockwright-lib-constants.git#f6142c9554e9f972519dd8115b2b73f02b73d5fb"
   "lockwright-lib-ui-react-native-components": "git+https://github.com/Dexterity-Works/lockwright-lib-ui-react-native-components.git#5a4ed69feda9b76c0de6f40cb12df72569beb9b4"
   "kdbxweb>@xmldom/xmldom": "0.8.15"
+  "hypercore": "^11.39.6"
+  "rocksdb-native": "^3.19.2"
   "udx-native": "^1.22.0"
 
 allowBuilds:
