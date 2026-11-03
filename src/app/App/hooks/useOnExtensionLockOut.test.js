@@ -7,10 +7,17 @@ import { NAVIGATION_ROUTES } from '../../../constants/navigation'
 import { HANDLER_EVENTS } from '../../../constants/services'
 
 const mockNavigate = jest.fn()
+const mockCloseModal = jest.fn()
 
 jest.mock('../../../context/RouterContext', () => ({
   useRouter: () => ({
     navigate: mockNavigate
+  })
+}))
+
+jest.mock('../../../context/ModalContext', () => ({
+  useModal: () => ({
+    closeModal: mockCloseModal
   })
 }))
 
@@ -48,7 +55,7 @@ describe('useOnExtensionLockOut', () => {
     )
   })
 
-  it('should call navigate with correct params on extension-lock event', () => {
+  it('should close modals and navigate on extension-lock event', () => {
     let handler
     addEventListenerSpy.mockImplementation((event, cb) => {
       if (event === HANDLER_EVENTS.extensionLock) {
@@ -68,5 +75,6 @@ describe('useOnExtensionLockOut', () => {
     expect(mockNavigate).toHaveBeenCalledWith('welcome', {
       state: NAVIGATION_ROUTES.SCREEN_LOCKED
     })
+    expect(mockCloseModal).toHaveBeenCalledWith({ force: true })
   })
 })

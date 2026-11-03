@@ -42,6 +42,13 @@ export const formatDate = (
 }
 
 /**
+ * @param {string|number|Date} dateInput
+ * @returns {string} e.g. "24 Oct 2026 14:05"
+ */
+export const formatDateTime = (dateInput) =>
+  `${formatDate(dateInput, 'dd-mmm-yyyy', ' ')} ${formatDate(dateInput, 'hh-mi', ':')}`
+
+/**
  * @param {string|number|Date} date1
  * @param {string|number|Date} date2
  * @returns {boolean}

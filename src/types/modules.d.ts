@@ -66,8 +66,32 @@ declare module 'lockwright-lib-vault' {
     targetDeviceId: string
   }): Promise<{
     results: Array<{ targetDeviceId: string; channel: 'outbox' }>
-    failures: Array<{ targetDeviceId: string; error: Error }>
+    failures: Array<{ targetDeviceId: string; error: Error; kind?: 'epoch' }>
+    epoch: {
+      rotated: boolean
+      id?: string
+      seq?: number
+      members?: string[]
+      reason?: string
+      uncovered: string[]
+    } | null
   }>
+  export type VaultKeyState = {
+    vaultId: string
+    epoch: string | null
+    legacy: boolean
+    canRead: boolean
+    members: string[]
+    rotatedAt: number | null
+    removed: Array<{ id: string; name: string | null }>
+  }
+  export function getVaultKeyState(): Promise<VaultKeyState | null>
+  export function waitForKeyRotation(params: {
+    vaultId: string
+    deviceId: string
+    timeoutMs: number
+    signal?: AbortSignal
+  }): Promise<VaultKeyState | null>
   export const VaultProvider: any
   export function useVaults(options?: {
     onCompleted?: (payload: Vault[]) => void

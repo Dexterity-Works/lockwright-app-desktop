@@ -177,7 +177,8 @@ export const Sidebar = () => {
       await lockAppSession({
         closeAllInstances,
         navigate,
-        resetState
+        resetState,
+        closeModal
       })
     } finally {
       setIsLoading(false)

@@ -58,7 +58,7 @@ export const useVaultAccessRevoked = () => {
     }
   })
 
-  const handleAccessRevoked = useCallback(
+  const wipeRevokedVault = useCallback(
     async (
       { vaultId, actor }: { vaultId: string; actor?: string } = {} as {
         vaultId: string
@@ -137,6 +137,22 @@ export const useVaultAccessRevoked = () => {
       )
     },
     []
+  )
+
+  // The kick envelope and the epoch status can both announce one removal.
+  const handling = useRef(new Set<string>())
+  const handleAccessRevoked = useCallback(
+    async (payload: { vaultId: string; actor?: string }) => {
+      const vaultId = payload?.vaultId
+      if (!vaultId || handling.current.has(vaultId)) return
+      handling.current.add(vaultId)
+      try {
+        await wipeRevokedVault(payload)
+      } finally {
+        handling.current.delete(vaultId)
+      }
+    },
+    [wipeRevokedVault]
   )
 
   useEffect(() => {

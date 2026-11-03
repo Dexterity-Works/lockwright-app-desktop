@@ -132,10 +132,12 @@ describe('createWorkletSupervisor', () => {
     worklet.client().emit('update')
     worklet.client().emit('master-update')
     worklet.client().emit('personal-swarm-envelope', { id: 1 })
+    worklet.client().emit('epoch-status', { epoch: 2 })
     expect(window.send.mock.calls).toEqual([
       ['vault:update'],
       ['vault:master-update'],
-      ['vault:personal-swarm-envelope', { id: 1 }]
+      ['vault:personal-swarm-envelope', { id: 1 }],
+      ['vault:epoch-status', { epoch: 2 }]
     ])
   })
 

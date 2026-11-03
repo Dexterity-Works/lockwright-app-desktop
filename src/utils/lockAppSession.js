@@ -12,7 +12,7 @@ const DEFAULT_CLOSE_TIMEOUT_MS = 5_000
  *   closeAllInstances: () => Promise<unknown>,
  *   navigate: (page: string, data?: import('../context/RouterContext').RouterData) => void,
  *   resetState?: () => void,
- *   closeModal?: () => void,
+ *   closeModal?: (options: { force: boolean }) => void,
  *   timeoutMs?: number
  * }} params
  * @returns {Promise<void>}
@@ -42,7 +42,9 @@ export async function lockAppSession({
     )
   }
 
-  closeModal?.()
+  // Forced: a busy modal such as a running revoke must not stay on top of
+  // the lock screen.
+  closeModal?.({ force: true })
   navigate('welcome', { state: NAVIGATION_ROUTES.MASTER_PASSWORD })
   resetState?.()
 }

@@ -64,6 +64,8 @@ class NativeMessagingHost {
     this.handler = new NativeMessagingHandler()
     /** @type {import('pear-ipc').Client|null} */
     this.ipcClient = null
+    /** @type {Promise<void>|null} connect attempt in flight */
+    this.connecting = null
     /** @type {boolean} */
     this.isRunning = false
     /** @type {string|null} */
@@ -135,10 +137,19 @@ class NativeMessagingHost {
    * extension as a `{ event, data }` native-messaging push, which the
    * extension background already routes into pearpassVaultClient.emit().
    *
+   * Pushes are dropped unless `link.client` is the current client and
+   * `link.proven` is set: until proveServer passes, the pipe owner may be a
+   * squatter, and a replaced client must not speak for the live one.
+   *
+   * @param {{ client: Object|null, proven: boolean }} link
    * @returns {Object}
    */
-  createIpcInboundApi() {
+  createIpcInboundApi(link) {
     const forward = (event, data) => {
+      if (!link.proven || link.client !== this.ipcClient) {
+        log('INFO', `Dropped ${event} from an unproven or replaced pipe owner`)
+        return
+      }
       try {
         this.handler.send({ event, data })
       } catch (err) {
@@ -153,14 +164,46 @@ class NativeMessagingHost {
         }
         // Inbound-only; expose a no-op so any accidental caller doesn't crash.
         return () => {}
+      },
+      onEpochStatus: (method) => {
+        method._onrequest = (data) => {
+          forward('epoch-status', data)
+        }
+        return () => {}
       }
     }
   }
 
   /**
+   * One connect at a time: concurrent callers share the attempt in flight.
    * @returns {Promise<void>}
    */
-  async connectToIPC() {
+  connectToIPC() {
+    if (!this.connecting) {
+      this.connecting = this.connectOnce().finally(() => {
+        this.connecting = null
+      })
+    }
+    return this.connecting
+  }
+
+  /**
+   * @returns {Promise<void>}
+   */
+  async connectOnce() {
+    let client = null
+    // Someone replaced or dropped this client while we awaited: close it
+    // and leave the status to whoever owns the current one.
+    const replaced = () => {
+      if (this.ipcClient === client) return false
+      try {
+        client.close()
+      } catch {
+        // Ignore close errors
+      }
+      return true
+    }
+
     try {
       // Resolve per attempt: on Windows each desktop start publishes a
       // fresh pipe name, so a path cached at host start goes stale.
@@ -176,13 +219,16 @@ class NativeMessagingHost {
       log('INFO', `Attempting to connect to IPC server at: ${this.socketPath}`)
 
       // Create new IPC client connection
-      this.ipcClient = new IPC.Client({
+      const link = { client: null, proven: false }
+      client = new IPC.Client({
         socketPath: this.socketPath,
         connect: true,
         connectTimeout: TIMEOUTS.IPC_CONNECTION,
         methods: COMMAND_DEFINITIONS,
-        api: this.createIpcInboundApi()
+        api: this.createIpcInboundApi(link)
       })
+      this.ipcClient = client
+      link.client = client
 
       // Wait for connection with timeout
       const timeoutPromise = new Promise((_, reject) => {
@@ -191,37 +237,43 @@ class NativeMessagingHost {
         }, TIMEOUTS.IPC_CONNECTION)
       })
 
-      await Promise.race([this.ipcClient.ready(), timeoutPromise])
+      await Promise.race([client.ready(), timeoutPromise])
+      if (replaced()) return
 
       // A published pipe may be stale after a crash and squatted since.
       // Nothing, least of all the pairing token, goes to a pipe owner
       // that cannot prove it holds the secret from the pointer file.
-      if (
-        typeof target !== 'string' &&
-        !(await this.proveServer(target.secret))
-      ) {
-        log(
-          'INFO',
-          'Pipe owner failed the ownership proof; desktop app is not running'
-        )
-        this.desktopAppStatus = DESKTOP_APP_STATUS.NOT_RUNNING
-        this.closeIpcClient()
-        return
+      if (typeof target !== 'string') {
+        const proven = await this.proveServer(client, target.secret)
+        if (replaced()) return
+        if (!proven) {
+          log(
+            'INFO',
+            'Pipe owner failed the ownership proof; desktop app is not running'
+          )
+          this.desktopAppStatus = DESKTOP_APP_STATUS.NOT_RUNNING
+          this.closeIpcClient()
+          return
+        }
       }
 
       log('INFO', 'Successfully connected to IPC server')
 
+      link.proven = true
       // Update status
       this.desktopAppStatus = DESKTOP_APP_STATUS.CONNECTED
 
-      // Set up disconnect handler
-      this.ipcClient.on('close', () => {
+      // Set up disconnect handler. A replaced client's late close must not
+      // reset the live one.
+      client.on('close', () => {
+        if (this.ipcClient !== client) return
         log('INFO', 'IPC client disconnected')
         this.desktopAppStatus = DESKTOP_APP_STATUS.NOT_RUNNING
         this.ipcClient = null
       })
     } catch (error) {
       log('INFO', `Failed to connect to IPC server: ${error.message}`)
+      if (client && replaced()) return
       this.updateDesktopAppStatus(error)
 
       // Clean up client on failure
@@ -242,10 +294,11 @@ class NativeMessagingHost {
   /**
    * Challenge the pipe owner: it must answer a fresh nonce with
    * HMAC-SHA256(secret, nonce). Mismatch, error, or timeout all fail.
+   * @param {import('pear-ipc').Client} client
    * @param {string} secretHex
    * @returns {Promise<boolean>}
    */
-  async proveServer(secretHex) {
+  async proveServer(client, secretHex) {
     const nonce = randomBytes(16)
     const expected = createHmac('sha256', Buffer.from(secretHex, 'hex'))
       .update(nonce)
@@ -253,7 +306,7 @@ class NativeMessagingHost {
     let timer
     try {
       const reply = await Promise.race([
-        this.ipcClient.nmProveServer({ nonceHex: nonce.toString('hex') }),
+        client.nmProveServer({ nonceHex: nonce.toString('hex') }),
         new Promise((_, reject) => {
           timer = setTimeout(
             () => reject(new Error('Ownership proof timed out')),
@@ -288,11 +341,15 @@ class NativeMessagingHost {
 
   /**
    * @param {Message} message
+   * @param {boolean} [retried] set on the one retry after a reconnect
    * @returns {Promise<void>}
    */
-  async handleMessage(message) {
+  async handleMessage(message, retried = false) {
     const { id, method, command, params } = message
     const methodName = method || command
+    // Set when the call failed on a client that has since been replaced:
+    // the live client is fine and the desktop may already have run the call.
+    let failedOnOldClient = false
 
     try {
       // Remove any padding added to work around Chrome 255-byte bug
@@ -379,10 +436,11 @@ class NativeMessagingHost {
           }, TIMEOUTS.IPC_CALL)
         })
 
+        const client = this.ipcClient
         try {
           // Race between the IPC call and timeout
           result = await Promise.race([
-            this.ipcClient[methodName](cleanParams),
+            client[methodName](cleanParams),
             timeoutPromise
           ])
         } catch (error) {
@@ -391,9 +449,17 @@ class NativeMessagingHost {
             error.message.includes('timed out') ||
             error.message.includes('RPC destroyed')
           ) {
-            log('INFO', 'IPC call failed, desktop app may have been closed')
-            this.desktopAppStatus = DESKTOP_APP_STATUS.NOT_RUNNING
-            this.ipcClient = null
+            // Null: the desktop dropped the pipe and our close handler ran
+            // just before this rejection. Reconnect and retry as before.
+            if (this.ipcClient === client || this.ipcClient === null) {
+              log('INFO', 'IPC call failed, desktop app may have been closed')
+              this.desktopAppStatus = DESKTOP_APP_STATUS.NOT_RUNNING
+              this.closeIpcClient()
+              // Reconnect now so desktop pushes have a proven client to ride.
+              this.connectToIPC()
+            } else {
+              failedOnOldClient = true
+            }
           }
           throw error
         }
@@ -412,13 +478,17 @@ class NativeMessagingHost {
     } catch (error) {
       log('INFO', `Error handling message: ${error.message}`)
 
-      // If it's an RPC destroyed error, try to reconnect
-      if (error.message.includes('RPC destroyed')) {
+      // If it's an RPC destroyed error, reconnect and retry once
+      if (
+        error.message.includes('RPC destroyed') &&
+        !failedOnOldClient &&
+        !retried
+      ) {
         log('INFO', 'RPC destroyed detected, attempting to reconnect...')
         try {
           await this.reconnectIPC()
           // Retry the message after reconnection
-          return this.handleMessage(message)
+          return this.handleMessage(message, true)
         } catch (reconnectError) {
           log('INFO', `Failed to reconnect: ${reconnectError.message}`)
           this.updateDesktopAppStatus(reconnectError)
@@ -439,15 +509,8 @@ class NativeMessagingHost {
    */
   async reconnectIPC() {
     try {
-      // Close existing client if any
-      if (this.ipcClient) {
-        try {
-          this.ipcClient.close()
-        } catch {
-          // Ignore close errors
-        }
-        this.ipcClient = null
-      }
+      // Close the existing client unless a connect is already replacing it
+      if (!this.connecting) this.closeIpcClient()
 
       // Use connectToIPC which handles status updates
       await this.connectToIPC()
@@ -485,6 +548,8 @@ class NativeMessagingHost {
 log('INFO', 'Native messaging host script started')
 
 // Create and start the host
+export { NativeMessagingHost }
+
 const host = new NativeMessagingHost()
 
 // Graceful shutdown

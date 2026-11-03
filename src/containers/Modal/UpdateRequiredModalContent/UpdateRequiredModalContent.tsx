@@ -4,7 +4,7 @@ import { useCountDown } from 'lockwright-lib-ui-react-hooks'
 import { Button, Dialog, Text, useTheme } from 'lockwright-lib-ui-react-native-components'
 
 import { createStyles } from './UpdateRequiredModalContent.styles'
-import { useModal } from '../../../context/ModalContext'
+import { useModal, useModalEntryId } from '../../../context/ModalContext'
 import { useTranslation } from '../../../hooks/useTranslation'
 
 export type UpdateRequiredModalContentProps = {
@@ -16,12 +16,14 @@ export const UpdateRequiredModalContent = ({
 }: UpdateRequiredModalContentProps) => {
   const { t } = useTranslation()
   const { closeModal } = useModal()
+  // Opened with closable: false, so it must close its own entry by id.
+  const entryId = useModalEntryId()
   const { theme } = useTheme()
   const styles = createStyles()
 
   const handleUpdateApp = () => {
     onUpdate?.()
-    closeModal()
+    closeModal(entryId)
   }
 
   const expireTime = useCountDown({

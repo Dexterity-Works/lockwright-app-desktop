@@ -84,6 +84,7 @@ describe('preload.cjs', () => {
     expect(typeof window.electronAPI.vaultOnPersonalSwarmEnvelope).toBe(
       'function'
     )
+    expect(typeof window.electronAPI.vaultOnEpochStatus).toBe('function')
     expect(typeof window.electronAPI.clearStaleVaultsDir).toBe('function')
     expect(typeof window.electronAPI.openExternal).toBe('function')
     expect(typeof window.electronAPI.openLogsFolder).toBe('function')
@@ -168,6 +169,7 @@ describe('preload.cjs', () => {
 
   it.each([
     ['vaultOnPersonalSwarmEnvelope', 'vault:personal-swarm-envelope'],
+    ['vaultOnEpochStatus', 'vault:epoch-status'],
     ['onNativeMessagingEvent', 'nm:event']
   ])('%s hands the page the payload of %s', (api, channel) => {
     const { ipcRenderer } = require('electron')

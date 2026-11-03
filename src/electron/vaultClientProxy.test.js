@@ -44,6 +44,24 @@ describe('createElectronVaultClientProxy', () => {
     expect(handler).toHaveBeenCalledTimes(1)
   })
 
+  test('re-emits epoch-status with the status from the main process', () => {
+    let epochCallback = null
+    const proxy = createElectronVaultClientProxy({
+      vaultInvoke,
+      vaultOnUpdate,
+      vaultOnEpochStatus: (cb) => {
+        epochCallback = cb
+        return unsubscribe
+      }
+    })
+    const handler = jest.fn()
+    proxy.on('epoch-status', handler)
+
+    epochCallback({ epoch: 'e1', revoked: true })
+
+    expect(handler).toHaveBeenCalledWith({ epoch: 'e1', revoked: true })
+  })
+
   test('creates proxy methods that forward to vaultInvoke', async () => {
     const args = [{ foo: 'bar' }, 42]
 

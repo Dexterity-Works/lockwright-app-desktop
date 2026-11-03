@@ -118,6 +118,9 @@ function createWorkletSupervisor({
     next.on('personal-swarm-envelope', (msg) =>
       window.send('vault:personal-swarm-envelope', msg)
     )
+    next.on('epoch-status', (status) =>
+      window.send('vault:epoch-status', status)
+    )
     client = next
     exitStatus = null
     connected = true
