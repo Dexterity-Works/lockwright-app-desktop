@@ -93,6 +93,8 @@ function createNativeMessaging({
   let mod = null
   /** @type {object | null} */
   let server = null
+  /** @type {object | null} the vault client `server` was built on */
+  let serverClient = null
 
   const module_ = () => {
     if (!mod) {
@@ -114,9 +116,16 @@ function createNativeMessaging({
       devicePreferences.write(getStorageDir(), { nmClientPublicKeys: keys })
   }
 
+  // A respawned worklet comes with a new vault client. A stopped server built
+  // on the old one is dropped, or it would answer from a dead channel.
   const getServer = () => {
+    const client = vaultClient()
+    if (server && !server.isRunning && serverClient !== client) {
+      server = null
+    }
     if (!server) {
-      server = new (module_().NativeMessagingIPCServer)(vaultClient(), {
+      serverClient = client
+      server = new (module_().NativeMessagingIPCServer)(client, {
         emit: (type, payload) => send('nm:event', { type, payload }),
         preferences: {
           get: () => preferences,

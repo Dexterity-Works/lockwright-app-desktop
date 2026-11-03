@@ -82,6 +82,7 @@ const {
 const { installAppImageDesktop } = require('./installAppImageDesktop.cjs')
 const runtimeConfig = require('./runtime-config.cjs')
 const { assertVaultMethod } = require('./vaultMethods.cjs')
+const { createWorkletSupervisor } = require('./workletSupervisor.cjs')
 const devicePreferences = require('../src/utils/devicePreferences.cjs')
 const {
   getLogPaths,
@@ -94,7 +95,7 @@ const { logger, loggingForced, enableWorkletFileLogging } = setupLogging({
   pkg,
   debugMode,
   getStorageDir: () => getStorageDir(),
-  getVaultClient: () => vaultClient
+  getVaultClient: () => worklet.client()
 })
 
 if (hasSingleInstanceLock && process.env.PEARPASS_DEV_RESET !== '1') {
@@ -164,15 +165,16 @@ let mainWindow = null
 /** @type {import('pear-runtime') | null} */
 let pearRuntime = null
 
-/** @type {import('bare-sidecar') | null} */
-let workletSidecar = null
-
-/** @type {import('lockwright-lib-vault-core').PearpassVaultClient | null} */
-let vaultClient = null
+/** Set on before-quit: the worklet dying on the way out is not a crash. */
+let quitting = false
 
 const nativeMessaging = createNativeMessaging({
   logger,
-  getVaultClient: () => vaultClient,
+  getVaultClient: () => {
+    const exited = worklet.exitError()
+    if (exited) throw exited
+    return worklet.client()
+  },
   getStorageDir: () => getStorageDir(),
   getExecPath: () => getRuntimeExecPath(),
   getBridgePath: () => getNativeBridgePath(),
@@ -181,6 +183,26 @@ const nativeMessaging = createNativeMessaging({
       mainWindow.webContents.send(channel, data)
     }
   }
+})
+
+const worklet = createWorkletSupervisor({
+  connect: (sidecar) => connectVaultClient(sidecar),
+  isQuitting: () => quitting,
+  nativeMessaging,
+  window: {
+    send: (channel, data) => {
+      if (mainWindow && !mainWindow.isDestroyed()) {
+        mainWindow.webContents.send(channel, data)
+      }
+    },
+    reload: () => {
+      if (mainWindow && !mainWindow.isDestroyed()) {
+        mainWindow.webContents.reload()
+      }
+    }
+  },
+  emitMarker: emitStartupMarker,
+  logger
 })
 
 function getExecPath() {
@@ -446,9 +468,6 @@ async function startRuntime() {
   clearVaultStorageForDevReset(storageDir)
   const workletPath = getWorkletPath()
 
-  const { PearpassVaultClient } = await import(
-    'lockwright-lib-vault-core'
-  )
   // MSIX (Store) vs NSIS/portable: Pear OTA artifact extension must match.
   const extension = isLinux
     ? '.AppImage'
@@ -475,78 +494,7 @@ async function startRuntime() {
     throw new Error(`Worklet not found: ${workletPath}`)
   }
 
-  workletSidecar = pearRuntime.run(workletPath)
-  emitStartupMarker('WORKLET_SPAWNED', 'mode=pear-runtime')
-  workletSidecar.on('error', (err) => {
-    logger.error('MAIN', '[worklet IPC error]', err.code || err.message, err)
-  })
-  const ipcStream = workletSidecar._process?.stdio?.[3]
-  if (ipcStream)
-    ipcStream.on('error', (err) => {
-      logger.error(
-        'MAIN',
-        '[worklet IPC pipe error]',
-        err.code || err.message,
-        err
-      )
-    })
-  workletSidecar.stderr?.on('data', (d) =>
-    logger.error('MAIN', '[worklet stderr]', d?.toString?.() || d)
-  )
-  workletSidecar.stdout?.on('data', (d) =>
-    logger.log('MAIN', '[worklet stdout]', d?.toString?.() || d)
-  )
-  workletSidecar._process?.on?.('exit', (code, sig) => {
-    logger.error('MAIN', '[worklet exit] code=', code, 'signal=', sig)
-  })
-  workletSidecar._process?.on?.('error', (err) => {
-    logger.error('MAIN', '[worklet process error]', err)
-  })
-  await waitForWorkletReady(workletSidecar)
-  const storagePath = await resolveRuntimeStorageDir()
-  emitStartupMarker('STORAGE_PATH_SET', storagePath)
-  try {
-    vaultClient = new PearpassVaultClient(workletSidecar, storagePath, {
-      debugMode,
-      logger
-    })
-    emitStartupMarker('VAULT_CLIENT_READY')
-  } catch (error) {
-    emitStartupMarker(
-      'VAULT_CLIENT_ERROR',
-      (error && (error.stack || error.message)) || String(error)
-    )
-    throw error
-  }
-
-  if (loggingActive) {
-    await enableWorkletFileLogging()
-  }
-
-  vaultClient.on('update', () => {
-    if (mainWindow && !mainWindow.isDestroyed()) {
-      mainWindow.webContents.send('vault:update')
-    }
-  })
-
-  vaultClient.on('master-update', () => {
-    if (mainWindow && !mainWindow.isDestroyed()) {
-      mainWindow.webContents.send('vault:master-update')
-    }
-  })
-
-  vaultClient.on('personal-swarm-envelope', (msg) => {
-    if (mainWindow && !mainWindow.isDestroyed()) {
-      mainWindow.webContents.send('vault:personal-swarm-envelope', msg)
-    }
-  })
-
-  vaultClient.on('epoch-status', (status) => {
-    if (mainWindow && !mainWindow.isDestroyed()) {
-      mainWindow.webContents.send('vault:epoch-status', status)
-    }
-  })
-
+  // Before the worklet: if every spawn crashes, an OTA update may be the fix.
   pearRuntime.updater.on('updating', () => {
     if (mainWindow && !mainWindow.isDestroyed()) {
       logger.info('runtime:updating', 'sending updating event')
@@ -561,6 +509,12 @@ async function startRuntime() {
       mainWindow.webContents.send('runtime:updated')
     }
   })
+
+  await worklet.start(() => {
+    const sidecar = pearRuntime.run(workletPath)
+    emitStartupMarker('WORKLET_SPAWNED', 'mode=pear-runtime')
+    return sidecar
+  })
 }
 
 /**
@@ -572,9 +526,6 @@ async function startWorkletOnly() {
   // bare-sidecar is a dependency of pear-runtime and will be hoisted into
   // this app's node_modules, so we can require it directly.
   const Sidecar = require('bare-sidecar')
-  const { PearpassVaultClient } = await import(
-    'lockwright-lib-vault-core'
-  )
 
   const workletPath = getWorkletPath()
   if (!fs.existsSync(workletPath)) {
@@ -585,55 +536,45 @@ async function startWorkletOnly() {
   // to clear local vault/encryption data so the app starts from scratch.
   clearVaultStorageForDevReset(getStorageDir())
 
-  // In packaged builds, Bare's module resolution uses the process cwd.
-  let previousCwd = null
-  if (app.isPackaged) {
-    const appRoot = path.join(process.resourcesPath, 'app')
-    if (fs.existsSync(appRoot)) {
-      previousCwd = process.cwd()
-      process.chdir(appRoot)
-      logger.log('MAIN', 'Worklet cwd set to', appRoot)
+  await worklet.start(() => {
+    // In packaged builds, Bare's module resolution uses the process cwd.
+    let previousCwd = null
+    if (app.isPackaged) {
+      const appRoot = path.join(process.resourcesPath, 'app')
+      if (fs.existsSync(appRoot)) {
+        previousCwd = process.cwd()
+        process.chdir(appRoot)
+        logger.log('MAIN', 'Worklet cwd set to', appRoot)
+      }
     }
-  }
 
-  try {
-    workletSidecar = new Sidecar(workletPath)
-  } finally {
-    if (previousCwd !== null) {
-      process.chdir(previousCwd)
+    let sidecar
+    try {
+      sidecar = new Sidecar(workletPath)
+    } finally {
+      if (previousCwd !== null) {
+        process.chdir(previousCwd)
+      }
     }
-  }
-  emitStartupMarker('WORKLET_SPAWNED', 'mode=bare-sidecar')
-  workletSidecar.on('error', (err) => {
-    logger.error('MAIN', '[worklet IPC error]', err.code || err.message, err)
+    emitStartupMarker('WORKLET_SPAWNED', 'mode=bare-sidecar')
+    return sidecar
   })
-  const ipcStream = workletSidecar._process?.stdio?.[3]
-  if (ipcStream)
-    ipcStream.on('error', (err) => {
-      logger.error(
-        'MAIN',
-        '[worklet IPC pipe error]',
-        err.code || err.message,
-        err
-      )
-    })
-  workletSidecar.stderr?.on('data', (d) =>
-    logger.error('MAIN', '[worklet stderr]', d?.toString?.() || d)
+}
+
+/**
+ * Wait for a spawned worklet and build its vault client.
+ * @param {import('bare-sidecar')} sidecar
+ */
+async function connectVaultClient(sidecar) {
+  const { PearpassVaultClient } = await import(
+    'lockwright-lib-vault-core'
   )
-  workletSidecar.stdout?.on('data', (d) =>
-    logger.log('MAIN', '[worklet stdout]', d?.toString?.() || d)
-  )
-  workletSidecar._process?.on?.('exit', (code, sig) => {
-    logger.error('MAIN', '[worklet exit] code=', code, 'signal=', sig)
-  })
-  workletSidecar._process?.on?.('error', (err) => {
-    logger.error('MAIN', '[worklet process error]', err)
-  })
-  await waitForWorkletReady(workletSidecar)
+  await waitForWorkletReady(sidecar)
   const storagePath = await resolveRuntimeStorageDir()
   emitStartupMarker('STORAGE_PATH_SET', storagePath)
+  let client
   try {
-    vaultClient = new PearpassVaultClient(workletSidecar, storagePath, {
+    client = new PearpassVaultClient(sidecar, storagePath, {
       debugMode,
       logger
     })
@@ -647,32 +588,9 @@ async function startWorkletOnly() {
   }
 
   if (loggingActive) {
-    await enableWorkletFileLogging()
+    await enableWorkletFileLogging(client)
   }
-
-  vaultClient.on('update', () => {
-    if (mainWindow && !mainWindow.isDestroyed()) {
-      mainWindow.webContents.send('vault:update')
-    }
-  })
-
-  vaultClient.on('master-update', () => {
-    if (mainWindow && !mainWindow.isDestroyed()) {
-      mainWindow.webContents.send('vault:master-update')
-    }
-  })
-
-  vaultClient.on('personal-swarm-envelope', (msg) => {
-    if (mainWindow && !mainWindow.isDestroyed()) {
-      mainWindow.webContents.send('vault:personal-swarm-envelope', msg)
-    }
-  })
-
-  vaultClient.on('epoch-status', (status) => {
-    if (mainWindow && !mainWindow.isDestroyed()) {
-      mainWindow.webContents.send('vault:epoch-status', status)
-    }
-  })
+  return client
 }
 
 function createWindow() {
@@ -853,6 +771,11 @@ function registerIPC() {
   })
 
   ipcMain.handle('vault:invoke', async (_event, { method, args }) => {
+    const exited = worklet.exitError()
+    if (exited) {
+      return { ok: false, error: exited.message, code: exited.code }
+    }
+    const vaultClient = worklet.client()
     if (!vaultClient) {
       throw new Error('Vault client not ready')
     }
@@ -941,6 +864,7 @@ function registerIPC() {
     }
 
     // Toggle OFF: stop worklet writes first, then close main.
+    const vaultClient = worklet.client()
     if (vaultClient) {
       try {
         await vaultClient.setLogOptions({ logFile: null })
@@ -1009,11 +933,9 @@ async function cleanup() {
   try {
     await nativeMessaging.stop()
   } catch (_) {}
-  if (workletSidecar) {
-    try {
-      workletSidecar.destroy()
-    } catch (_) {}
-  }
+  try {
+    worklet.destroy()
+  } catch (_) {}
   if (pearRuntime && typeof pearRuntime.close === 'function') {
     try {
       await pearRuntime.close()
@@ -1026,5 +948,6 @@ app.on('window-all-closed', async () => {
 })
 
 app.on('before-quit', async () => {
+  quitting = true
   await cleanup()
 })

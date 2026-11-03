@@ -14,22 +14,56 @@ Starts at 0.0.17, after the Lockwright package rename. Earlier history is git.
 - The revoke dialog says a device is revoked only once the vault key has rotated past it, and shows the time of that rotation. Until then it says "Removed · key rotating", including when 50 seconds pass without seeing the rotation, and after a failed rotation "Removed · key not rotated". It no longer toasts "Device can no longer edit this vault" before the rotation is confirmed. After a failed rotation the dialog offers "Rotate key now".
 - Paired Devices says when the vault key last rotated, and keeps listing a removed device the key still reaches: "Removed · key rotating" while another device has to rotate it, or "Removed · key not rotated" with "Rotate key now". A rotation that lands after the revoke dialog closed shows here.
 - The revoke dialog lists what revoking does (removes the device, rotates the vault key) and what it doesn't (erase what the device already synced; it can still read every item from before the rotation), and asks to change the passwords a lost or stolen device could see. The browser extension uses the same text.
-
-## [0.0.31] - 2026-10-17
-
-`6e22c86a437f4c698870868ace4d7593ce4102ae`
-
-### Changed
-
-- The unique-ID, password check, password generator, QR, and validator utils now come from one package, `lockwright-lib-utils`.
 - The revoke dialog says revoking rotates the vault key, and that once the key rotates the device cannot read items added or changed afterwards. Items it already synced stay on it. If the key did not rotate, the dialog stays open with a warning and a Done button. A toast names devices that cannot read new items yet. The warning says in a plain sentence why the key did not rotate. If revoking has not finished after 50 seconds, the dialog can be closed and says the result is unknown.
 - The browser extension can rotate the vault key and read the key status through this app, so revoking a device from the extension rotates the key too.
 - A native-messaging bridge process started before this update exits once when the first epoch-status push arrives; the extension then reconnects to the new bridge.
 
 ### Fixed
 
+- The vault process no longer leaks a network connection for each website icon it loads. Connections the server closed stayed open until the app quit. bare-http1 moves to 4.6.3, bare-fetch to 3.4.1 and bare-sidecar to 0.5.14, which fix it.
 - A desktop removed from a vault by a key rotation wipes that vault, as it already does when it is kicked.
-- A password generated on a device whose clock is behind another device's stays at the top of generator history instead of dropping out.
+
+## [0.0.34] - 2026-11-01
+
+`f99b7d5064c72c8ea52819238d2929e2353cbb11`
+
+### Fixed
+
+- Locking, or switching to another vault, while a vault was applying synced changes could crash the vault process with `Cannot read properties of null (reading 'flushing')`. hypercore moves to 11.39.6, which fixes it.
+- Quitting the app while the vault database was still opening could crash it. rocksdb-native moves to 3.19.2, which fixes it.
+
+## [0.0.33] - 2026-10-26
+
+`b188e11bf8d06465cd6a276f673b4899ed6cb958`
+
+### Fixed
+
+- When the encryption store can't be read, the pairing code no longer changes and paired browsers are no longer forgotten. Pairing and the extension connection fail with `ENCRYPTION_READ_FAILED` instead of `CLIENT_NOT_PAIRED` or `PairingSecretPersistenceFailed`.
+- The browser extension's pairing check no longer fails while the desktop app is locked. Pairing reads open the encryption store, which the lock closes, before reading it.
+- Two browsers connecting at once while the desktop app is locked no longer leave every pairing read failing until the app restarts. They share one opening of the encryption store.
+- When the encryption store won't open, `ENCRYPTION_READ_FAILED` gives the reason instead of `Encryption not initialised`.
+- Unpairing a browser shows the error when it fails instead of doing nothing. Once the browser is removed, it leaves Your Devices even if a later step fails.
+
+## [0.0.32] - 2026-10-26
+
+`bec7715027deec6729375d144d05c9d1a2721cd1`
+
+### Fixed
+
+- When the vault process stops, the app starts it again and locks, instead of showing the vault while every action and browser-extension pairing fails with `CHANNEL_CLOSED`. It writes the exit code, signal, and last error lines to stderr even with logging off. Until a new vault process is up, vault actions fail with `WORKLET_EXITED`.
+- A vault process that stops while the app is still starting is started again too, and its last error lines reach stderr.
+
+## [0.0.31] - 2026-10-26
+
+`436ef5a1ee4d60bab6d227e2d0f8e174ea157978`
+
+### Changed
+
+- The unique-ID, password check, password generator, QR, and validator utils now come from one package, `lockwright-lib-utils`.
+
+### Security
+
+- A use-after-free in the network library (host lookups and network-interface watching) could corrupt the vault process's memory and crash it. udx-native moves to 1.22.0, which fixes it.
 
 ## [0.0.30] - 2026-10-03
 
@@ -45,6 +79,7 @@ Starts at 0.0.17, after the Lockwright package rename. Earlier history is git.
 - Generator history shows vault entries whose password matches, including ones saved before labels were stamped.
 - Generator history shows as soon as the Generator opens.
 - Generator history no longer loses entries when another device writes at the same time or has not synced yet.
+- A password generated on a device whose clock is behind another device's stays at the top of generator history instead of dropping out.
 - Cleared generator history stays cleared when another device or an older app version has not caught up. Generating and using a password at once no longer adds it twice.
 
 ## [0.0.29] - 2026-10-02

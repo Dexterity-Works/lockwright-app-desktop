@@ -53,8 +53,10 @@ function createWorkletLogConfigurer({
   workletLogLevel,
   logger
 }) {
-  return async function enableWorkletFileLogging() {
-    const vaultClient = getVaultClient()
+  // A worklet that is still connecting hands its client in directly.
+  return async function enableWorkletFileLogging(
+    vaultClient = getVaultClient()
+  ) {
     if (!vaultClient) return
     const { logsDir, corePath } = getLogPaths(getStorageDir())
     try {

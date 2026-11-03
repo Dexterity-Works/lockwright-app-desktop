@@ -74,6 +74,29 @@ const normalizeEncryptionGet = (val) => {
 }
 
 /**
+ * Read a value from the encryption store. Only a stored-but-empty or missing
+ * value is null; a failed read throws, so callers never mistake it for
+ * "nothing stored" and overwrite what is there.
+ * @param {import('lockwright-lib-vault-core').PearpassVaultClient} client
+ * @param {string} key
+ * @returns {Promise<string|null>}
+ */
+const readEncrypted = async (client, key) => {
+  try {
+    // A desktop lock closes the store; opening it needs no password.
+    await openEncryption(client)
+    return normalizeEncryptionGet(await client.encryptionGet(key))
+  } catch (err) {
+    throw new Error(
+      createErrorWithCode(
+        SecurityErrorCodes.ENCRYPTION_READ_FAILED,
+        `${key}: ${err?.message || 'Unknown error'}`
+      )
+    )
+  }
+}
+
+/**
  * Convert bytes to base64 (URL-safe=false)
  * @param {Uint8Array} bytes
  * @returns {string}
@@ -112,9 +135,7 @@ const createPairingSecret = async (client) => {
  * @returns {Promise<string>} base64-encoded secret
  */
 const getOrCreatePairingSecret = async (client) => {
-  const pairingSecretB64 = normalizeEncryptionGet(
-    await client.encryptionGet(ENC_KEY_PAIRING_SECRET).catch(() => null)
-  )
+  const pairingSecretB64 = await readEncrypted(client, ENC_KEY_PAIRING_SECRET)
   if (!pairingSecretB64) return createPairingSecret(client)
 
   const bytes = Buffer.from(pairingSecretB64, 'base64')
@@ -138,46 +159,48 @@ export const rotatePairingSecret = async (client) => {
   await createPairingSecret(client)
 }
 
+// The worklet's encryptionInit is not idempotent: a second call while one is
+// in flight opens a second store on the same files and fails on the lock.
+let encryptionOpening = null
+
+const initEncryption = async (client) => {
+  // The worklet returns { status: boolean }. A failed check means the channel
+  // is down, so fail closed instead of initializing on an unknown state.
+  const statusResponse = await client.encryptionGetStatus()
+  if (statusResponse?.status === true) return
+
+  logger.info('APP-IDENTITY', 'Encryption not initialized, initializing...')
+  const initResult = await client.encryptionInit()
+  logger.info(
+    'APP-IDENTITY',
+    `Encryption initialization result: ${JSON.stringify(initResult)}`
+  )
+}
+
 /**
- * Ensure encryption is initialized on the client.
+ * Open the encryption store if it is closed. Concurrent callers share one
+ * attempt; a later call checks again, so a store closed since can reopen.
+ * @param {import('lockwright-lib-vault-core').PearpassVaultClient} client
+ * @returns {Promise<void>}
+ */
+const openEncryption = (client) => {
+  encryptionOpening ??= initEncryption(client).finally(() => {
+    encryptionOpening = null
+  })
+  return encryptionOpening
+}
+
+/**
+ * Ensure encryption is initialized on the client, logging a failure.
  * @param {import('lockwright-lib-vault-core').PearpassVaultClient} client
  */
-const ensureEncryptionInitialized = async (client) => {
-  try {
-    const statusResponse = await client.encryptionGetStatus()
-    // The worklet returns { status: boolean }
-    const initialized = statusResponse?.status === true
-    if (!initialized) {
-      logger.info('APP-IDENTITY', 'Encryption not initialized, initializing...')
-      const initResult = await client.encryptionInit()
-      logger.info(
-        'APP-IDENTITY',
-        `Encryption initialization result: ${JSON.stringify(initResult)}`
-      )
-    }
-  } catch (err) {
-    // If status check fails, try to initialize anyway
-    logger.info(
+const ensureEncryptionInitialized = (client) =>
+  openEncryption(client).catch((err) => {
+    logger.error(
       'APP-IDENTITY',
-      `Status check failed, attempting initialization: ${err.message}`
+      `Failed to initialize encryption: ${err.message}`
     )
-    try {
-      const initResult = await client.encryptionInit()
-      logger.info(
-        'APP-IDENTITY',
-        `Encryption initialization result: ${JSON.stringify(initResult)}`
-      )
-    } catch (initErr) {
-      // Ignore if already initialized
-      if (!initErr?.message?.includes('already initialized')) {
-        logger.error(
-          'APP-IDENTITY',
-          `Failed to initialize encryption: ${initErr.message}`
-        )
-      }
-    }
-  }
-}
+  })
 
 /**
  * Generate new identity keys and persist them.
@@ -528,9 +551,7 @@ const parseClientRecords = (data) => {
  * @param {import('lockwright-lib-vault-core').PearpassVaultClient} client
  */
 const getClientData = async (client) => {
-  const data = normalizeEncryptionGet(
-    await client.encryptionGet(ENC_KEY_CLIENT_DATA).catch(() => null)
-  )
+  const data = await readEncrypted(client, ENC_KEY_CLIENT_DATA)
   if (!data) return null
   try {
     return JSON.parse(data)

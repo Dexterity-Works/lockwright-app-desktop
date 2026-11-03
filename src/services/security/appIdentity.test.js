@@ -3,6 +3,7 @@ import sodium from 'sodium-native'
 import {
   getOrCreateIdentity,
   getPairingCode,
+  getPairingToken,
   getFingerprint,
   verifyPairingToken,
   rotatePairingSecret,
@@ -12,9 +13,11 @@ import {
   removeClientIdentity,
   createMemoryClientKeyStore,
   getCachedClientIdentityPublicKeys,
+  getPairedClients,
   setClientKeyStore
 } from './appIdentity'
 import { PAIRING_STATES } from '../../constants/pairing'
+import { SecurityErrorCodes } from '../../constants/securityErrors'
 import { logger } from '../../utils/logger'
 
 // Mock dependencies
@@ -183,7 +186,7 @@ describe('appIdentity', () => {
       expect(__getMemIdentity()).not.toBeNull()
     })
 
-    it('should handle encryption initialization failure gracefully', async () => {
+    it('does not initialize when the status check fails', async () => {
       mockClient.encryptionGetStatus.mockRejectedValue(
         new Error('Status check failed')
       )
@@ -191,31 +194,18 @@ describe('appIdentity', () => {
       mockClient.encryptionGet.mockResolvedValue(null)
       mockClient.encryptionAdd.mockResolvedValue()
 
-      await getOrCreateIdentity(mockClient)
+      await expect(getOrCreateIdentity(mockClient)).resolves.toHaveProperty(
+        'ed25519PublicKey'
+      )
+      await expect(getPairedClients(mockClient)).rejects.toThrow(
+        `${SecurityErrorCodes.ENCRYPTION_READ_FAILED}: nm.client.data: Status check failed`
+      )
 
-      expect(logger.info).toHaveBeenCalledWith(
+      expect(logger.error).toHaveBeenCalledWith(
         'APP-IDENTITY',
         expect.stringContaining('Status check failed')
       )
-      expect(mockClient.encryptionInit).toHaveBeenCalled()
-    })
-
-    it('should ignore "already initialized" errors', async () => {
-      mockClient.encryptionGetStatus.mockRejectedValue(
-        new Error('Status check failed')
-      )
-      mockClient.encryptionInit.mockRejectedValue(
-        new Error('Encryption already initialized')
-      )
-      mockClient.encryptionGet.mockResolvedValue(null)
-      mockClient.encryptionAdd.mockResolvedValue()
-
-      await getOrCreateIdentity(mockClient)
-
-      expect(logger.error).not.toHaveBeenCalledWith(
-        'APP-IDENTITY',
-        expect.stringContaining('already initialized')
-      )
+      expect(mockClient.encryptionInit).not.toHaveBeenCalled()
     })
   })
 
@@ -316,6 +306,40 @@ describe('appIdentity', () => {
     })
   })
 
+  describe('getPairingToken', () => {
+    const publicKeyB64 = Buffer.alloc(32, 42).toString('base64')
+
+    beforeEach(() => {
+      sodium.randombytes_buf = jest.fn((buf) => buf.fill(5))
+    })
+
+    afterEach(() => {
+      delete sodium.randombytes_buf
+    })
+
+    it('creates a secret when none is stored', async () => {
+      mockClient.encryptionGet.mockResolvedValue({ data: null })
+      mockClient.encryptionAdd.mockResolvedValue()
+
+      await getPairingToken(mockClient, publicKeyB64)
+
+      expect(mockClient.encryptionAdd).toHaveBeenCalledWith(
+        'nm.identity.pairingSecret',
+        Buffer.alloc(32, 5).toString('base64')
+      )
+    })
+
+    it('fails without replacing the secret when the read fails', async () => {
+      mockClient.encryptionGet.mockRejectedValue(new Error('CHANNEL_CLOSED'))
+      mockClient.encryptionAdd.mockResolvedValue()
+
+      await expect(getPairingToken(mockClient, publicKeyB64)).rejects.toThrow(
+        `${SecurityErrorCodes.ENCRYPTION_READ_FAILED}: nm.identity.pairingSecret: CHANNEL_CLOSED`
+      )
+      expect(mockClient.encryptionAdd).not.toHaveBeenCalled()
+    })
+  })
+
   describe('getFingerprint', () => {
     it('should generate a hex SHA-256 fingerprint', () => {
       const publicKeyB64 = Buffer.alloc(32, 10).toString('base64')
@@ -399,6 +423,123 @@ describe('appIdentity', () => {
           ]
         })
       )
+    })
+
+    it('fails without rewriting the client list when the read fails', async () => {
+      mockClient.encryptionGet.mockRejectedValue(new Error('CHANNEL_CLOSED'))
+      mockClient.encryptionAdd.mockResolvedValue()
+
+      await expect(
+        setClientIdentityPublicKey(mockClient, 'firefoxPub')
+      ).rejects.toThrow(
+        `${SecurityErrorCodes.ENCRYPTION_READ_FAILED}: nm.client.data: CHANNEL_CLOSED`
+      )
+      expect(mockClient.encryptionAdd).not.toHaveBeenCalled()
+    })
+  })
+
+  describe('getPairedClients', () => {
+    it('opens a store the desktop lock closed before reading it', async () => {
+      let open = false
+      mockClient.encryptionGetStatus.mockImplementation(async () => ({
+        status: open
+      }))
+      mockClient.encryptionInit.mockImplementation(async () => {
+        open = true
+      })
+      mockClient.encryptionGet.mockImplementation(async () => {
+        if (!open) throw new Error('Encryption not initialised')
+        return JSON.stringify({
+          clients: [
+            { publicKey: 'chromePub', pairingState: PAIRING_STATES.CONFIRMED }
+          ]
+        })
+      })
+
+      await expect(getPairedClients(mockClient)).resolves.toEqual([
+        { publicKey: 'chromePub', pairingState: PAIRING_STATES.CONFIRMED }
+      ])
+    })
+
+    it('opens a closed store once for concurrent reads', async () => {
+      let open = false
+      mockClient.encryptionGetStatus.mockImplementation(async () => ({
+        status: open
+      }))
+      mockClient.encryptionInit.mockImplementation(async () => {
+        await Promise.resolve()
+        open = true
+      })
+      mockClient.encryptionGet.mockResolvedValue(null)
+
+      await expect(
+        Promise.all([
+          getPairedClients(mockClient),
+          getPairedClients(mockClient)
+        ])
+      ).resolves.toEqual([[], []])
+      expect(mockClient.encryptionInit).toHaveBeenCalledTimes(1)
+    })
+
+    it('reports why the store would not open', async () => {
+      mockClient.encryptionGetStatus.mockResolvedValue({ status: false })
+      mockClient.encryptionInit.mockRejectedValue(
+        new Error('File descriptor could not be locked')
+      )
+      mockClient.encryptionGet.mockResolvedValue(null)
+
+      await expect(getPairedClients(mockClient)).rejects.toThrow(
+        `${SecurityErrorCodes.ENCRYPTION_READ_FAILED}: nm.client.data: File descriptor could not be locked`
+      )
+      expect(mockClient.encryptionGet).not.toHaveBeenCalled()
+      // Identity loading still falls back instead of failing.
+      await expect(getOrCreateIdentity(mockClient)).resolves.toHaveProperty(
+        'ed25519PublicKey'
+      )
+    })
+
+    describe('after an open settles', () => {
+      // A fresh module, so no open still in flight leaks in from other tests.
+      let isolatedGetPairedClients
+      let open
+
+      beforeEach(() => {
+        jest.isolateModules(() => {
+          isolatedGetPairedClients = require('./appIdentity').getPairedClients
+        })
+        open = false
+        mockClient.encryptionGetStatus.mockImplementation(async () => ({
+          status: open
+        }))
+        mockClient.encryptionGet.mockResolvedValue(null)
+      })
+
+      it('opens the store again after a lock closes it', async () => {
+        mockClient.encryptionInit.mockImplementation(async () => {
+          open = true
+        })
+
+        await isolatedGetPairedClients(mockClient)
+        open = false
+        await isolatedGetPairedClients(mockClient)
+
+        expect(mockClient.encryptionInit).toHaveBeenCalledTimes(2)
+      })
+
+      it('tries again after a failed open', async () => {
+        mockClient.encryptionInit
+          .mockRejectedValueOnce(
+            new Error('File descriptor could not be locked')
+          )
+          .mockImplementation(async () => {
+            open = true
+          })
+
+        await expect(isolatedGetPairedClients(mockClient)).rejects.toThrow(
+          'File descriptor could not be locked'
+        )
+        await expect(isolatedGetPairedClients(mockClient)).resolves.toEqual([])
+      })
     })
   })
 

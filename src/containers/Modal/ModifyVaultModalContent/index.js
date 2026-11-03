@@ -7,12 +7,6 @@ import { Button, InputField } from 'lockwright-lib-ui-react-native-components'
 import { Validator } from 'lockwright-lib-utils/validator'
 import { useVault } from 'lockwright-lib-vault'
 
-import { RadioSelect } from '../../../components/RadioSelect'
-import { useLoadingContext } from '../../../context/LoadingContext'
-import { useModal } from '../../../context/ModalContext'
-import { useTranslation } from '../../../hooks/useTranslation'
-import { logger } from '../../../utils/logger'
-import { ModalContent } from '../ModalContent'
 import {
   Content,
   InputLabel,
@@ -21,6 +15,12 @@ import {
   ModalTitle,
   Wrapper
 } from './styles'
+import { RadioSelect } from '../../../components/RadioSelect'
+import { useLoadingContext } from '../../../context/LoadingContext'
+import { useModal } from '../../../context/ModalContext'
+import { useTranslation } from '../../../hooks/useTranslation'
+import { logger } from '../../../utils/logger'
+import { ModalContent } from '../ModalContent'
 
 const UPDATE_MODE = {
   NAME: 'name',

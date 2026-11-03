@@ -144,6 +144,18 @@ describe('createNativeMessaging', () => {
     expect(await ipcMain.invoke('nm:isRunning')).toBe(false)
   })
 
+  it('rebuilds a stopped server on the vault client of a respawned worklet', async () => {
+    await ipcMain.invoke('nm:prefs', { nativeMessagingEnabled: true })
+    await ipcMain.invoke('nm:stop')
+
+    const respawned = { encryptionAdd: jest.fn() }
+    client = respawned
+    await ipcMain.invoke('nm:prefs', { nativeMessagingEnabled: true })
+
+    expect(mod.state.server.client).toBe(respawned)
+    expect(mod.state.server.isRunning).toBe(true)
+  })
+
   it('gives the server a live view of the preferences and a way back', async () => {
     await ipcMain.invoke('nm:start')
     const { preferences } = mod.state.server.deps
