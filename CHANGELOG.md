@@ -26,6 +26,7 @@ Starts at 0.0.17, after the Lockwright package rename. Earlier history is git.
 
 - The vault process no longer leaks a network connection for each website icon it loads. Connections the server closed stayed open until the app quit. bare-http1 moves to 4.6.3, bare-fetch to 3.4.1 and bare-sidecar to 0.5.14, which fix it.
 - A desktop removed from a vault by a key rotation wipes that vault, as it already does when it is kicked.
+- Revoking a device sends it the revoke notice only after it is removed from the vault, so the device can no longer take the notice as a cue to write first. If the removal fails, no notice goes out.
 
 ## [0.0.34] - 2026-11-01
 
