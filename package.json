@@ -157,7 +157,7 @@
     "react": "19.1.0",
     "react-dom": "19.1.0",
     "styled-components": "6.1.19",
-    "bare-sidecar": "0.5.4",
+    "bare-sidecar": "0.5.14",
     "sodium-native": "5.1.0",
     "@lingui/message-utils": "5.9.5",
     "compact-encoding": "2.18.0"

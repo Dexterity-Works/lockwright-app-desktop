@@ -9,6 +9,10 @@ Starts at 0.0.17, after the Lockwright package rename. Earlier history is git.
 
 ## [Unreleased]
 
+### Fixed
+
+- The vault process no longer leaks a network connection for each website icon it loads. Connections the server closed stayed open until the app quit. bare-http1 moves to 4.6.3, bare-fetch to 3.4.1 and bare-sidecar to 0.5.14, which fix it.
+
 ## [0.0.34] - 2026-11-01
 
 `f99b7d5064c72c8ea52819238d2929e2353cbb11`

@@ -10,6 +10,7 @@ overrides:
   "kdbxweb>@xmldom/xmldom": "0.8.15"
   "hypercore": "^11.39.6"
   "rocksdb-native": "^3.19.2"
+  "bare-http1": "^4.5.8"
   "udx-native": "^1.22.0"
 
 allowBuilds:
